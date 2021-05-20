@@ -195,17 +195,17 @@ if ! cmp -s $0 ${tools}/seg.sh ; then
 fi
 cp ${antspath}/ANTS -vn ${tools}/
 cp ${antspath}/WarpImageMultiTransform -vn ${tools}/
-cp ${binpath}/crlCorrectFetalPartialVoluming -vn ${tools}/
-cp ${binpath}/crlProbabilisticGMMSTAPLE -vn ${tools}/
-cp ${binpath}/crlComputeVolume -vn ${tools}/
-cp ${binpath}/crlImageAlgebra -vn ${tools}/
+cp /home/ch135192/bin/crlCorrectFetalPartialVoluming -vn ${tools}/
+# cp ${binpath}/crlProbabilisticGMMSTAPLE -vn ${tools}/ # USE CRKIT
+cp /home/ch135192/bin/crlComputeVolume -vn ${tools}/
+# cp ${binpath}/crlImageAlgebra -vn ${tools}/ # USE CRKIT
 cp ${tlist} -v ${tools}/
 ANTS="${tools}/ANTS"
 WARP="${tools}/WarpImageMultiTransform"
-SEG="${tools}/crlProbabilisticGMMSTAPLE"
+SEG="crlProbabilisticGMMSTAPLE"
 PVC="${tools}/crlCorrectFetalPartialVoluming"
 VOL="${tools}/crlComputeVolume"
-MATH="${tools}/crlImageAlgebra"
+MATH="crlImageAlgebra"
 baseTLIST=`basename $tlist`
 TLIST="${tools}/${baseTLIST}"
 

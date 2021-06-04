@@ -1,3 +1,9 @@
+Dependencies:
+Connection to CRL server
+--which has: CRKIT, ANTS, ITKSNAP, FLIRT
+GPU's, for reconstruction
+
+
 Bash scripts for reconstructing and post-processing fetal T2 data
 
 General workflow:

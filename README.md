@@ -15,10 +15,10 @@ prep-fetal2.sh [RAW CASE DIR] [STUDY RECON DIR]
 5. Run RECON
 Generate SVRTK docker run script: sh svrtk-dock-gen.sh [nii]
 
-6a. DEOBLIQUE and CREATE REORIENTED RECONS (to each stack)
+  6a. DEOBLIQUE and CREATE REORIENTED RECONS (to each stack)
 reorient-fetal.sh [RECON] 
 
-6b. Visually check outputs and note the best (orthogonal) oriented stack
+  6b. Visually check outputs and note the best (orthogonal) oriented stack
 
 7. Initial N4
 reg-prep2.sh [BEST ORTHOGANAL REORIENTED STACK] [# N4 iterations]

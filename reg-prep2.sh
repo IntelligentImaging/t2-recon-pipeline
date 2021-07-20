@@ -6,7 +6,7 @@ if [[ $# -lt 1 || $# -gt 3 ]]; then
 	echo "usage: sh $0 [Best Recon Orientation] [opt: #iterations] [opt: --temp]"
     echo
     echo "Sets up recon registration to atlas space including"
-    echo "directory tree, N4 bias correction, and 3D Unet ICC mask"
+    echo "directory tree and N4 bias correction"
     echo 
     echo " [#iterations] (default 3) number of N4 b0-inhomogeneity"
     echo "                           correction recursive loops"
@@ -100,23 +100,6 @@ cmd="crlMatchMaxImageIntensity $REF $biascorr $maxcorr"
 $cmd
 echo $cmd >> $LOG
 cmd="crlNoNegativeValues $maxcorr $finalcorr"
-$cmd
-echo $cmd >> $LOG
-
-# 3DUnet installation
-echo "Installing 3DUnet"
-NET="/home/ch162835/Software/3DUnet"
-maskcopy="${REGDIR}/mask.nii.gz"
-cp ${NET} -rv ${REGDIR}/
-cmd="cp ${finalcorr} -v ${REGDIR}/3DUnet/InputData/"
-$cmd
-echo $cmd >> $LOG
-# Run 3DUnet
-echo "Running 3D UNet brain extraction"
-cmd="python2.7 ${REGDIR}/3DUnet/Code/3DUnet.py"
-$cmd
-echo $cmd >> $LOG
-cmd="cp ${REGDIR}/3DUnet/Result/3DUnet_${finalcorrBASE} -v ${maskcopy}"
 $cmd
 echo $cmd >> $LOG
 

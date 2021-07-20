@@ -47,14 +47,19 @@ cat << EOF
     
         -h      display this help and exit
         -a      [optional] supply a structual ATLAS text list
-                formatted with one image per row and GA, i.e.
+                formatted with one image per row and GA
+                for example:
                     PATH/atlas30.nii.gz 30
                     PATH/atlas31.nii.gz 31
-                    PATH/atlas32.nii.gz 32
                     ...etc
-        -l      [required if -a is specified] supply prefix for
-                atlas LABELS. Labels should be in same directory
-                as atlas, named PREFIX-SameAsAtlas.nii.gz
+        -l      [required if -a is specified] supply string to
+                designate atlas label prefix. Labels should be in
+                the same directory as the corresponding atlas image
+                and must be named with format: PREFIX-SameAsAtlas.ext
+                using the above example, there should be files named:
+                    PATH/PREFIX-atlas30.nii.gz
+                    PATH/PREFIX-atlas31.nii.gz
+                    ...etc
         -p      [optional] specify output segmentation prefix
                 default: mas
 
@@ -193,11 +198,11 @@ if ! cmp -s $0 ${tools}/seg.sh ; then
 	echo "Either use ${tools}/seg.sh or clear it if you're really sure you want to change the processing script"
 	exit
 fi
-cp ${antspath}/ANTS -vn ${tools}/
-cp ${antspath}/WarpImageMultiTransform -vn ${tools}/
-cp /home/ch135192/bin/crlCorrectFetalPartialVoluming -vn ${tools}/
+cp ${antspath}/ANTS -v ${tools}/
+cp ${antspath}/WarpImageMultiTransform -v ${tools}/
+cp /home/ch135192/bin/crlCorrectFetalPartialVoluming -v ${tools}/
 # cp ${binpath}/crlProbabilisticGMMSTAPLE -vn ${tools}/ # USE CRKIT
-cp /home/ch135192/bin/crlComputeVolume -vn ${tools}/
+cp /home/ch135192/bin/crlComputeVolume -v ${tools}/
 # cp ${binpath}/crlImageAlgebra -vn ${tools}/ # USE CRKIT
 cp ${tlist} -v ${tools}/
 ANTS="${tools}/ANTS"
@@ -304,9 +309,11 @@ for lpref in $AllLabs ; do
         echo Number of atlas labels: ${#ARRAY_S[@]:0:$count}
         echo "  Atlases:"
         printf '%s\n' "${ARRAY_T[@]:0:$count}"
-        echo "  Labels:"
+        echo "  Applicable Labels:"
+        echo "  NOTE: OKAY if there are none, or if there are blanks"
+        echo "        If there are none, segmentation will not process for label atlas '$OutputPrefix'"
+        echo "        Listed labels (below) should match the order of listed atlases (above)"
         printf '%s\n' "${ARRAY_S[@]:0:$count}"
-        echo "NOTE: These lists should match in order. It's okay if there are blank spaces if there is not an atlas label for each atlas image"
         # Check that at least one atlas was found, but it's advisable to have at least 3
         if [[ $count -eq 0 ]] ; then
             echo "Didn't find ANY template images of similar GA. Make sure you have the right template lists selected. Alternatively, if you don't have template images for this GA=$GA, you can try changing the GA of the subject in $inputs to another age for which there are templates."
@@ -439,8 +446,8 @@ for lpref in $AllLabs ; do
 
             # Check to see we have the script-generated lists of (registered) atlas+labels
             if [[ ! -e "$outdir"/"$name"/log/labels_for_${OutPre2}.txt || ! -e "$outdir"/"$name"/log/atlas_for_${OutPre2}.txt ]] ; then
-                echo "  error: No transformed atlas images and/or parcellations were recorded for this case, so we have nothing to run STAPLE with."
-                echo "  This may be because there were no GA matches for the input (or no GA was given for the input at all). Skipping to next input."
+                echo "  No transformed atlas images and/or ${OutPre2} parcellations for this case, so STAPLE won't segment ${OutPre2}."
+                echo "  If this was unexpected, validate that the input GA matches at least one atlas. Skipping to next input."
                 echo ""
                 continue
             fi
@@ -539,7 +546,7 @@ while read line; do
             rm ${CPmask} ${CPnone} ${CPparc}
             echo "Output: ${parcOUT}"
         done
-    else "GEPZ or Region segs were not found for image. Skipping."
+    else echo "GEPZ or Region segs were not found for image. Skipping."
     fi
 done < $inputs
 

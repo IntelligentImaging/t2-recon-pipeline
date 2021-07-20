@@ -87,7 +87,7 @@ else
 
 # Copy T2 stacks to reconstruction folder
 RECON="${PROC}/${ID}/nii"
-mkdir -pv ${RECON} ${RECON}/../notgood
+mkdir -pv ${RECON}/../notgood
 for TERM in T2_HASTE CERVIX SSFSE_T2 ; do # Search terms
     ARRAY=`find ${NIIDIR}/ -type f -name \*$TERM\*.nii\*` # Make an array of found images
     if [[ -n $ARRAY ]] ; then # exlcude empty arrays

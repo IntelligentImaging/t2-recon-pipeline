@@ -482,27 +482,59 @@ for lpref in $AllLabs ; do
     #				echo "Iteration two:"
     #				$PVC ${image} ${corIt1} ${corIt2} 0.5 0.2 0
                     else echo "Partial volume correction ${OutPVC} already complete. Skipping..."
-            fi
+                fi
                     
-            # A check to compare output of PVC and confirm that is is decreasing CP volume as intended
-            echo "Checking PVC output..."
-            BEFORE=`crlComputeVolume ${OutSeg} ${LCP}`
-            AFTER=`crlComputeVolume ${OutPVC} ${LCP}`
-            declare -a EARRAY
-            if (( $(echo "scale=2 ; 100-(${AFTER}/${BEFORE})*100 < 2" | bc -l) )) ; then
-                echo "  FAILURE: Problem detected. Change from SEG to PVC-it1 was less than 2%"
-                echo "PVC didn't have the desired effect of decreasing CP label."
-                echo "Do the CP, SP, and WM labels match what $PVC is expecting?" 
-                EARRAY[${ecount}]=${OutPVC}
-                ((ecount++))
+                # A check to compare output of PVC and confirm that is is decreasing CP volume as intended
+                echo "Checking PVC output..."
+                BEFORE=`crlComputeVolume ${OutSeg} ${LCP}`
+                AFTER=`crlComputeVolume ${OutPVC} ${LCP}`
+                declare -a EARRAY
+                if (( $(echo "scale=2 ; 100-(${AFTER}/${BEFORE})*100 < 2" | bc -l) )) ; then
+                    echo "  FAILURE: Problem detected. Change from SEG to PVC-it1 was less than 2%"
+                    echo "PVC didn't have the desired effect of decreasing CP label."
+                    echo "Do the CP, SP, and WM labels match what $PVC is expecting?" 
+                    EARRAY[${ecount}]=${OutPVC}
+                    ((ecount++))
                 else echo "  SUCCESS: PVC appears to have had the desired effect (CP change was > 2%)"
-            fi
-            else echo "Partial volume correction is turned off"
+                fi
+        else echo "Partial volume correction is turned off"
             echo "Open the script in a text editor to turn it on (there is a switch near the top)"
-            fi
+        fi
+        echo
+
+        # # HAORAN DL CP SEGMENTATION - FetalCPSeg - HDL # #
+        # Location of the trained model
+        FCPS="${outdir}/${name}/FCPS"
+        Fsrc="/fileserver/fetal/segmentation/FetalCPSeg/FetalCPSeg-Programe/"
+        Fenv="/fileserver/fetal/venv/HDLenv/bin/activate"
+        Fin="${outdir}/${name}/FCPS/Input"
+        Fsub="${Fin}/${name}"
+        Fout="${outdir}/${name}/seg/FCPS_${name}.nii.gz"
+        echo "# # FetalCPSeg deep learning model for CP segmentation # #"
+        echo
+        if [[ ! -f "${Fout}" ]] ; then
+            echo "time : `date`"
+            echo "Install model for subject"
+            mkdir -pv ${Fsub}
+            cp ${Fsrc} -r ${FCPS}/
+            cp ${image} -v ${Fsub}/image.nii.gz
+            echo "Source virtual environment"
+            source $Fenv
+            cd ${FCPS}
+            python FetalCPSeg-Programe/Test/infer_novel.py
+            cd -
+            deactivate
+            echo "Resample model prediction"
+            crlCopyImageInformation ${Fsub}/predict.nii.gz ${Fsub}/cii.nii.gz ${Fsub}/image.nii.gz 1
+            echo "FetalCPSeg complete"
+            cp ${Fsub}/cii.nii.gz -v ${Fout}
+        else echo "FCPS output found. Skipping..."
+        fi
+        echo
+
+        # This is the end of the T2 inputs loop for segmentation for this label scheme
         done < $inputs
-        # That's the end of the T2 inputs loop for segmentation for this label scheme
-        else
+    else
         echo ""
         echo "Segmentation turned off - open the script in a text editor to turn it on (there is a switch near the top)"
         echo ""
@@ -547,6 +579,14 @@ while read line; do
             echo "Output: ${parcOUT}"
         done
     else echo "GEPZ or Region segs were not found for image. Skipping."
+    fi
+    echo
+    echo "Image algebra for FetalCPSeg"
+    if [[ -f "${Fout}" && -f "${REGION}" ]] ; then
+        Fbase=`basename $Fout`
+        Falg="${calc}/ParCP-${Fbase}"
+        $MATH ${REGION} multiply ${Fout} ${Falg} 
+    else echo "FetalCPSeg or Region segs were not found for image. Skipping"
     fi
 done < $inputs
 

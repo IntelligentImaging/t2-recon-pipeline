@@ -27,8 +27,8 @@ fi
 
 # Number of N4 iterations
 re='^[0-9]+$'
-if ! [[ $2 =~ $re && $2 -ne 0 ]] ; then
-    echo "error: 2nd argument #iterations was not a natural number."
+if ! [[ $2 =~ $re ]] ; then
+    echo "error: 2nd argument #iterations was not a whole number."
     echo "sh $0 for full instructions"
     exit 1
 fi
@@ -86,7 +86,7 @@ while [ $i -lt $ITS ] ; do
     ((i++))
 done
 # Cleanup N4 temp files
-mv -v $inN4 $biascorr
+cp -v $inN4 $biascorr
 rm -v $tempmask
 if [[ ! $TEMP == "--temp" ]] ; then
     rm -v ${REGDIR}/*(biastemp*_${BASE})
@@ -105,4 +105,3 @@ echo $cmd >> $LOG
 
 # Open permissions for group to write
 find ${REGDIR} -type d -exec chmod -c --preserve-root 770 {} \;
-chmod 660 ${REGDIR}/mask.nii.gz

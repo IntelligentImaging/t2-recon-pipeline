@@ -441,7 +441,7 @@ for lpref in $AllLabs ; do
 
             # Output segmentation file names
             OutSeg="${outdir}/${name}/seg/${OutPre2}_${name}.nii.gz"
-            OutPVC="${outdir}/${name}/PVC/pvc-${OutPre2}_${name}.nii.gz"
+            OutPVC="${outdir}/${name}/PVC/${OutPre2}-pvc_${name}.nii.gz"
     #		corIt2="${outdir}/${name}/PVC/it2-pvc-${OutPre2}_${name}.nii.gz"
 
             # Check to see we have the script-generated lists of (registered) atlas+labels
@@ -556,17 +556,18 @@ while read line; do
     calc="${outdir}/${name}/calc"
     mkdir -pv $calc
     # Check that we have a GEPZ seg and a region seg
-    GEPZ="${outdir}/${name}/PVC/pvc-${OutputPrefix}-GEPZ_${name}.nii.gz"
-    REGION="${outdir}/${name}/seg/${OutputPrefix}-region_${name}.nii.gz"
+    GEPZ="${outdir}/${name}/PVC/MAS-GEPZ-pvc_${name}.nii.gz"
+    REGION="${outdir}/${name}/seg/MAS-region_${name}.nii.gz"
     if [[ -f "${GEPZ}" && -f "${REGION}" ]] ; then
-        pvcs=`find ${outdir}/${name}/PVC/ -type f -name pvc\*-GEPZ\*_${name}.nii.gz`
+        pvcs=`find ${outdir}/${name}/PVC/ -type f -name \*-GEPZ\*pvc_${name}.nii.gz`
         echo "These CP's will be parcellated: ${pvcs}"
         for parc in $pvcs ; do 
             parcbase=`basename $parc`
-            CPmask="${calc}/CPmask_${parcbase}"
-            CPnone="${calc}/CPnone_${parcbase}"
-            CPparc="${calc}/CPparc_${parcbase}"
-            parcOUT="${calc}/ParCP-${parcbase}"
+            sub=`echo $parcbase | sed 's,MAS-GEPZ\(.*-pvc\),MAS-GEPZ\1-ParCP,'`
+            CPmask="${calc}/CPmask.nii.gz"
+            CPnone="${calc}/CPnone.nii.gz"
+            CPparc="${calc}/CPparc.nii.gz"
+            parcOUT="${calc}/${sub}.nii.gz"
             # Create CP mask from GEPZ
             crlRelabelImages $parc $parc "112 113" "1 1" ${CPmask} 0
             # Create no-CP seg from GEPZ
@@ -580,11 +581,10 @@ while read line; do
         done
     else echo "GEPZ or Region segs were not found for image. Skipping."
     fi
-    echo
-    echo "Image algebra for FetalCPSeg"
+    echo "Performing image algebra for FetalCPSeg"
     if [[ -f "${Fout}" && -f "${REGION}" ]] ; then
         Fbase=`basename $Fout`
-        Falg="${calc}/ParCP-${Fbase}"
+        Falg="${calc}/FCPS-ParCP_${name}.nii.gz"
         $MATH ${REGION} multiply ${Fout} ${Falg} 
     else echo "FetalCPSeg or Region segs were not found for image. Skipping"
     fi
@@ -593,7 +593,7 @@ done < $inputs
 echo
 
 # Report if there was an error dectected in the partial volume corrections
-echo "Report of partial volume success/failure"
+echo "Report of partial volume success/failure:"
 if [[ ${ecount} -gt 0 ]] ; then
 	echo "A problem was detected with the output of PVC for the following cases. Check to make sure it is adjusting segmentations as intended"
 	printf '%s\n' "${EARRAY[@]:0:$ecount}"

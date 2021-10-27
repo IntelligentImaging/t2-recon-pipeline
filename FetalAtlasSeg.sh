@@ -509,7 +509,7 @@ for lpref in $AllLabs ; do
         Fenv="/fileserver/fetal/venv/HDLenv/bin/activate"
         Fin="${outdir}/${name}/FCPS/Input"
         Fsub="${Fin}/${name}"
-        Fout="${outdir}/${name}/seg/FCPS_${name}.nii.gz"
+        Fout="${FCPS}/FCPS-${name}.nii.gz"
         echo "# # FetalCPSeg deep learning model for CP segmentation # #"
         echo
         if [[ ! -f "${Fout}" ]] ; then

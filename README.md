@@ -1,5 +1,5 @@
 # T2 Fetal Recon Pipeline
-The T2 recon pipeline is a set of instructions and scripts for going from raw T2 fetal data stacks to a super resolution 3D reconstruction (Gholipour et al. 2017).
+The T2 recon pipeline is a set of instructions and scripts for going from raw T2 fetal data stacks to a super resolution 3D reconstruction (Gholipour et al. 2017). It's generally more efficient to run these steps for groups of images one section at a time. For example, first do Recon Setup for all scans, then run SVRTK for all scans, then do registration pre-processing for all scans, etc.
 # Prequisites
 - Be on a CRL server machine
 - Currently may need to specifically be on latte (Clemente's machine) or another machine with GPU's installed
@@ -31,23 +31,24 @@ sh CASEID/nii/run-svrtk.sh`
 Use this convenient script to search for all run-svrtk.sh files and run any for which the corresponding output cannot be found.
 `sh svrtk-allrun-dock.sh [STUDY RECON DIR]`
 Note- you will need to first copy this script into the study folder so it is accessible while running the container
+8. Check recon and change stack selection and/or mask, and re-run SVRTK if necessary.
 
 # Pre-process recon for registration
-8. Reorient recon
+9. Reorient recon
 `sh reorient-fetal.sh [recon.nii.gz]`
 Supply the output SVRTK recon. This script reorients the recon based on each input T2 stack.
-9. Choose a good orientation. Look through the *r3DreconO_fetus_\*.nii.gz* files and choose one which is orthogonal
-10. Run N4 bias correction and set up the registration
+10. Choose a good orientation. Look through the *r3DreconO_fetus_\*.nii.gz* files and choose one which is orthogonal
+11. Run N4 bias correction and set up the registration
 `sh reg-prep2.sh [best r3D_*.nii.gz] [n4 iterations]`
 - This creates a sub-directory named *registration*, copies the chosen recon, and runs N4 bias correction *x* times.
 - This correction will help the automated brain extraction. 1 iteration may be sufficient. It will take several minutes to process.
 - Output will be named registration/nxbr3DreconOfetus_\*.nii.gz
-11. Run Davood's brain extraction docker
+12. Run Davood's brain extraction docker
 `davood_temp_be.sh registration/nxbr3DreconOfetus_\*.nii.gz`
 - Output is registration/mask.nii.gz
 - Validate and correct *mask.nii.gz* by overlaying on *nxb\*.nii.gz* with ITKSNAP
 # Registration
-12. Run N4 bias correction (again) and register to atlas space
+13. Run N4 bias correction (again) and register to atlas space
 `sh reg-fetal-recon.sh -m mask.nii.gz -n 3 -t [TARGET] -w [input] [ga]`
 - This script crops the image using *mask.nii.gz*, runs *n* iterations of N4, and performs multiple registration attempts, matching *input* to *target* by *GA*
 - *TARGET* has four options:
@@ -57,12 +58,12 @@ Supply the output SVRTK recon. This script reorients the recon based on each inp
   - [any supplied image.nii.gz] -- Alternatively you can supply any image 
  - *-w* Matches plus/minus 1 week GA, instead of exact match.
  - If you are unsure of the input GA, you can first use: `sh estimateGA.sh [input]` -- this utility script compares the mask size to atlas images and guesses the closest GA.
- 13. Look through output registrations and choose the best one
+ 14. Look through output registrations and choose the best one
  `sh choosereg.sh [best reg]`
 Copies best registration as *register_CASEID.nii.gz*, throws out all other registration attempts.
 
 # Segmentation
-13. Multi-atlas segmentation script for fetal data
+15. Multi-atlas segmentation script for fetal data
 `sh FetalAtlasSeg.sh [Imagelist] [OutputDir] [MaxThreads]`
 - Image list is a path list of post-processed T2 recons (as done above) with GA's, for example:
 > /path/to/atlas_t2final_CASE001.nii.gz 34 <br>/path/to/atlas_t2final_CASE002.nii.gz 22<br>/path/to/atlas_t2final_CASE003.nii.gz 29<br>/path/to/atlas_t2final_CASE004.nii.gz 37

@@ -65,9 +65,6 @@ Copies best registration as *register_CASEID.nii.gz*, throws out all other regis
 13. Multi-atlas segmentation script for fetal data
 `sh FetalAtlasSeg.sh [Imagelist] [OutputDir] [MaxThreads]`
 - Image list is a path list of post-processed T2 recons (as done above) with GA's, for example:
-> /path/to/atlas_t2final_CASE001.nii.gz 34
-> /path/to/atlas_t2final_CASE002.nii.gz 22
-> /path/to/atlas_t2final_CASE003.nii.gz 29
-> /path/to/atlas_t2final_CASE004.nii.gz 37
+> /path/to/atlas_t2final_CASE001.nii.gz 34 <br>/path/to/atlas_t2final_CASE002.nii.gz 22<br>/path/to/atlas_t2final_CASE003.nii.gz 29<br>/path/to/atlas_t2final_CASE004.nii.gz 37
 - Default settings will reference full set of atlas images and individual subject atlases (ISA's) and use the *"GEPZ"* and *"region"* segmentation schemes
 - Also runs partial volume correction (PVC) on the *GEPZ segmentation*, Haoran's DL CP segmentation, and image algebra to parcellate cortical plate segmentations 

@@ -3,6 +3,7 @@ The T2 recon pipeline is a set of instructions and scripts for going from raw T2
 # Prequisites
 - Be on a CRL server machine
 - Currently may need to specifically be on latte (Clemente's machine) or another machine with GPU's installed
+- Have this in your PATH (Ali's binary directory): /home/ch135192/bin
 - Docker: https://docs.docker.com/engine/install/
 - SVRTK Docker: https://github.com/SVRTK/svrtk-docker-gpu
 - Davood's recon brain extraction docker: https://hub.docker.com/r/davoodk/brain_extraction

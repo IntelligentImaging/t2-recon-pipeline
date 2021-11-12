@@ -76,13 +76,6 @@ while :; do
     shift
 done
 
-# Required arguments
-INPUT=`readlink -f $1`
-GA="$2"
-DIR=`dirname $INPUT`
-BASE=`basename $INPUT`
-SCRIPT="${DIR}/run-reg.sh"
-
 if [ $# -ne 2 ] ; then
     show_help
     exit
@@ -92,6 +85,13 @@ if [ ! -e $1 ] ; then
     echo "error: Could not find $1 ... exiting"
     exit 1
 fi
+
+# Required arguments
+INPUT=`readlink -f $1`
+GA="$2"
+DIR=`dirname $INPUT`
+BASE=`basename $INPUT`
+SCRIPT="${DIR}/run-reg.sh"
 
 # registration command to be called later
 function register {

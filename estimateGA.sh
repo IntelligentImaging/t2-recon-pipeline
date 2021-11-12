@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [[ $# -ne 1 || ! -f $1 ]]; then	
+if [[ $# -lt 1 || $# -gt 2 || ! -f $1 ]]; then	
 	echo "Incorrect argument supplied!"
-	echo "usage: sh $0 [input T2 recon]"
+	echo "usage: sh $0 [input T2 recon] [opt: -m]"
     echo "Guesses fetal recon GA by comparing size to fetal STA"
 	exit
 	fi
@@ -12,10 +12,17 @@ input=`readlink -f $1`
 choose="/fileserver/fetal/segmentation/templates/STA_GEPZ/masks/choose.txt"
 base=`basename $input`
 # Binary threshold the recon to get a rough volume
-mask="TEMPestimateMASK_${base}"
-crlBinaryThreshold $input $mask 150 20000 1 0
-vol=`crlComputeVolume $mask 1`
-rm $mask
+if [[ $2 == "-m" ]] ; then
+    echo measure supplied mask
+    mask=$1
+    vol=`crlComputeVolume $mask 1`
+else
+    # No mask specified
+    mask="TEMPestimateMASK_${base}"
+    crlBinaryThreshold $input $mask 150 20000 1 0
+    vol=`crlComputeVolume $mask 1`
+    rm $mask
+fi
 # compare input mask volume to each STA mask volume and pick the smallest (absolute) difference
 while read line ; do
     atlasGA=`echo $line | cut -d' ' -f1`

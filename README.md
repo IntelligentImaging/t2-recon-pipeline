@@ -33,7 +33,7 @@ Note- you will need to first copy this script into the study folder so it is acc
 9. Reorient recon: `sh reorient-fetal.sh [recon.nii.gz]`
 <br>Supply the output SVRTK recon. This script reorients the recon based on each input T2 stack.
 10. Choose a good orientation. Look through the *r3DreconO_fetus_\*.nii.gz* files and choose one which is orthogonal
-11. Run N4 bias correction and set up the registration: `sh reg-prep2.sh [best r3D_*.nii.gz] [n4 iterations]`<br>
+11. Run N4 bias correction and set up the registration: `sh reg-prep2.sh [r3Drecon0fetus_x.nii.gz] [n4 iterations]`<br>
 - This creates a sub-directory named *registration*, copies the chosen recon, and runs N4 bias correction *x* times.
 - This correction will help the automated brain extraction. 1 iteration may be sufficient. It will take several minutes to process.
 - Output will be named registration/nxbr3DreconOfetus_\*.nii.gz

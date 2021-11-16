@@ -35,6 +35,7 @@ if [[ $n -eq 0 ]] ; then
 fi
 
 # write reconstruct script
+echo 'export PATH=$PATH:/home/MIRTK/build/bin/' >> $run
 # reconstruct [output] [# stacks] [stack1.nii.gz ... stackn.nii.gz] -mask [mask.nii.gz]
 echo "mirtk reconstruct $SVR $n \\" >> $run
 for stack in $t2s ; do

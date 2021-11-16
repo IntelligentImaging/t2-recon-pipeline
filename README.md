@@ -48,7 +48,7 @@ This script writes the SVRTK container command (*run-svrtk.sh*) to run the recon
  - *-w* Matches plus/minus 1 week GA, instead of exact match.
  - If you are unsure of the input GA, you can first use: `sh estimateGA.sh [input]` -- this utility script compares the mask size to atlas images and guesses the closest GA.
  13. Look through output registrations and choose the best one, then run: `sh choosereg.sh [best reg]`
-<br>Copies best registration as *register_CASEID.nii.gz*, throws out all other registration attempts.
+<br>Copies best registration as *atlas_t2final_CASEID.nii.gz*, throws out all other registration attempts.
 
 # Segmentation
 14. Multi-atlas segmentation script for fetal data: `sh FetalAtlasSeg.sh [Imagelist] [OutputDir] [MaxThreads]`<br>

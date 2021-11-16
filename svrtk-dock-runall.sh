@@ -3,7 +3,7 @@
 if [ $# -ne 1 ] ; then
 	echo "Incorrect argument"
 	echo "usage: sh $0 [Directory]"
-	echo "fins all SVRTK run.sh's in [Directory] and runs them"
+	echo "finds all SVRTK run.sh's in [Directory] and runs them"
 	echo "This version of the run script is for the Docker container installation"
 	exit 1
 fi

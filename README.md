@@ -24,7 +24,7 @@ This script writes the SVRTK container command (*run-svrtk.sh*) to run the recon
 6a. Script to run a single recon: `sh svrtk-exec.sh [recon directory]`
 <br>-ALTERNATIVELY-
 Use this convenient script to search for all run-svrtk.sh files and run any for which the corresponding output cannot be found: `sh svrtk-allexec.sh [STUDY DIRECTORY]`<br>
-*study directory* is the folder which holds all of the individual subject recon directories
+*study directory* is the folder which holds all of the individual subject recon directories<br>
 6b. Check recon and change stack selection and/or mask, and re-run SVRTK if necessary.
 
 # Pre-process recon for registration

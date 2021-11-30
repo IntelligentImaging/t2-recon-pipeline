@@ -9,6 +9,11 @@ cat << EOF
 
         Fetal pipeline register to atlas space script
 
+          REQUIRED ARGUMENTS
+        [input] Input image which gets registered to atlas space
+        [ga]    Input image gestational age (22..38) OR "est", used for atlas selection
+                If you input "est", the script will estimate GA by comparing mask volume to the atlas images
+          OPTIONAL ARGUMENTS
         -h      display help
         -m      supply a binary mask to crop the image (default: no mask)
         -n      run N4 bias correction (after masking) for "n" iterations, usually 3 (default: n=3)

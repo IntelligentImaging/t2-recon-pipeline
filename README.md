@@ -47,8 +47,8 @@ This script writes the SVRTK container command (*run-svrtk.sh*) to run the recon
   - EARLY -- A pre-selection of useful small brains (GA=17-22 weeks). Use for the smallest/earliest brains.
   - [any supplied image.nii.gz] -- Alternatively you can supply any image 
  - *-w* Matches plus/minus 1 week GA, instead of exact match.
- - If you specify "est" for the GA, the script will estimate GA by comparing the mask volume to the atlas images
- So, basic usage could be: `sh reg-fetal-recon.sh -m mask.nii.gz -n 3 -w nxbr3DreconOfetus_x.nii.gz est`
+ - If you specify "est" for the GA, the script will estimate GA by comparing the mask volume to the atlas images<br>
+ So, basic usage could be: `sh reg-fetal-recon.sh -m mask.nii.gz -n 3 -w nxbr3DreconOfetus_x.nii.gz est`<br>
    or `sh reg-fetal-recon.sh -w mbnxbr3DreconOfetus_x.nii.gz est`
  13. Look through output registrations and choose the best one, then run: `sh choosereg.sh [best reg]`
 <br>Copies best registration as *atlas_t2final_CASEID.nii.gz*, throws out all other registration attempts.

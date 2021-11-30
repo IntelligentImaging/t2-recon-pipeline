@@ -13,7 +13,6 @@ choose="/fileserver/fetal/segmentation/templates/STA_GEPZ/masks/choose.txt"
 base=`basename $input`
 # Binary threshold the recon to get a rough volume
 if [[ $2 == "-m" ]] ; then
-    echo measure supplied mask
     mask=$1
     vol=`crlComputeVolume $mask 1`
 else

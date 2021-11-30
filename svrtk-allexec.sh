@@ -54,5 +54,4 @@ for f in $runs ; do
         docker kill $dockname
         echo
     fi
-    echo next case
 done

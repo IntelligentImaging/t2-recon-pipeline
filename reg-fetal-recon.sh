@@ -5,10 +5,15 @@ shopt -s extglob
 
 show_help () {
 cat << EOF
-    USAGE: sh ${0##*/} [-h] [-m|--mask mask.nii.gz] [-n|--normalize n] [-t|--target] [-w|--wide] -- [input] [ga]
+    USAGE: sh ${0##*/} [-h] [-m|--mask mask.nii.gz] [-n|--normalize n] [-t|--target] [-c|--metric] [-w|--wide] -- [input] [ga]
 
         Fetal pipeline register to atlas space script
 
+          REQUIRED ARGUMENTS
+        [input] Input image which gets registered to atlas space
+        [ga]    Input image gestational age (22..38) OR "est", used for atlas selection
+                If you input "est", the script will estimate GA by comparing mask volume to the atlas images
+          OPTIONAL ARGUMENTS
         -h      display help
         -m      supply a binary mask to crop the image (default: no mask)
         -n      run N4 bias correction (after masking) for "n" iterations, usually 3 (default: n=3)
@@ -16,6 +21,7 @@ cat << EOF
                 OR specify a single target image for registration.
                 "EARLY" should be used for very small brains (~20 weeks and below)
                 (default: ATLAS)
+        -c      FLIRT registration metric {mutualinfo,corratio,normcorr,normmi,leastsq,labeldiff,bbr} (default is corratio)
         -w      Widens selection of targets to +/- one week GA (default: off)
 
 EOF
@@ -63,9 +69,16 @@ while :; do
             fi
             echo ARGS $#
             ;;
+        -c|--metric)
+            if [[ "$2" ]] ; then
+                METRIC=$2
+                shift
+            fi
+            echo ARGS $#
+            ;;
         -w|--wide)
             WIDE="YES"
-            echo $ARGS $#
+            echo ARGS $#
             ;;
         -?*)
             printf 'warning: unknown option (ignored: %s\n' "$1" >&2
@@ -92,6 +105,7 @@ GA="$2"
 DIR=`dirname $INPUT`
 BASE=`basename $INPUT`
 SCRIPT="${DIR}/run-reg.sh"
+if [[ ! -n $METRIC ]] ; then METRIC="corratio" ; fi
 
 # registration command to be called later
 function register {
@@ -100,17 +114,19 @@ function register {
                 echo "input is $INPUT"
                 echo "base name is $basebrain" 
                 echo "template image is $template"
-		echo "template GA is $tga"
+        		echo "template GA is $tga"
                 echo "output files are $output"
+                echo "reg metric is $METRIC"
                 echo "Running FLIRT!"
-                cmd="flirt -dof 6 -cost corratio -in $INPUT -ref ${template} -omat ${output}.mat -out ${output}"
+                cmd="flirt -dof 6 -cost $METRIC -in $INPUT -ref ${template} -omat ${output}.mat -out ${output}"
 		echo $cmd >> $SCRIPT
 		$cmd
                 }
 
+# If optional mask is supplied, mask input image and set masked image as image which gets registered
+CCMASK="${DIR}/mask_r3Drecon_registration.nii.gz"
 if [ $MASK ] ; then
     echo "Finalize mask (crlMaskConnectedComponents)"
-    CCMASK="${DIR}/mask_r3Drecon_registration.nii.gz"
     crlMaskConnectedComponents ${MASK} ${CCMASK} 1 500
     echo Masking image
     MASKED="${DIR}/m${BASE}"
@@ -118,6 +134,7 @@ if [ $MASK ] ; then
     INPUT=$MASKED
 fi
 
+# If optional N4 bias is supplied, do N4 bias correction n times
 if [ $ITER ] ; then
     echo Performing bias correction
     let count=0
@@ -137,15 +154,43 @@ if [ $ITER ] ; then
     INPUT=${CORR} 
 fi
 
-# for naming output files
+# used to name output files
 basebrain="${INPUT%%.*}"
 
-if [[ ! -n $TARGET ]] ; then
-    TARGET="ATLAS"
-    echo "Reg target will be $TARGET"
+# AUTO-DETECT GA -- USE IF -est is given 
+if [[ $GA == "est" || $GA == "EST" ]] ; then
+    # Compare mask volume to each STA mask volume and pick the closest
+    echo "Estimating input GA"
+    choose="/fileserver/fetal/segmentation/templates/STA_GEPZ/masks/choose.txt"
+    while read line ; do
+        atlasGA=`echo $line | cut -d' ' -f1`
+        avol=`echo $line | cut -d ' ' -f2`
+        invol=`crlComputeVolume $CCMASK 1`
+        diff=`echo "($avol-$invol)/1" | bc`
+        abs=${diff#-}
+        # list all comparison results
+        # echo AtlasGA $atlasGA Diff $abs
+        # if no comparison values yet, set it using first line
+        if [[ -z $pick ]] ; then
+            pick="$atlasGA"
+            pickvol="$abs"
+            # if a line's diff is less than comparison, replace the saved values
+        elif [[ $abs -lt $pickvol ]] ; then
+            pick="$atlasGA"
+            pickvol="$abs"
+        fi
+    done < $choose
+    echo "Estimated GA is: $pick"
+    GA=$pick
 fi
 
-# lists with registration templates
+# If a single target was given, use it
+if [[ ! -n $TARGET ]] ; then
+TARGET="ATLAS"
+echo "Reg target will be $TARGET"
+fi
+
+# Else, we use a list with registration templates
 if   [[ $TARGET == "CASES" ]] ; then
 	echo "*** Registering $INPUT to same-age cases ***"
     tlist="/fileserver/fetal/segmentation/templates/regtemplates/cases.csv"
@@ -164,9 +209,9 @@ elif [[ -f $TARGET ]] ; then
 	register
 	warning="n"
 else
-        echo "Supplied argument for reference invalid"
-        exit
-        fi
+    echo "Supplied argument for reference invalid"
+    exit
+fi
 
 if [[ $TARGET == "ATLAS" || $TARGET == "CASES" || $TARGET == "EARLY" ]] ; then 
 	# inspect list of possible registration templates
@@ -183,7 +228,7 @@ if [[ $TARGET == "ATLAS" || $TARGET == "CASES" || $TARGET == "EARLY" ]] ; then
 			echo
 		fi
 	done < ${tlist}
-	fi
+fi
 
 if [[ ! "$warning" = "n" ]] ; then
 	echo "No templates of correct GA were found for ${input}"

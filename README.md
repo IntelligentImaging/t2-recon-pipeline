@@ -24,7 +24,7 @@ This script writes the SVRTK container command (*run-svrtk.sh*) to run the recon
 6. Method A) Script to run a single recon: `sh svrtk-exec.sh [recon directory]`
 <br>OR Method B) Use this convenient script to search for all run-svrtk.sh files and run any for which the corresponding output cannot be found: `sh svrtk-allexec.sh [STUDY DIRECTORY]`<br>
 *study directory* is the folder which holds all of the individual subject recon directories<br>
-7. Check recon and change stack selection and/or mask, and re-run SVRTK if necessary.
+7. Check recon output. If necessary (recon is poor), change the stack selection and/or mask, and re-run SVRTK.
 
 # Pre-process recon for registration
 8. Reorient recon: `sh reorient-fetal.sh [recon.nii.gz]`

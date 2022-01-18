@@ -18,7 +18,6 @@ shopt -s extglob
 
 # Binary/program directories
 antspath="/fileserver/fetal/atlas/ants/"
-binpath="/fileserver/fetal/bin"
 
 # Default STA atlas list # # # # # # # # # 
 tlist="/fileserver/fetal/segmentation/templates/STA_GEPZ/tlist_old.txt"
@@ -34,11 +33,10 @@ AllLabs="GEPZ GEPZ-WMZ region"
 segmentation="ON"                       
 # # # # # # # # # # # # # # # # # # # # #
 PartialVolumeCorrection="ON"
-LCP="112" # Cortical plate label for testing PVC output behavior
+LCP="112" # Cortical plate label used to test PVC output behavior
 # # # # # # # # # # # # # # # # # # # # #
 
 # Arguments and help message
-args="$*"
 show_help () {
 cat << EOF
     ----------------------------------------------------------
@@ -150,6 +148,7 @@ if ! [[ $inputsType == *":"*"text"* ]] ; then
 	echo "Should be a text file formatted: [IMAGE] [GA]"
     exit 1
 fi
+
 # Checking that template list is a text file
 tlistType=$(file "$tlist")
 if [[ ! $tlistType == *":"*"text"* ]] ; then
@@ -182,11 +181,10 @@ re='^[0-9]+$'
 if ! [[ $NThreads =~ $re && $NThreads -ne 0 ]] ; then
     echo "error: argument six (MaxThreads) was not a natural number." >&2; exit 1
 fi
-
 # # # Finished checking arguments and variables # # #
+
 # # # Case directory setups begin # # # 
 echo "Making case directory, setting some variables, starting template propagation..."
-
 # Create output DIR and copy scripts and binaries
 mkdir -pv "$outdir"
 tools="${outdir}/tools"
@@ -198,13 +196,11 @@ if ! cmp -s $0 ${tools}/seg.sh ; then
 	echo "Either use ${tools}/seg.sh or clear it if you're really sure you want to change the processing script"
 	exit
 fi
-cp ${antspath}/ANTS -v ${tools}/
-cp ${antspath}/WarpImageMultiTransform -v ${tools}/
-cp /home/ch135192/bin/crlCorrectFetalPartialVoluming -v ${tools}/
-# cp ${binpath}/crlProbabilisticGMMSTAPLE -vn ${tools}/ # USE CRKIT
-cp /home/ch135192/bin/crlComputeVolume -v ${tools}/
-# cp ${binpath}/crlImageAlgebra -vn ${tools}/ # USE CRKIT
-cp ${tlist} -v ${tools}/
+cp ${antspath}/ANTS -vu ${tools}/
+cp ${antspath}/WarpImageMultiTransform -vu ${tools}/
+cp /home/ch135192/bin/crlCorrectFetalPartialVoluming -vu ${tools}/
+cp /home/ch135192/bin/crlComputeVolume -vu ${tools}/
+cp ${tlist} -vu ${tools}/
 ANTS="${tools}/ANTS"
 WARP="${tools}/WarpImageMultiTransform"
 SEG="crlProbabilisticGMMSTAPLE"
@@ -219,7 +215,7 @@ if [ -n $OutputPrefix] ; then
     OutputPrefix="MAS"
 fi
 
-# Begin 'for loop' for each atlas segmentation
+# Begin 'for loop' for each atlas segmentation scheme
 # default labels are specified at top of script
 # probably GEPZ, GEPZ-WMZ, and regions
 for lpref in $AllLabs ; do
@@ -431,6 +427,7 @@ for lpref in $AllLabs ; do
             # Get path, name, and GA
             image=`readlink -f $(echo $line | awk -F' ' '{ print $1 }')`
             echo "time : `date`"
+            echo "segmentation scheme: $OutPre2"
             echo "image : ${image}"
             GA=`echo $line | awk -F' ' '{ print $2 }'`
             name=`echo $(basename $image) | awk -F'.' '{ print $1 }'`
@@ -444,9 +441,11 @@ for lpref in $AllLabs ; do
             OutPVC="${outdir}/${name}/PVC/${OutPre2}-pvc_${name}.nii.gz"
     #		corIt2="${outdir}/${name}/PVC/it2-pvc-${OutPre2}_${name}.nii.gz"
 
-            # Check to see we have the script-generated lists of (registered) atlas+labels
-            if [[ ! -e "$outdir"/"$name"/log/labels_for_${OutPre2}.txt || ! -e "$outdir"/"$name"/log/atlas_for_${OutPre2}.txt ]] ; then
-                echo "  No transformed atlas images and/or ${OutPre2} parcellations for this case, so STAPLE won't segment ${OutPre2}."
+            # Use this so we can check number of atlases (can't STAPLE if we only have one atlas, after all)
+            let labcount=`wc -l "$outdir"/"$name"/log/labels_for_${OutPre2}.txt | cut -d' ' -f1`
+            # Check to see we have the script-generated lists of (registered) atlas+labels            
+            if [[ ! -e "$outdir"/"$name"/log/labels_for_${OutPre2}.txt || ! -e "$outdir"/"$name"/log/atlas_for_${OutPre2}.txt || $labcount -lt 2 ]] ; then
+                echo "  Insufficient transformed atlas images and/or ${OutPre2} parcellations for this case, so STAPLE won't segment ${OutPre2}."
                 echo "  If this was unexpected, validate that the input GA matches at least one atlas. Skipping to next input."
                 echo ""
                 continue
@@ -502,35 +501,6 @@ for lpref in $AllLabs ; do
         fi
         echo
 
-        # # HAORAN DL CP SEGMENTATION - FetalCPSeg - HDL # #
-        # Location of the trained model
-        FCPS="${outdir}/${name}/FCPS"
-        Fsrc="/fileserver/fetal/segmentation/FetalCPSeg/FetalCPSeg-Programe/"
-        Fenv="/fileserver/fetal/venv/HDLenv/bin/activate"
-        Fin="${outdir}/${name}/FCPS/Input"
-        Fsub="${Fin}/${name}"
-        Fout="${FCPS}/FCPS_${name}.nii.gz"
-        echo "# # FetalCPSeg deep learning model for CP segmentation # #"
-        echo
-        if [[ ! -f "${Fout}" ]] ; then
-            echo "time : `date`"
-            echo "Install model for subject"
-            mkdir -pv ${Fsub}
-            cp ${Fsrc} -r ${FCPS}/
-            cp ${image} -v ${Fsub}/image.nii.gz
-            echo "Source virtual environment"
-            source $Fenv
-            cd ${FCPS}
-            python FetalCPSeg-Programe/Test/infer_novel.py
-            cd -
-            deactivate
-            echo "Resample model prediction"
-            crlCopyImageInformation ${Fsub}/predict.nii.gz ${Fsub}/cii.nii.gz ${Fsub}/image.nii.gz 1
-            echo "FetalCPSeg complete"
-            cp ${Fsub}/cii.nii.gz -v ${Fout}
-        else echo "FCPS output found. Skipping..."
-        fi
-        echo
 
         # This is the end of the T2 inputs loop for segmentation for this label scheme
         done < $inputs
@@ -545,13 +515,45 @@ done
 # # # Post-processing # # #
 echo "# # # Post-processing steps begin # # #"
 echo
-# CP region multiplication
-echo "Image algebra to create parcellated CP"
+
 while read line; do
     # Get path, name
     image=`readlink -f $(echo $line | awk -F' ' '{ print $1 }')`
     name=`echo $(basename $image) | awk -F'.' '{ print $1 }'`
     echo "name : $name"
+
+    # # HAORAN DL CP SEGMENTATION - FetalCPSeg - HDL # #
+    echo "# # FetalCPSeg deep learning model for CP segmentation # #"
+    # Location of the trained model
+    FCPS="${outdir}/${name}/FCPS"
+    Fsrc="/fileserver/fetal/segmentation/FetalCPSeg/FetalCPSeg-Programe/"
+    Fenv="/fileserver/fetal/venv/HDLenv/bin/activate"
+    Fin="${outdir}/${name}/FCPS/Input"
+    Fsub="${Fin}/${name}"
+    Fout="${FCPS}/FCPS_${name}.nii.gz"
+    echo
+    if [[ ! -f "${Fout}" ]] ; then
+        echo "time : `date`"
+        echo "Install model for subject"
+        mkdir -pv ${Fsub}
+        cp ${Fsrc} -r ${FCPS}/
+        cp ${image} -v ${Fsub}/image.nii.gz
+        echo "Source virtual environment"
+        source $Fenv
+        cd ${FCPS}
+        python FetalCPSeg-Programe/Test/infer_novel.py
+        cd -
+        deactivate
+        echo "Resample model prediction"
+        crlCopyImageInformation ${Fsub}/predict.nii.gz ${Fsub}/cii.nii.gz ${Fsub}/image.nii.gz 1
+        echo "FetalCPSeg complete"
+        cp ${Fsub}/cii.nii.gz -v ${Fout}
+    else echo "FCPS output found. Skipping..."
+    fi
+    echo
+
+    # CP region multiplication
+    echo "# # Image algebra steps # #"
     # Output dir for calculations
     calc="${outdir}/${name}/calc"
     mkdir -pv $calc
@@ -562,12 +564,13 @@ while read line; do
         pvcs=`find ${outdir}/${name}/PVC/ -type f -name \*-GEPZ\*pvc_${name}.nii.gz`
         echo "These CP's will be parcellated: ${pvcs}"
         for parc in $pvcs ; do 
+            echo "Parcellate GEPZ segs using Region seg"
             parcbase=`basename $parc`
             sub=`echo $parcbase | sed 's,MAS-GEPZ\(.*-pvc\),MAS-GEPZ\1-ParCP,'`
             CPmask="${calc}/CPmask.nii.gz"
             CPnone="${calc}/CPnone.nii.gz"
             CPparc="${calc}/CPparc.nii.gz"
-            parcOUT="${calc}/${sub}.nii.gz"
+            parcOUT="${calc}/${sub}"
             # Create CP mask from GEPZ
             crlRelabelImages $parc $parc "112 113" "1 1" ${CPmask} 0
             # Create no-CP seg from GEPZ
@@ -576,18 +579,50 @@ while read line; do
             $MATH ${CPmask} multiply $REGION ${CPparc}
             # Add parcellated CP back to full segmentation
             $MATH ${CPnone} add ${CPparc} ${parcOUT}
-            rm ${CPmask} ${CPnone} ${CPparc}
             echo "Output: ${parcOUT}"
+
+            # Add FCPS CP to PVC
+            echo "Insert FCPS into PVC"
+            FinvCP="${calc}/FinvCP.nii.gz"
+            CPnone2="${calc}/CPnone2.nii.gz"
+            rFout="${calc}/rFout.nii.gz"
+            sub2=`echo $parcbase | sed 's,MAS-GEPZ\(.*-pvc\),MAS-GEPZ\1-wFCPS,'`
+            # This is the file which has the inserted FCPS CP
+            insert="${calc}/${sub2}"
+            crlRelabelImages ${Fout} ${Fout} "1" "0" ${FinvCP} 1
+            crlRelabelImages ${Fout} ${Fout} "1" "112" ${rFout}
+            $MATH ${CPnone} multiply ${FinvCP} ${CPnone2}
+            $MATH ${CPnone2} add ${rFout} ${insert}
+            echo "Output: ${insert}" 
+
+            # Remove temp files
+            rm ${CPmask} ${CPnone} ${CPparc} ${FinvCP} ${CPnone2} ${rFout}
         done
     else echo "GEPZ or Region segs were not found for image. Skipping."
     fi
-    echo "Performing image algebra for FetalCPSeg"
+    echo "Parcelate FetalCPSeg using region seg"
     if [[ -f "${Fout}" && -f "${REGION}" ]] ; then
         Fbase=`basename $Fout`
         Falg="${calc}/FCPS-ParCP_${name}.nii.gz"
         $MATH ${REGION} multiply ${Fout} ${Falg} 
     else echo "FetalCPSeg or Region segs were not found for image. Skipping"
     fi
+
+    # Make LEFT/RIGHT mask
+    # echo
+    # echo "Genarating LEFT/RIGHT mask (work in progress)"
+    # LR="${calc}/LR-${name}.nii.gz"
+    # crlRelabelImages ${REGION} ${REGION} \
+        # "1  2   3   4   5   6   7   8   9   10  11  12  13  14  15  16  17  18  19  20  21  22  23  24  25  26  27  28  29  30  31  32  33  34  35  36  37  38  39  40  41  42  43  44  45  46  47  48  49  50  51  52  53  54  55  56  57  58  59  60  61  62  63  64  65  66  67  68  69  70  71  72  73  74  75  76  77  78  79  80  81  82  83  84  85  86  87  88  89  90  91  92  93  94  95  96  97  98  99  100 101 102 103 104 105 106 107 108 109 110 111 112 113 114 115 116 117 118 119 120 121 122 123 124 125 126 127" \
+        # "1  2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   3   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   1   2   3   3   1   2   1   2   1   2   1   2   1   2   1   2   3   3   1   2" \
+        # $LR 0
+    # echo "Reassign GEPZ/FCPS combo CP label to have a left and right side"
+    # crlRelabelImages $LR $LR "2" "1" ${calc}/onlyR.nii.gz 0
+    # crlImageAlgebra ${calc}/onlyR.nii.gz multiply $insert ${calc}/onlyRinsert.nii.gz
+    # crlImageAlgebra ${calc}/onlyRinsert.nii.gz add $insert ${calc}/LR-${sub2}
+    # rm ${calc}/onlyR.nii.gz ${calc}/onlyRinsert.nii.gz
+    echo
+
 done < $inputs
 
 echo

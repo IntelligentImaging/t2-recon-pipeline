@@ -16,29 +16,32 @@ if [[ ! -f $best ]] ; then
 fi
 
 base=`basename $best .nii.gz`
-mkdir -v tmp
+dir=`dirname $best`
+tmpdir=${dir}/tmp
+mkdir -v $tmpdir
 
-if [[ ! -d tmp ]] ; then
+if [[ ! -d $tmpdir ]] ; then
     echo "couldn't create directory tmp, exiting"
     exit 1
 fi
 
-mv -v ${base}* tmp/
+mv -v ${base}* ${tmpdir}/
 flirt=${best%%FLIRTto*}
 rm -v ${flirt}*
-mv -v tmp/${base}* .
-rmdir -v tmp
+mv -v ${tmpdir}/${base}* ${dir}/
+rmdir -v ${tmpdir}
 
 full=`readlink -f $best`
 sdir="${full%%/nii*}"
 id=`basename $sdir`
-cp $best -v atlas_t2final_${id}.nii.gz
+cp $best -v ${dir}/atlas_t2final_${id}.nii.gz
 
-if [[ -f run-reg.sh ]] ; then
+run="${dir}/run-reg.sh"
+if [[ -f $run ]] ; then
     str=${best%%.*}
-    if grep -q $str run-reg.sh ; then
+    if grep -q $str $run ; then
         echo "Updating run-reg.sh"
-        val=`grep $str run-reg.sh | tail -n1` 
-        echo $val > run-reg.sh
+        val=`grep $str ${run} | tail -n1` 
+        echo $val > ${run}
     fi
 fi

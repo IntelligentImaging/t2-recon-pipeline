@@ -62,7 +62,7 @@ else
 # Copy T2 stacks to reconstruction folder
 RECON="${PROC}/${ID}/nii"
 mkdir -pv ${RECON} ${RECON}/../notgood
-find ${RECON}/../ -type d -exec chmod -c --preserve-root 770 {} \;
+find ${RECON}/../ -type d -exec chmod -c --preserve-root 777 {} \;
 for IM in ${NIIDIR}/*T2*/*.nii.gz ; do
         base=`basename $IM`
         end="${base##*_}"

@@ -50,8 +50,8 @@ for f in $runs ; do
         echo
         echo "Recon done"
         date
-        echo "Killing docker image"
-        docker kill $dockname
+        echo "Stopping docker image"
+        docker stop $dockname
         echo
     fi
 done

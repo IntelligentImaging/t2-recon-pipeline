@@ -37,6 +37,6 @@ docker exec -t -i -w /home/data $dockname sh -c "sh run-svrtk.sh"
 echo
 echo "Recon done"
 date
-echo "Killing docker image"
-docker kill $dockname
+echo "Stopping docker image"
+docker stop $dockname
 echo

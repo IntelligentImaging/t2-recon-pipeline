@@ -17,7 +17,7 @@ fi
 
 base=`basename $best .nii.gz`
 dir=`dirname $best`
-tmpdir=${dir}/tmp
+tmpdir="${dir}/tmp${RANDOM}"
 mkdir -v $tmpdir
 
 if [[ ! -d $tmpdir ]] ; then

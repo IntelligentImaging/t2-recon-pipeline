@@ -223,11 +223,12 @@ if [[ $TARGET == "ATLAS" || $TARGET == "CASES" || $TARGET == "EARLY" ]] ; then
 		# check if template GA is match for our input GA, if so run command
 		# if -w is set it will check for +/-1 GA templates
 		if [[ $GA -eq $tga ]] || [[ -n $WIDE && ( ${GA}-${tga} -eq 1 || ${GA}-${tga} -eq -1 ) ]] ; then
-			register
+			register &
 			warning="n"
 			echo
 		fi
 	done < ${tlist}
+    wait
 fi
 
 if [[ ! "$warning" = "n" ]] ; then

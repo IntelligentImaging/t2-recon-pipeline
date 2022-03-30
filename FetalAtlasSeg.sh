@@ -198,14 +198,12 @@ if ! cmp -s $0 ${tools}/seg.sh ; then
 fi
 cp ${antspath}/ANTS -vu ${tools}/
 cp ${antspath}/WarpImageMultiTransform -vu ${tools}/
-cp /home/ch135192/bin/crlCorrectFetalPartialVoluming -vu ${tools}/
-cp /home/ch135192/bin/crlComputeVolume -vu ${tools}/
 cp ${tlist} -vu ${tools}/
 ANTS="${tools}/ANTS"
 WARP="${tools}/WarpImageMultiTransform"
 SEG="crlProbabilisticGMMSTAPLE"
-PVC="${tools}/crlCorrectFetalPartialVoluming"
-VOL="${tools}/crlComputeVolume"
+PVC="/fileserver/fetal/software/bin/crlCorrectFetalPartialVoluming"
+VOL="/fileserver/fetal/software/bin/crlComputeVolume"
 MATH="crlImageAlgebra"
 baseTLIST=`basename $tlist`
 TLIST="${tools}/${baseTLIST}"
@@ -327,16 +325,15 @@ for lpref in $AllLabs ; do
                 if [ $tcount -lt $count ] ; then
                     # Skip if this reg is already done
                     if [[ ! -e ${outdir}/${name}/template_rT/r${ARRAY_T_NAME[$tcount]}_to_${name}Warpxvec.nii.gz || ! -e ${outdir}/${name}/template_rT/r${ARRAY_T_NAME[$tcount]}_to_${name}InverseWarpxvec.nii.gz || ! -e ${outdir}/${name}/template_rT/r${ARRAY_T_NAME[$tcount]}_to_${name}Affine.txt ]] ; then
-                            echo "Running ANTS on ${ARRAY_T_NAME[$tcount]}, registering to ${image}"
+                            echo "ANTS register ${ARRAY_T_NAME[$tcount]} to ${name}"
                         # Registration command
                         # This produces the "case123Warp.nii.gz", "case123InverseWarp.nii.gz", and "case123Affine.txt" files
                         $ANTS 3 -m PR[${image}, ${ARRAY_T[$tcount]},1,2] -o ${outdir}/${name}/template_rT/r${ARRAY_T_NAME[$tcount]}_to_${name}\.nii.gz -r Gauss[3,0] --affine-metric-type MI -i 100x100x20 -t SyN[0.4] &
                     else
-                        echo "We found warp (transformation) files for registering ${ARRAY_T_NAME[$tcount]} to ${name}. Skipping..."
+                        echo "Found transform for ${ARRAY_T_NAME[$tcount]} to ${name}. Skipping..."
                     fi
                     # Increase counts
                     npr=$[ $npr + 1 ]
-                    echo "Process count: $npr"
                     tcount=$[ $tcount + 1 ]
                 else
                     npr=$NThreads
@@ -354,14 +351,13 @@ for lpref in $AllLabs ; do
             while ( [ ${npr} -lt ${NThreads} ] ) ; do
                 if [ ${tcount} -lt ${count} ] ; then
                     if [[ ! -f "$outdir"/"$name"/template_rT/r${ARRAY_T_NAME[$tcount]}_to_${name}.nii.gz ]]; then
-                        echo "Warping ${ARRAY_T[$tcount]} to ${image}..."
+                        echo "Applying transform: ${ARRAY_T[$tcount]} to ${name}..."
                         # This produces the warped grayscale e.g. "template123_to_case123.nii.gz"
                         $WARP 3 ${ARRAY_T[$tcount]} "$outdir"/"$name"/template_rT/r${ARRAY_T_NAME[$tcount]}_to_${name}.nii.gz -R ${image} "$outdir"/"$name"/template_rT/r${ARRAY_T_NAME[$tcount]}_to_${name}\Warp.nii.gz "$outdir"/"$name"/template_rT/r${ARRAY_T_NAME[$tcount]}_to_${name}\Affine.txt &
                     else
-                        echo "This template has already been warped. Skipping"
+                        echo "Atlas has been transformed. Skipping"
                     fi
                     npr=$[ ${npr} + 1 ]
-                    echo "Process count: ${npr}"
                     tcount=$[ ${tcount} + 1 ]
                 else
                     npr=$NThreads
@@ -379,7 +375,7 @@ for lpref in $AllLabs ; do
             while ( [ ${npr} -lt ${NThreads} ] ) ; do
                 if [ ${tcount} -lt ${count} ] ; then
                     if [[ ! -f "$outdir"/"$name"/template_rT/r${ARRAY_S_NAME[$tcount]}_to_${name}.nii.gz && -f "${ARRAY_S[$tcount]}" ]]; then
-                        echo "Warping ${ARRAY_S[$tcount]} to ${image}"
+                        echo "Transforming ${ARRAY_S[$tcount]} to ${name}"
                         # This produces the warped parcellation e.g. "template123parc_to_case123.nii.gz"
                         $WARP 3 ${ARRAY_S[$tcount]} "$outdir"/"$name"/template_rT/r${ARRAY_S_NAME[$tcount]}_to_${name}.nii.gz -R ${image} "$outdir"/"$name"/template_rT/r${ARRAY_T_NAME[$tcount]}_to_"$name"\Warp.nii.gz "$outdir"/"$name"/template_rT/r${ARRAY_T_NAME[$tcount]}_to_"$name"\Affine.txt --use-NN &
                     elif [[ ! -f "${ARRAY_S[$tcount]}" ]] ; then
@@ -388,7 +384,6 @@ for lpref in $AllLabs ; do
                         echo ""$outdir"/"$name"/template_rT/r${ARRAY_S_NAME[$tcount]}_to_${name}.nii.gz already exists. Skipping..."
                     fi
                     npr=$[ $npr + 1 ]
-                    echo "Process count ${npr}"
                     tcount=$[ $tcount + 1 ]
                 else
                     npr=$NThreads

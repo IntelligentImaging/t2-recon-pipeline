@@ -2,14 +2,14 @@
 
 show_help () {
 cat << EOF
-    USAGE: sh ${0##*/} [-h] [-d|--dense] [-m|--mask] -- [RAW CASE DIR] [GENERAL PROC DIR]
+    USAGE: sh ${0##*/} [-h] -- [RAW CASE DIR] [GENERAL PROC DIR]
     Sets up processing directory for fetal reconstruction pipeline
     [RAW CASE DIR] should be the the case directory with the subject ID (eg. f1234s1/)
     [PROC DIR] should be a folder with many cases (eg. /fileserver/fetal/reconstruction/)
 
     -h      Display this help and exit
-    -dense  Setup 2D Densenet dir
-    -mask   Start 2D Densenet brain extraction
+    [DEPRECIATED] -dense  Setup 2D Densenet dir
+    [DEPRECIATED] -mask   Start 2D Densenet brain extraction
 EOF
 }
 

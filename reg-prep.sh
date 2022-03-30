@@ -1,44 +1,69 @@
 #!/bin/bash
 shopt -s extglob
 
-if [[ $# -lt 1 || $# -gt 3 ]]; then	
-	echo "Incorrect argument supplied!"
-	echo "usage: sh $0 [Best Recon Orientation] [opt: #iterations] [opt: --temp]"
-    echo
-    echo "Sets up recon registration to atlas space including"
-    echo "directory tree and N4 bias correction"
-    echo 
-    echo " [#iterations] (default 3) number of N4 b0-inhomogeneity"
-    echo "                           correction recursive loops"
-    echo " [--temp] if set, temporary recurions will be preserved"
-    echo "                           (biastemp0, biastemp1, etc)"
-	exit
-	fi
+
+show_help () {
+cat << EOF
+    USAGE: sh ${0##*/} [input]
+    Incorrect input supplied
+
+	Incorrect argument supplied!
+	usage: sh $0 [-i] [-t] [-m] -- [Best Recon Orientation] 
+    Sets up recon registration to atlas space including directory tree and N4 bias correction
+
+        [-i] number of N4 b0-inhomogeneity correction recursive loops (DEFAULT=3)
+        [-t] if set, temporary recurions will be preserved (biastemp0, biastemp1, etc)
+        [-m] performs Davood Karimi brain extraction (mask segmentation)
+EOF
+}
+
+while :; do
+    case $1 in
+        -h|-\?|--help)
+            show_help
+            exit
+            ;;
+        -i|--iterations)
+            re='^[0-9]+$'
+            if [[ $2 =~ $re ]] ; then
+                ITS=$2
+                echo "N4 iterations set to $ITS"
+                shift
+            else
+                die 'error: "-i" requires a (whole) number of iterations'
+                exit
+            fi
+            ;;
+        -t|--temp)
+            TEMP="YES"
+            shift
+            ;;
+        -m|--mask)
+            MASK="YES"
+            shift
+            ;;
+        -?*)
+            printf 'warning: unknown option (ignored: %s\n' "$1" >&2
+            ;;
+        *) # default case no options
+            break
+    esac
+    shift
+done
+
+if [ $# -ne 1 ] ; then
+    show_help
+    exit
+fi
+
+if [ ! -e $1 ] ; then
+    echo "error: Could not find $1 ... exiting"
+    exit 1
+fi
+
 
 # N4 binary
 n4="crlN4biasfieldcorrection"
-
-# Verify arguments
-# Input stack
-if [ ! -e $1 ] ; then
-    echo "Could not find "$1". Exiting"
-    exit 1
-fi
-
-# Number of N4 iterations
-re='^[0-9]+$'
-if ! [[ $2 =~ $re ]] ; then
-    echo "error: 2nd argument #iterations was not a whole number."
-    echo "sh $0 for full instructions"
-    exit 1
-fi
-
-# Select whether to retain intermediary N4 corrections
-if [[ ! $3 == "-t" && ! $3 == "" ]] ; then
-    echo "error: 3rd argument should be '--temp' or be omitted."
-    echo "sh $0 for full instructions"
-    exit 1
-fi
 
 # Set naming conventions
 RECON=`readlink -f $1`
@@ -47,8 +72,6 @@ gzip -v $RECON
 RECONDIR=`dirname $RECON`
 REGDIR="${RECONDIR}/registration"
 BASE=`basename $RECON`
-ITS="$2"
-TEMP="$3"
 LOG="${REGDIR}/run-reg-prep.txt"
 # The chosen orientation is renamed to "best"
 if [[ ! $RECON = *"best"* ]] ; then
@@ -73,7 +96,7 @@ echo "Creating mask"
 cmd="crlBinaryThreshold ${inN4} ${tempmask} 0.5 40000 1 0"
 $cmd
 echo $cmd > $LOG
-while [ $i -lt $ITS ] ; do
+while [[ $i -lt $ITS ]] ; do
     biastemp="${REGDIR}/biastemp${i}_${BASE}"
     echo "Bias correction step ${i} ..."
     # N4 binary
@@ -88,7 +111,7 @@ done
 # Cleanup N4 temp files
 cp -v $inN4 $biascorr
 rm -v $tempmask
-if [[ ! $TEMP == "--temp" ]] ; then
+if [[ ! $TEMP == "YES" ]] ; then
     rm -v ${REGDIR}/*(biastemp*_${BASE})
 fi
 echo "N4 bias correction done"
@@ -104,4 +127,15 @@ $cmd
 echo $cmd >> $LOG
 
 # Open permissions for group to write
-find ${REGDIR} -type d -exec chmod -c --preserve-root 770 {} \;
+find ${REGDIR} -type d -exec chmod -c --preserve-root 775 {} \;
+
+# Davood Karimi Brain Extraction
+work="${REGDIR}/BE"
+mkdir -pv $work
+cp ${finalcorr} -v ${work}/
+# Open permission for docker
+chmod 777 $work
+echo "Running Davood Karimi brain extraction docker"
+docker run --mount src=$work,target=/src/test_images/,type=bind davoodk/brain_extraction
+seg=`find ${work}/segmentations -type f -name \*segmentation.nii.gz`
+cp ${seg} -v ${REGDIR}/mask.nii.gz

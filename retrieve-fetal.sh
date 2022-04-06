@@ -1,59 +1,51 @@
 #!/bin/bash 
 
-if [[ $# -lt 4 ]]; then echo $0 [MRN] [YYYYMMDD] [MODALITY] [OUTPUT DIRECTORY] ; exit; fi
+#Set the path to DCMTK 
+export DCMTK="/opt/el7/pkgs/dcmtk/dcmtk-3.6.4/bin"
 
-# set arguments and binaries
-mrn="$1"
-studydate="$2"
-modality="$3"
-outdir="$4"
-dcm4che="/opt/el7/pkgs/dcm4che/dcm4che-5.11.0/bin/"
-dcmtk="/opt/el7/pkgs/dcmtk/3.6.1-20161102/bin/"
-export outdir dcm4che dcmtk modality
+if [[ $# -lt 4 ]]; then echo $0 [MRN] [YYYYMMDD] [OUTPUT DIRECTORY] [MODALITY]; exit; fi
 
-# function: get DICOM tag, search for term, translate spaces to underscore
-get_tag() { $dcmtk/dcmdump "$1" | grep "$2" | head -1 | awk '$0=$2' FS=[ RS=] | tr " " "_"; } 
+PatientID=$1 
+StudyDate=$2
+output_dir=$3
+Modality=$4
 
-# function: multiple search terms -- use get_tag() multiple times
+export PatientID StudyDate output_dir 
+
+mkdir -vp $output_dir
+
+#Searches dcmdump for value of specific tag
+get_tag() { $DCMTK/dcmdump +P "$1" "$2" | grep -o -P '(?<=\[)(.*?)(?=\])'; }
+
+#Sorts DICOMs by PatientID, Accession Number, and Series 
 sortd() { 
-patient=`get_tag "$1" 'PatientID'`
-study=`get_tag "$1" 'AccessionNumber'`
-series=`get_tag "$1" 'SeriesDescription'`
-seriesnum=`get_tag "$1" 'SeriesNumber'`
-
-# output directory tree
-dpath="$outdir"/"$patient"/DICOM/"$seriesnum"_"$series"
-
-# check to see target is DICOM
+patient=`get_tag PatientID $1`
+study=`get_tag StudyID $1` 
+series=`get_tag SeriesDescription $1` 
+seriesnum=`get_tag SeriesNumber $1`
+dpath="$output_dir"/"$patient"/"DICOM"/"$seriesnum"_"$series"
 if [[ ! "$patient" == "" ]] && [[ ! "$study" == "" ]] && [[ ! "$seriesnum" == "" ]] && [[ ! "$series" == "" ]] ; then 
-	# make directory tree
-	if [[ ! -d "$dpath" ]] ; then 
-		mkdir -vp "$dpath"
-		mv -v --backup=t "$1" "$dpath"
-	else
-		mv -v --backup=t "$1" "$dpath"
-	fi 
+ if [[ ! -d "$dpath" ]]; then
+  mkdir -vp "$dpath"
+  mv --backup=t "$1" "$dpath"
+ else
+  mv --backup=t "$1" "$dpath"
+ fi
 else 
-	echo missing dicom 'info', doing nothing 
-fi  
+ echo missing dicom 'info', doing nothing
+fi;
 }
 
 export -f get_tag sortd
 
-StudyUIDs=("${StudyUIDs[@]}" `$dcm4che/findscu -c PACSDCM@pacsstor.tch.harvard.edu:104 -b RESEARCHPACS -L STUDY -M StudyRoot -mPatientID="$mrn" -mStudyDate="$studydate" -mModalitiesInStudy=$modality -rStudyInstanceUID | grep 0020,000D | awk '$0=$2' FS=[ RS=]`)
+#Return StudyInstanceUID for all studies with given PatientID, StudyDate, and Modality
+$DCMTK/findscu -od $output_dir -X +sr -aet RESEARCHPACS -aec PACSDCM -S -k "QueryRetrieveLevel=STUDY" -k "PatientID=$PatientID" -k "StudyDate=$StudyDate" -k "Modality=$Modality" -k StudyInstanceUID  pacsstor.tch.harvard.edu 104
 
-# actually get the data
-for s in  ${StudyUIDs[@]}; do 
- $dcm4che/movescu -c PACSDCM@pacsstor.tch.harvard.edu:104 -b RESEARCHPACS --dest RESEARCHPACS -L STUDY -M StudyRoot -mStudyInstanceUID="$s" -mModalitiesInStudy=$modality
- $dcm4che/getscu -c RESEARCHPACS@researchpacs:11112 -L STUDY -M StudyRoot -mStudyInstanceUID="$s" -mModalitiesInStudy=$modality --directory "$outdir"
-done
+#Retrieve all matching studies for given DICOM query files
+for d in $output_dir/rsp*.dcm; do 
+	$DCMTK/getscu -od $output_dir -aet RESEARCHPACS -aec PACSDCM -S pacsstor.tch.harvard.edu 104 $d
+done 
 
-# run function sortd in parallel
-if [[ -d "$outdir" ]] ; then 
-	find "$outdir" -maxdepth 1 -type f -print | /home/ch163210/bin/parallel -j `nproc` -k sortd 
-	rm -v "$outdir"/1.*
-else
-	echo "$outdir not created. It's likely the data was not pulled"
-	echo "Either the MRN/date/modality was wrong, or there were no images"
-	exit
-fi
+#Sort the DICOMs in output directory
+find "$output_dir" -maxdepth 1 -type f -print | /home/ch163210/bin/parallel -j `nproc` -k sortd
+

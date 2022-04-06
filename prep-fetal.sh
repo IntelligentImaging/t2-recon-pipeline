@@ -52,24 +52,26 @@ if [ $# -eq 0 ] ; then
         
 RAW="$1"
 PROC="$2"
-ID=`basename $RAW`
+ID=`basename "$RAW"`
 DCMDIR=`find ${RAW} -type d -name DICOM`
 NIIDIR="`dirname $DCMDIR`/nii"
 NET="/home/ch162835/Software/2Ddensenet"
 
 if [[ ! -d $RAW ]] ; then
-	die "Raw case directory $RAW doesn't exist. Exiting."
+	die "error: Raw case directory $RAW doesn't exist"
+elif [[ ! -d $DCMDIR ]] ; then
+    die "error: DICOM directory named DICOM not found in $RAW"
 	fi
 
 function convert () {
-	BASE=`basename $DCM`
-	OUT="${NIIDIR}/${BASE}"
-	mkdir -pv ${OUT}
+	BASE=`basename "$DCM"`
+	OUT=`echo ${NIIDIR}/${BASE} | sed -e 's, ,_,g'`
+	mkdir -pv "${OUT}"
 	if [[ ! -z `find ${OUT} -type f` ]] ; then
 		echo "Skipping: Files already exist in ${OUT}"
 	else
 		echo "Converting $DCM"
-		dcm2niix -z y -f %d_%s -o "${OUT}/" $DCM
+		dcm2niix -z y -i y -f %d_%s -o "${OUT}/" "$DCM"
 		fi
 	}
 
@@ -92,7 +94,7 @@ for TERM in T2_HASTE CERVIX SSFSE_T2 ; do # Search terms
     ARRAY=`find ${NIIDIR}/ -type f -name \*$TERM\*.nii\*` # Make an array of found images
     if [[ -n $ARRAY ]] ; then # exlcude empty arrays
         for IM in $ARRAY ; do
-            base=`basename $IM`
+            base=`basename "$IM"`
             end="${base##*_}"
             new="fetus_${end}"
             chk=`find ${PROC}/${ID} -type f -name $new`

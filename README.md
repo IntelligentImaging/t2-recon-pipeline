@@ -35,7 +35,7 @@ This script writes the SVRTK container command (*run-svrtk.sh*) to run the recon
 - This correction will help the automated brain extraction. 1 iteration may be sufficient. It will take several minutes to process.
 - Output will be named registration/nxbr3DreconOfetus_\*.nii.gz
 - Note: You can supply "0" if no bias correction is necessary 
-11. Run Davood's brain extraction docker: `davood_temp_be.sh registration/nxbr3DreconOfetus_*.nii.gz`<br>
+11. Run Davood's brain extraction docker: `davood_temp_be.sh registration/nxbr3DreconOfetus_\*.nii.gz`<br>
 - Output is registration/mask.nii.gz
 - Validate and correct *mask.nii.gz* by overlaying on *nxb\*.nii.gz* with ITKSNAP
 # Registration

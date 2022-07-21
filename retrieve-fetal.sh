@@ -3,12 +3,14 @@
 #Set the path to DCMTK 
 export DCMTK="/opt/el7/pkgs/dcmtk/dcmtk-3.6.4/bin"
 
-if [[ $# -lt 4 ]]; then echo $0 [MRN] [YYYYMMDD] [OUTPUT DIRECTORY] [MODALITY]; exit; fi
+if [[ $# -lt 4 ]]; then echo $0 [MRN] [YYYYMMDD] [OUTPUT DIRECTORY] [MODALITY] ; exit ; fi
 
 PatientID=$1 
 StudyDate=$2
 output_dir=$3
 Modality=$4
+
+if [[ ! $Modality == "MR" ]] ; then echo "MODALITY should usually be 'MR'. If not, comment this line." ; exit ; fi
 
 export PatientID StudyDate output_dir 
 

@@ -81,7 +81,7 @@ while :; do
             echo ARGS $#
             ;;
         -?*)
-            printf 'warning: unknown option (ignored: %s\n' "$1" >&2
+            printf 'warning: unknown option (ignored): %s\n' "$1" >&2
             ;;
         *) # default case, no options
             break

@@ -17,6 +17,11 @@ cat << EOF
 EOF
 }
 
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
 while :; do
     case $1 in
         -h|-\?|--help)
@@ -36,14 +41,12 @@ while :; do
             ;;
         -t|--temp)
             TEMP="YES"
-            shift
             ;;
         -m|--mask)
             MASK="YES"
-            shift
             ;;
         -?*)
-            printf 'warning: unknown option (ignored: %s\n' "$1" >&2
+            printf 'warning: unknown option -- ignored: %s\n' "$1" >&2
             ;;
         *) # default case no options
             break
@@ -81,6 +84,9 @@ else
 fi
 mv -v ${RECON} ${BEST}
 mkdir -pv ${REGDIR}
+# Remove un-chosen r3D's
+rm -f ${RECONDIR}/r3DreconOfetus_?.nii.gz
+rm -f ${RECONDIR}/r3DreconOfetus_??.nii.gz
 
 # N4 bias correction (iterative loops)
 i=0
@@ -130,12 +136,15 @@ echo $cmd >> $LOG
 find ${REGDIR} -type d -exec chmod -c --preserve-root 775 {} \;
 
 # Davood Karimi Brain Extraction
-work="${REGDIR}/BE"
-mkdir -pv $work
-cp ${finalcorr} -v ${work}/
-# Open permission for docker
-chmod 777 $work
-echo "Running Davood Karimi brain extraction docker"
-docker run --mount src=$work,target=/src/test_images/,type=bind davoodk/brain_extraction
-seg=`find ${work}/segmentations -type f -name \*segmentation.nii.gz`
-cp ${seg} -v ${REGDIR}/mask.nii.gz
+if [[ $MASK == "YES" ]] ; then
+    work="${REGDIR}/BE"
+    mkdir -pv $work
+    cp ${finalcorr} -v ${work}/
+    # Open permission for docker
+    chmod 777 $work
+    echo "Running Davood Karimi brain extraction docker"
+    docker run --mount src=$work,target=/src/test_images/,type=bind davoodk/brain_extraction
+    seg=`find ${work}/segmentations -type f -name \*segmentation.nii.gz`
+    cp ${seg} -v ${REGDIR}/mask.nii.gz
+else echo "Brain extraction option not set"
+fi

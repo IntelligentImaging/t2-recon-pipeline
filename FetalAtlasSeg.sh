@@ -517,35 +517,35 @@ while read line; do
     name=`echo $(basename $image) | awk -F'.' '{ print $1 }'`
     echo "name : $name"
 
-    # # HAORAN DL CP SEGMENTATION - FetalCPSeg - HDL # #
-    echo "# # FetalCPSeg deep learning model for CP segmentation # #"
-    # Location of the trained model
-    FCPS="${outdir}/${name}/FCPS"
-    Fsrc="/fileserver/fetal/segmentation/FetalCPSeg/FetalCPSeg-Programe/"
-    Fenv="/fileserver/fetal/venv/HDLenv/bin/activate"
-    Fin="${outdir}/${name}/FCPS/Input"
-    Fsub="${Fin}/${name}"
-    Fout="${FCPS}/FCPS_${name}.nii.gz"
-    echo
-    if [[ ! -f "${Fout}" ]] ; then
-        echo "time : `date`"
-        echo "Install model for subject"
-        mkdir -pv ${Fsub}
-        cp ${Fsrc} -r ${FCPS}/
-        cp ${image} -v ${Fsub}/image.nii.gz
-        echo "Source virtual environment"
-        source $Fenv
-        cd ${FCPS}
-        python FetalCPSeg-Programe/Test/infer_novel.py
-        cd -
-        deactivate
-        echo "Resample model prediction"
-        crlCopyImageInformation ${Fsub}/predict.nii.gz ${Fsub}/cii.nii.gz ${Fsub}/image.nii.gz 1
-        echo "FetalCPSeg complete"
-        cp ${Fsub}/cii.nii.gz -v ${Fout}
-    else echo "FCPS output found. Skipping..."
-    fi
-    echo
+    # # # HAORAN DL CP SEGMENTATION - FetalCPSeg - HDL # #
+    # echo "# # FetalCPSeg deep learning model for CP segmentation # #"
+    # # Location of the trained model
+    # FCPS="${outdir}/${name}/FCPS"
+    # Fsrc="/fileserver/fetal/segmentation/FetalCPSeg/FetalCPSeg-Programe/"
+    # Fenv="/fileserver/fetal/venv/HDLenv/bin/activate"
+    # Fin="${outdir}/${name}/FCPS/Input"
+    # Fsub="${Fin}/${name}"
+    # Fout="${FCPS}/FCPS_${name}.nii.gz"
+    # echo
+    # if [[ ! -f "${Fout}" ]] ; then
+    #     echo "time : `date`"
+    #     echo "Install model for subject"
+    #     mkdir -pv ${Fsub}
+    #     cp ${Fsrc} -r ${FCPS}/
+    #     cp ${image} -v ${Fsub}/image.nii.gz
+    #     echo "Source virtual environment"
+    #     source $Fenv
+    #     cd ${FCPS}
+    #     python FetalCPSeg-Programe/Test/infer_novel.py
+    #     cd -
+    #     deactivate
+    #     echo "Resample model prediction"
+    #     crlCopyImageInformation ${Fsub}/predict.nii.gz ${Fsub}/cii.nii.gz ${Fsub}/image.nii.gz 1
+    #     echo "FetalCPSeg complete"
+    #     cp ${Fsub}/cii.nii.gz -v ${Fout}
+    # else echo "FCPS output found. Skipping..."
+    # fi
+    # echo
 
     # CP region multiplication
     echo "# # Image algebra steps # #"
@@ -576,32 +576,32 @@ while read line; do
             $MATH ${CPnone} add ${CPparc} ${parcOUT}
             echo "Output: ${parcOUT}"
 
-            # Add FCPS CP to PVC
-            echo "Insert FCPS into PVC"
-            FinvCP="${calc}/FinvCP.nii.gz"
-            CPnone2="${calc}/CPnone2.nii.gz"
-            rFout="${calc}/rFout.nii.gz"
-            sub2=`echo $parcbase | sed 's,MAS-GEPZ\(.*-pvc\),MAS-GEPZ\1-wFCPS,'`
-            # This is the file which has the inserted FCPS CP
-            insert="${calc}/${sub2}"
-            crlRelabelImages ${Fout} ${Fout} "1" "0" ${FinvCP} 1
-            crlRelabelImages ${Fout} ${Fout} "1" "112" ${rFout}
-            $MATH ${CPnone} multiply ${FinvCP} ${CPnone2}
-            $MATH ${CPnone2} add ${rFout} ${insert}
-            echo "Output: ${insert}" 
+            # # Add FCPS CP to PVC
+            # echo "Insert FCPS into PVC"
+            # FinvCP="${calc}/FinvCP.nii.gz"
+            # CPnone2="${calc}/CPnone2.nii.gz"
+            # rFout="${calc}/rFout.nii.gz"
+            # sub2=`echo $parcbase | sed 's,MAS-GEPZ\(.*-pvc\),MAS-GEPZ\1-wFCPS,'`
+            # # This is the file which has the inserted FCPS CP
+            # insert="${calc}/${sub2}"
+            # crlRelabelImages ${Fout} ${Fout} "1" "0" ${FinvCP} 1
+            # crlRelabelImages ${Fout} ${Fout} "1" "112" ${rFout}
+            # $MATH ${CPnone} multiply ${FinvCP} ${CPnone2}
+            # $MATH ${CPnone2} add ${rFout} ${insert}
+            # echo "Output: ${insert}" 
 
             # Remove temp files
             rm ${CPmask} ${CPnone} ${CPparc} ${FinvCP} ${CPnone2} ${rFout}
         done
     else echo "GEPZ or Region segs were not found for image. Skipping."
     fi
-    echo "Parcelate FetalCPSeg using region seg"
-    if [[ -f "${Fout}" && -f "${REGION}" ]] ; then
-        Fbase=`basename $Fout`
-        Falg="${calc}/FCPS-ParCP_${name}.nii.gz"
-        $MATH ${REGION} multiply ${Fout} ${Falg} 
-    else echo "FetalCPSeg or Region segs were not found for image. Skipping"
-    fi
+    # echo "Parcelate FetalCPSeg using region seg"
+    # if [[ -f "${Fout}" && -f "${REGION}" ]] ; then
+    #     Fbase=`basename $Fout`
+    #     Falg="${calc}/FCPS-ParCP_${name}.nii.gz"
+    #     $MATH ${REGION} multiply ${Fout} ${Falg} 
+    # else echo "FetalCPSeg or Region segs were not found for image. Skipping"
+    # fi
 
     # Make LEFT/RIGHT mask
     # echo

@@ -36,7 +36,7 @@ while :; do
             fi
             ;;
          -?*)
-             printf 'warning: unknown option (ignored: %s\n' "$1" >&2
+             printf 'warning: unknown option -- ignored: %s\n' "$1" >&2
              ;;
          *) # Default case, no options
              break

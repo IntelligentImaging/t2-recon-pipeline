@@ -62,7 +62,7 @@ fi
 echo "-svr_only \\">> $run
 echo "-resolution 0.75 \\" >> $run
 echo "-iterations 3 \\" >> $run
-echo "-remote" >> $run
+# echo "-remote" >> $run
 
 # Bash error log
 # echo "2>${t2dir}/bash-reconstruct-error.txt" >> $run

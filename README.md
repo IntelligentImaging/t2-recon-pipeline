@@ -7,6 +7,7 @@ The T2 recon pipeline is a set of instructions and scripts for going from raw T2
 - Docker: https://docs.docker.com/engine/install/
 - SVRTK Docker: https://github.com/SVRTK/svrtk-docker-gpu
 - Davood's recon brain extraction docker: https://hub.docker.com/r/davoodk/brain_extraction
+- detox (convenient tool to fix directory names with special characters)
 # Recon setup
 1. Pull data to CRL server. This step will most likely already be completed by Clemente. Only applies to scans performed at BCH. 
 <br>`sh retrieve-fetal.sh [MRN] [DOS] MR [OUTPUT DIRECTORY]`

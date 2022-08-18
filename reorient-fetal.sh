@@ -20,12 +20,14 @@ dir2=`echo $dir | sed s,/nii.*,/nii,`
 script="${dir2}/run-reorient.sh"
 drecon="${dir2}/drecon.nii"
 if [[ -f $script ]] ; then rm -v ${script} ; fi
+
 # Afni 3dWarp deoblique
 echo "Deoblique..."
 cmd="3dWarp -deoblique -prefix $drecon $recon"
 echo "$cmd" >> $script
 $cmd
 echo
+
 # Reorient to each T2 stack
 echo "Reorienting..."
 # Use argument two if entered
@@ -33,12 +35,16 @@ if [[ -n $2 ]] ; then
     REFDIR="$2"
 else REFDIR="$dir2"
 fi
-    for file in ${REFDIR}/fetus*.nii* ; do
-        echo $file
-        base=`basename $file`
-        cmd="crlReorientReconstructedImage $drecon $file ${dir2}/r3DreconO$base"
-        echo "$cmd" >> $script
-        $cmd
-        echo
-    done
+
+# Run N parellel processes
+let N=5
+for file in ${REFDIR}/fetus*.nii* ; do
+    ((i=i%N)); ((i++==0)) && wait
+    echo $file 
+    base=`basename $file` 
+    cmd="crlReorientReconstructedImage $drecon $file ${dir2}/r3DreconO$base" 
+    echo "$cmd" >> $script 
+    $cmd &
+    echo 
+done
 echo "Note: TransformFileWriterTemplate itk::ERROR is OK - we don't output a transform text file"

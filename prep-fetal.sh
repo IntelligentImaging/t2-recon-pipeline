@@ -2,14 +2,15 @@
 
 show_help () {
 cat << EOF
-    USAGE: sh ${0##*/} [-h] -- [RAW CASE DIR] [GENERAL PROC DIR]
+    USAGE: sh ${0##*/} [-h] [-d study DWI folder] -- [RAW CASE DIR] [GENERAL PROC DIR]
     Sets up processing directory for fetal reconstruction pipeline
     [RAW CASE DIR] should be the the case directory with the subject ID (eg. f1234s1/)
     [PROC DIR] should be a folder with many cases (eg. /fileserver/fetal/reconstruction/)
 
     -h      Display this help and exit
-    [DEPRECIATED] -dense  Setup 2D Densenet dir
-    [DEPRECIATED] -mask   Start 2D Densenet brain extraction
+    -d      Set up diffusion processing directory in the specified location. Do not put subject ID here.
+    [DEPRECIATED] --dense  Setup 2D Densenet dir
+    [DEPRECIATED] --mask   Start 2D Densenet brain extraction
 EOF
 }
 
@@ -25,12 +26,17 @@ while :; do
             show_help
             exit
             ;;
-        -d|--dense)
-            dense="Y"
+        -d)
+            dwi="Y"
+            dwipath="$2"
+            shift
             ;;
-        -m|--mask)
-            mask="Y"
-            ;;
+        # --dense)
+        #     dense="Y"
+            # ;;
+        # -m|--mask)
+        #     mask="Y"
+            # ;;
         --)
             shift
             break
@@ -53,7 +59,7 @@ if [ $# -eq 0 ] ; then
 RAW="$1"
 PROC="$2"
 ID=`basename "$RAW"`
-DCMDIR=`find ${RAW} -type d -name DICOM`
+DCMDIR=`find ${RAW} -type d -name DICOM | head -n1`
 NIIDIR="`dirname $DCMDIR`/nii"
 NET="/home/ch162835/Software/2Ddensenet"
 
@@ -74,6 +80,10 @@ function convert () {
 		dcm2niix -z y -i y -f %d_%s -o "${OUT}/" "$DCM"
 		fi
 	}
+
+# Detox DICOM dir
+echo "Removing special characters from DICOM folder names"
+detox ${DCMDIR}
 
 # Convert to NIFTI with dcm2niix
 mkdir -pv ${NIIDIR}
@@ -105,6 +115,13 @@ for TERM in T2_HASTE CERVIX SSFSE_T2 ; do # Search terms
         done
     fi
 done
+
+# Set up diffusion processing directory
+DCMPATH=`readlink -f $DCMDIR`
+if [[ $dwi == "Y" ]] ; then
+    echo "Create directory tree for DWI processing"
+    sh ${FETALDTI}/dtiTemplate.sh ${dwipath}/${ID} ${DCMPATH}
+fi
 
 # Install 2D Densenet to recon directory
 if [[ $dense == "Y" || $mask == "Y" ]] ; then

@@ -8,10 +8,10 @@ cat << EOF
     Incorrect input supplied
 
 	Incorrect argument supplied!
-	usage: sh $0 [-i] [-t] [-m] -- [Best Recon Orientation] 
+	usage: sh $0 [-n] [-t] [-m] -- [Best Recon Orientation] 
     Sets up recon registration to atlas space including directory tree and N4 bias correction
 
-        [-i] number of N4 b0-inhomogeneity correction recursive loops (DEFAULT=3)
+        [-n] number of N4 b0-inhomogeneity correction recursive loops (DEFAULT=3)
         [-t] if set, temporary recurions will be preserved (biastemp0, biastemp1, etc)
         [-m] performs Davood Karimi brain extraction (mask segmentation)
 EOF
@@ -28,14 +28,14 @@ while :; do
             show_help
             exit
             ;;
-        -i|--iterations)
+        -n|--N4iterations)
             re='^[0-9]+$'
             if [[ $2 =~ $re ]] ; then
                 ITS=$2
                 echo "N4 iterations set to $ITS"
                 shift
             else
-                die 'error: "-i" requires a (whole) number of iterations'
+                die 'error: "-n" requires a (whole) number of iterations'
                 exit
             fi
             ;;

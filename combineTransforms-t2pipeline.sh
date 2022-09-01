@@ -1,20 +1,26 @@
 #!/bin/bash
 
-if [ $# -ne 6 ]; then	
+if [ $# -ne 2 ]; then	
 	echo "Incorrect argument supplied!"
-	echo "usage: sh $0 [1st TFM] [2nd TFM] [moving IM: 1st TFM] [moving IM: 2nd TFM] [reference IM] [OUTPUT TFM.tfm]"
-	echo "Combines two transforms into one file"
+	echo "usage: sh $0 [FINAL IMAGE] [ATLAS-SPACE TARGET IMAGE]"
+	echo "For use with the fetal T2 pipeline scripts"
+    echo "Takes the 2nd step moving image and assumes the rest of the file names and intermediatary files from that"
 	echo "Script will convert .mat flirt transforms to itk"
 	exit
 	fi
 
 # set inputs
-TFM1="$1"
-TFM2="$2"
-MOV1="$3"
-MOV2="$4"
-REF="$5"
-TFMcom="$6"
+FINAL="$1"
+REF="$2"
+
+TFM2=`echo $FINAL | sed 's,\..*,\.mat,g'`
+MOV2="${FINAL%_FLIRTto*}.nii.gz"
+TFM1=`echo $MOV2 | sed 's,\..*,\.mat,g'`
+MOV1="${MOV2%_FLIRTto*}.nii.gz"
+REFbase=`basename $REF`
+REFname=${REFbase%%.*}
+TFMcom="${MOV1%%.*}_FLIRTto_${REFname}.tfm"
+output="${MOV1%%.*}_FLIRTto_${REFname}.nii.gz"
 
 # select available python3 version
 # if python3.5 -V | grep -q "Python 3.5" ; then
@@ -82,7 +88,6 @@ $cmd
 #python3.5 /home/ch191070/scripts/fetalDTI/changeTFMnameInFileToAffine.py b0-t2_1272s1_ncc_part2.tfm
 
 #crlComposeAffineTransforms b0-t2_1272s1_ncc.tfm b0-t2_1272s1_ncc_part2.tfm b0-t2_1272s1_nccflirt.tfm 
-
-echo "Created $TFMcom"
-echo "You can verify with:"
-echo "crlResampler ${MOV1} ${TFMcom} ${REF} bspline VERIFY.nii.gz"
+echo "Resample"
+crlResampler ${MOV1} ${TFMcom} ${REF} bspline $output
+echo "Created $TFMcom and $output"

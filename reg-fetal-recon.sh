@@ -185,9 +185,12 @@ if [[ $GA == "est" || $GA == "EST" ]] ; then
 fi
 
 # If a single target was given, use it
-if [[ ! -n $TARGET ]] ; then
-TARGET="ATLAS"
-echo "Reg target will be $TARGET"
+if [[ ! -n $TARGET && ${GA} -lt 22 ]] ; then
+    TARGET="EARLY"
+    echo "Small brain ROI so we will register to early-GA templates"
+elif [[ ! -n $TARGET ]] ; then
+    TARGET="ATLAS"
+    echo "Reg target will be $TARGET"
 fi
 
 # Else, we use a list with registration templates

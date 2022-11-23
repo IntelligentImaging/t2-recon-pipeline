@@ -14,6 +14,10 @@ if [[ ! -f $best ]] ; then
     echo "$best doesn't exist"
     exit 1
 fi
+if [[ $best == *FLIRT*FLIRT* ]] ; then
+    echo does this transform need to be composed?
+    exit
+fi
 
 base=`basename $best .nii.gz`
 dir=`dirname $best`
@@ -25,10 +29,17 @@ if [[ ! -d $tmpdir ]] ; then
     exit 1
 fi
 
-mv -v ${base}* ${tmpdir}/
-flirt=${best%%FLIRTto*}
+check=`find ${dir} -name ${base}.\*`
+checkwc=`echo $check | wc -w`
+if [[ $checkwc -lt 2 ]] ; then
+    echo "Didn't find at least two files to preserve, exiting (should find final reg and a transform"
+    exit
+fi
+
+mv -v ${base}.* ${tmpdir}/
+flirt=${best%%IRTto*}
 rm -v ${flirt}*
-mv -v ${tmpdir}/${base}* ${dir}/
+mv -v ${tmpdir}/${base}.* ${dir}/
 rmdir -v ${tmpdir}
 
 full=`readlink -f $best`

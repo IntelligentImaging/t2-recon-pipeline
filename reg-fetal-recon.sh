@@ -5,7 +5,7 @@ shopt -s extglob
 
 show_help () {
 cat << EOF
-    USAGE: sh ${0##*/} [-h] [-m|--mask mask.nii.gz] [-n|--normalize n] [-t|--target] [-c|--metric] [-w|--wide] -- [input] [ga]
+    USAGE: sh ${0##*/} [-h] [-m|--mask mask.nii.gz] [-n|--normalize n] [-t|--target] [-c|--metric] [-ga|--ga GA] [-w|--wide] -- [input]
 
         Fetal pipeline register to atlas space script
 
@@ -46,9 +46,7 @@ while :; do
                 shift
             else
                 die 'error: "--mask" requires a mask image'
-                exit
             fi
-            echo ARGS $#
             ;;
         -n|--normalize)
             if [[ "$2" ]] ; then
@@ -56,29 +54,33 @@ while :; do
                 if [[ $ITER -gt 0 ]] ; then
                     echo ITER is $ITER
                     shift
-                else echo "-n ITER should be a number greater than 0"
-                    exit
+                else die "-n ITER should be a number greater than 0"
                 fi
             fi
-            echo ARGS $#
             ;;
         -t|--target)
             if [[ "$2" ]] ; then
                 TARGET=$2
                 shift
+            else die 'no registration target specified'
             fi
-            echo ARGS $#
             ;;
         -c|--metric)
             if [[ "$2" ]] ; then
                 METRIC=$2
                 shift
+            else die 'no target specified'
             fi
-            echo ARGS $#
+            ;;
+        -ga|--ga)
+            if [[ "$2" ]] ; then
+                GA=$2
+                shift
+            else die 'no GA specified'
+            fi
             ;;
         -w|--wide)
             WIDE="YES"
-            echo ARGS $#
             ;;
         -?*)
             printf 'warning: unknown option (ignored): %s\n' "$1" >&2
@@ -89,7 +91,7 @@ while :; do
     shift
 done
 
-if [ $# -ne 2 ] ; then
+if [ $# -ne 1 ] ; then
     show_help
     exit
 fi
@@ -101,7 +103,6 @@ fi
 
 # Required arguments
 INPUT=`readlink -f $1`
-GA="$2"
 DIR=`dirname $INPUT`
 BASE=`basename $INPUT`
 SCRIPT="${DIR}/run-reg.sh"
@@ -111,11 +112,10 @@ if [[ ! -n $METRIC ]] ; then METRIC="corratio" ; fi
 function register {
                 baseT="`basename ${template%%.*}`"
                 output=${basebrain}_FLIRTto_${baseT}
-                echo "input is $INPUT"
-                echo "base name is $basebrain" 
+                echo "input is $BASE"
                 echo "template image is $template"
         		echo "template GA is $tga"
-                echo "output files are $output"
+                echo "output files are ${output##*/}"
                 echo "reg metric is $METRIC"
                 echo "Running FLIRT!"
                 cmd="flirt -dof 6 -cost $METRIC -in $INPUT -ref ${template} -omat ${output}.mat -out ${output}"
@@ -157,8 +157,8 @@ fi
 # used to name output files
 basebrain="${INPUT%%.*}"
 
-# AUTO-DETECT GA -- USE IF -est is given 
-if [[ $GA == "est" || $GA == "EST" ]] ; then
+# AUTO-DETECT GA if no GA supplied 
+if [[ ! -n $GA ]] ; then
     # Compare mask volume to each STA mask volume and pick the closest
     echo "Estimating input GA"
     choose="/fileserver/fetal/segmentation/templates/STA_GEPZ/masks/choose.txt"

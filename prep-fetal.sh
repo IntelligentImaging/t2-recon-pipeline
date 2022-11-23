@@ -101,7 +101,7 @@ else
 RECON="${PROC}/${ID}/nii"
 mkdir -pv ${RECON}/../notgood
 for TERM in T2_HASTE CERVIX SSFSE_T2 ; do # Search terms
-    ARRAY=`find ${NIIDIR}/ -type f -name \*$TERM\*.nii\*` # Make an array of found images
+    ARRAY=`find ${NIIDIR}/ -type f -name \*$TERM\*.nii\* -and ! -iname \*DLonur\* -and ! -iname \*_DL` # Make an array of found images
     if [[ -n $ARRAY ]] ; then # exlcude empty arrays
         for IM in $ARRAY ; do
             base=`basename "$IM"`

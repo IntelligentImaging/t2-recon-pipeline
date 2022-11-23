@@ -1,8 +1,8 @@
 #!/bin/bash
 
-if [ $# -ne 2 ]; then	
+if [ $# -ne 1 ]; then	
 	echo "Incorrect argument supplied!"
-	echo "usage: sh $0 [FINAL IMAGE] [ATLAS-SPACE TARGET IMAGE]"
+	echo "usage: sh $0 [FINAL IMAGE]"
 	echo "For use with the fetal T2 pipeline scripts"
     echo "Takes the 2nd step moving image and assumes the rest of the file names and intermediatary files from that"
 	echo "Script will convert .mat flirt transforms to itk"
@@ -11,16 +11,13 @@ if [ $# -ne 2 ]; then
 
 # set inputs
 FINAL="$1"
-REF="$2"
 
 TFM2=`echo $FINAL | sed 's,\..*,\.mat,g'`
 MOV2="${FINAL%_FLIRTto*}.nii.gz"
 TFM1=`echo $MOV2 | sed 's,\..*,\.mat,g'`
 MOV1="${MOV2%_FLIRTto*}.nii.gz"
-REFbase=`basename $REF`
-REFname=${REFbase%%.*}
-TFMcom="${MOV1%%.*}_FLIRTto_${REFname}.tfm"
-output="${MOV1%%.*}_FLIRTto_${REFname}.nii.gz"
+TFMcom="${MOV1%%.*}_FLIRTto_STA.tfm"
+output="${MOV1%%.*}_FLIRTto_STA.nii.gz"
 
 # select available python3 version
 # if python3.5 -V | grep -q "Python 3.5" ; then
@@ -49,7 +46,7 @@ if [[ ${TFM1} == *.mat ]] ; then
 	tmp=`basename ${TFM1} .mat`
 	TFM1ITK="${tmp}.tfm"
     TFM1tmp="${TFM1ITK}.$RANDOM"
-	cmd="$c3d -ref $REF -src $MOV1 $TFM1 -fsl2ras -oitk $TFM1ITK"
+	cmd="$c3d -ref $FINAL -src $MOV1 $TFM1 -fsl2ras -oitk $TFM1ITK"
 	echo $cmd >> $LOG
 	$cmd
 	# Change type designation to "AffineTransform_double_3_3"
@@ -67,7 +64,7 @@ if [[ ${TFM2} == *.mat ]] ; then
         tmp=`basename ${TFM2} .mat`
         TFM2ITK="${tmp}.tfm"
         TFM2tmp="${TFM2ITK}.$RANDOM"
-        cmd="$c3d -ref $REF -src $MOV2 $TFM2 -fsl2ras -oitk $TFM2ITK"
+        cmd="$c3d -ref $FINAL -src $MOV2 $TFM2 -fsl2ras -oitk $TFM2ITK"
 	echo $cmd >> $LOG
 	$cmd
 	# Change type designation to "AffineTransform_double_3_3"
@@ -89,5 +86,5 @@ $cmd
 
 #crlComposeAffineTransforms b0-t2_1272s1_ncc.tfm b0-t2_1272s1_ncc_part2.tfm b0-t2_1272s1_nccflirt.tfm 
 echo "Resample"
-crlResampler ${MOV1} ${TFMcom} ${REF} bspline $output
+crlResampler $MOV1 $TFMcom $FINAL bspline $output
 echo "Created $TFMcom and $output"

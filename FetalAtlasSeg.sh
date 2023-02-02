@@ -20,7 +20,7 @@ shopt -s extglob
 antspath="/fileserver/fetal/atlas/ants/"
 
 # Default STA atlas list # # # # # # # # # 
-tlist="/fileserver/fetal/segmentation/templates/STA_GEPZ/tlist_old.txt"
+tlist="/fileserver/fetal/segmentation/templates/STA_GEPZat/tlist_old.txt"
 # # # PREFIXES OF DEFAULT ATLAS LABELS # #
 # GEPZ = standard tissue seg
 # GEPZ-WMZ = with subplate, normally only used for GA < 32 weeks
@@ -44,35 +44,21 @@ cat << EOF
     Usage: sh ${0} [-h] [-a AtlasList.txt -l AtlasLabelsPrefix] [-p OutputSegPrefix] -- [Imagelist] [OutputDir] [MaxThreads]
     
         -h      display this help and exit
-        -a      [optional] supply a structual ATLAS text list
-                formatted with one image per row and GA
-                for example:
+        -a      [optional] supply a structual ATLAS text list, formatted like:
                     PATH/atlas30.nii.gz 30
-                    PATH/atlas31.nii.gz 31
-                    ...etc
-        -l      [required if -a is specified] supply string to
-                designate atlas label prefix. Labels should be in
-                the same directory as the corresponding atlas image
-                and must be named with format: PREFIX-SameAsAtlas.ext
-                using the above example, there should be files named:
+                    PATH/atlas31.nii.gz 31 ... etc
+        -l      [required if -a is specified] specify atlas label prefix. Label files need to be in the same directory as atlases and named like:
                     PATH/PREFIX-atlas30.nii.gz
-                    PATH/PREFIX-atlas31.nii.gz
-                    ...etc
-        -p      [optional] specify output segmentation prefix
-                default: mas
+                    PATH/PREFIX-atlas31.nii.gz ...etc
+                    (defualt: all three of GEPZ, GEPZ-WMZ and REGION)
+        -p      [optional] specify output segmentation prefix (default: mas)
+        -f|--fcps   Run Haoran Dou's FCPS (fetal cortical plate segmentation) code. Requires GPU's.
 
-        [InputList] A text file with a list of input images
-                formatted with one image per row and GA, i.e.
+        [Imagelist] A text file with a list of input images formatted with one image per row and GA, i.e.
                     PATH/image01.nii.gz 32
-                    PATH/image02.nii.gz 29
-                    PATH/image03.nii.gz 31
-                    ...etc
-
-        [OutputDir] Output directory for all working files
-                and output segmentations
-
-        [MaxThreads] Maximum number of CPUs for running
-        registrations and STAPLE (usually 8-12)
+                    PATH/image02.nii.gz 29 ...etc
+        [OutputDir] Output directory for all working files and output segmentations
+        [MaxThreads] Maximum number of CPUs for running registrations and STAPLE (usually 8-12)
 EOF
 }
 
@@ -111,6 +97,9 @@ while :; do
             else
                 die 'error: "-p" requires prefix be specified'
             fi
+            ;;
+        -f|--fcps)
+            let yesFCPS=1
             ;;
         --) # end of optionals
             shift
@@ -518,34 +507,37 @@ while read line; do
     echo "name : $name"
 
     # # # HAORAN DL CP SEGMENTATION - FetalCPSeg - HDL # #
-    # echo "# # FetalCPSeg deep learning model for CP segmentation # #"
-    # # Location of the trained model
-    # FCPS="${outdir}/${name}/FCPS"
-    # Fsrc="/fileserver/fetal/segmentation/FetalCPSeg/FetalCPSeg-Programe/"
-    # Fenv="/fileserver/fetal/venv/HDLenv/bin/activate"
-    # Fin="${outdir}/${name}/FCPS/Input"
-    # Fsub="${Fin}/${name}"
-    # Fout="${FCPS}/FCPS_${name}.nii.gz"
-    # echo
-    # if [[ ! -f "${Fout}" ]] ; then
-    #     echo "time : `date`"
-    #     echo "Install model for subject"
-    #     mkdir -pv ${Fsub}
-    #     cp ${Fsrc} -r ${FCPS}/
-    #     cp ${image} -v ${Fsub}/image.nii.gz
-    #     echo "Source virtual environment"
-    #     source $Fenv
-    #     cd ${FCPS}
-    #     python FetalCPSeg-Programe/Test/infer_novel.py
-    #     cd -
-    #     deactivate
-    #     echo "Resample model prediction"
-    #     crlCopyImageInformation ${Fsub}/predict.nii.gz ${Fsub}/cii.nii.gz ${Fsub}/image.nii.gz 1
-    #     echo "FetalCPSeg complete"
-    #     cp ${Fsub}/cii.nii.gz -v ${Fout}
-    # else echo "FCPS output found. Skipping..."
-    # fi
-    # echo
+    if [[ $yesFCPS = 1 ]] ; then
+        echo "# # FetalCPSeg deep learning model for CP segmentation # #"
+        # Location of the trained model
+        FCPS="${outdir}/${name}/FCPS"
+        Fsrc="/fileserver/fetal/segmentation/FetalCPSeg/FetalCPSeg-Programe/"
+        Fenv="/fileserver/fetal/venv/HDLenv/bin/activate"
+        Fin="${outdir}/${name}/FCPS/Input"
+        Fsub="${Fin}/${name}"
+        Fout="${FCPS}/FCPS_${name}.nii.gz"
+        echo
+        if [[ ! -f "${Fout}" ]] ; then
+            echo "time : `date`"
+            echo "Install model for subject"
+            mkdir -pv ${Fsub}
+            cp ${Fsrc} -r ${FCPS}/
+            cp ${image} -v ${Fsub}/image.nii.gz
+            echo "Source virtual environment"
+            source $Fenv
+            cd ${FCPS}
+            python FetalCPSeg-Programe/Test/infer_novel.py
+            cd -
+            deactivate
+            echo "Resample model prediction"
+            crlCopyImageInformation ${Fsub}/predict.nii.gz ${Fsub}/cii.nii.gz ${Fsub}/image.nii.gz 1
+            echo "FetalCPSeg complete"
+            cp ${Fsub}/cii.nii.gz -v ${Fout}
+        else echo "FCPS output found. Skipping..."
+        fi
+    else echo "FCPS script option is not set"
+        echo
+    fi 
 
     # CP region multiplication
     echo "# # Image algebra steps # #"
@@ -591,7 +583,7 @@ while read line; do
             # echo "Output: ${insert}" 
 
             # Remove temp files
-            rm ${CPmask} ${CPnone} ${CPparc} ${FinvCP} ${CPnone2} ${rFout}
+            rm ${CPmask} ${CPnone} ${CPparc} # ${FinvCP} ${CPnone2} ${rFout}
         done
     else echo "GEPZ or Region segs were not found for image. Skipping."
     fi

@@ -86,14 +86,13 @@ mri=`dcmdump $dcm | grep -i ModelName | head -n1   | sed -e 's,.*\[,,g' -e 's,\]
 loc=`dcmdump $dcm | grep -i StationN | head -n1    | sed -e 's,.*\[,,g' -e 's,\].*,,g'`
 
 # translate scanner name to Redcap code
-if [[ $mri == "Prisma" || $mri == "PRISMA" ]] ; then
-    mri2="5"
-elif [[ $mri == "Skyra" || $mri == "SKYRA" ]] ; then
-    mri2="3"
-elif [[ $mri == "MAGNETOM Vida" ]] ; then
-    mri2="6"
-else mri2="FIXSCRIPT"
-fi
+prisma=`echo $mri | grep -i prisma`
+if [[ -n $prisma ]] ; then mri2="5" ; fi
+skyra=`echo $mri | grep -i skyra`
+if [[ -n $skyra ]] ; then mri2="3" ; fi
+vida=`echo $mri | grep -i vida`
+if [[ -n $vida ]] ; then mri2="6" ; fi
+if [[ ! -n $mri2 ]] ; then mri2="FIXSCRIPT" ; fi
 
 # translate location to Redcap code
 if [[ $loc == "2BPMRI_1" ]] ; then

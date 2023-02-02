@@ -61,7 +61,7 @@ PROC="$2"
 ID=`basename "$RAW"`
 DCMDIR=`find ${RAW} -type d -name DICOM | head -n1`
 NIIDIR="`dirname $DCMDIR`/nii"
-NET="/home/ch162835/Software/2Ddensenet"
+NET="/fileserver/fetal/software/2Ddensenet"
 
 if [[ ! -d $RAW ]] ; then
 	die "error: Raw case directory $RAW doesn't exist"

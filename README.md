@@ -4,7 +4,9 @@ The T2 recon pipeline is a set of instructions and scripts for going from raw T2
 - Be on a CRL server machine
 - Processing machines Clemente has used include (all CentOS7): zephyr, boreas, auster, eurus, dingo, anchorage (Clemente's workstation). Ubuntu machines such as barnes, french, saadi, iced may work but I'm not sure. Try using bash script.sh instead of sh script.sh.
 - Source CRkit in your bash profile
-  Something like: `source /opt/el7/pkgs/crkit/nightly/20220213/bin/crkit-env.sh`
+  
+	Something like: `source /opt/el7/pkgs/crkit/nightly/20220213/bin/crkit-env.sh`
+	
 - Have the fetal processing pipeline binary directory in your PATH: `/fileserver/fetal/software/bin`
 
 The servers above should be ready to go. If getting set up on a new machine, you will need:
@@ -16,10 +18,13 @@ Helpful tools:
 - ITK-SNAP (for viewing images and drawing/editing ROI's)
 - detox (convenient tool to fix directory names with special characters)
 ## Data prep and setup
-1. Pull data to CRL server. This step will most likely already be completed by Clemente. Only applies to scans performed at BCH. 
-`sh retrieve-fetal.sh [MRN] [DOS] MR [OUTPUT DIRECTORY]`
-1. Convert data from DICOM to NIFTI and set up recon directory: `sh prep-fetal.sh [RAW CASE DIR] [STUDY RECON DIR]`
-This script will create a case processing folder in *STUDY RECON DIR* and place all T2 stacks in a subfolder *STUDY/CASEID/nii*. Henceforth this is referred to as the *recon directory*.
+1. Pull data to CRL server. This step will most likely already be completed by Clemente. Only applies to scans performed at BCH.
+ 
+	`sh retrieve-fetal.sh [MRN] [DOS] MR [OUTPUT DIRECTORY]`
+1. Convert data from DICOM to NIFTI and set up recon directory:
+
+	`sh prep-fetal.sh [RAW CASE DIR] [STUDY RECON DIR]`<br>
+	This script will create a case processing folder in *STUDY RECON DIR* and place all T2 stacks in a subfolder *STUDY/CASEID/nii*. Henceforth this is referred to as the *recon directory*.
 1. Check T2 stacks in the recon directory, archive bad stacks in *STUDY/CASEID/notgood*
 	- Stacks that do not have the entire brain should be archived
 	- Stacks in which the fetus changes orientation (from coronal to sagittal, for example) should be archived
@@ -43,16 +48,17 @@ This script writes the SVRTK container command (*run-svrtk.sh*) to run the recon
   - Validate and correct *mask.nii.gz* by overlaying on *nxb\*.nii.gz* with ITK-SNAP
 ## Registration to atlas-space
 1. Run the register script: `sh reg-fetal-recon.sh -m mask.nii.gz -n 2 -w [input]`
-  - This script registers the input image to atlas images of similar gestational age. It estimates gestational age by measuring the total  volume of the brain.
-  > * -m mask.nii.gz tells the script to crop the input using mask.nii.gz. If you already have a masked image you can omit this argument
-  > * -n 2 tells the script to perform two more iterations of N4 intensity bias correction. Some data may not need bias correction
-  > * -t [argument] can be used to specify a registration target:
-  >   * ATLAS -- Fetal spatiotemporal atlas images. Default option.
-  >   * CASES -- Individual subject atlases. These are more varied; useful when ATLAS fails.
-  >   * EARLY -- A pre-selection of useful small brains (GA=17-22 weeks). Can use for the smallest/earliest brains, though the script will also detect when the input is very small and use these instead.
-  >   * [any supplied image.nii.gz] -- Alternatively you can target a specific image
-  > * -w Matches plus/minus 1 week GA, instead of exact match.
-  > * --ga [GA] allows you to specify a gestational age instead of having the script estimate it
+
+	This script registers the input image to atlas images of similar gestational age. It estimates gestational age by measuring the total  volume of the brain.
+  > -m mask.nii.gz tells the script to crop the input using mask.nii.gz. If you already have a masked image you can omit this argument
+  > <br>-n 2 tells the script to perform two more iterations of N4 intensity bias correction. Some data may not need bias correction
+  > <br>-t [argument] can be used to specify a registration target:
+  > <br>&nbsp;&nbsp;&nbsp;&nbsp;ATLAS -- Fetal spatiotemporal atlas images. Default option.
+  > <br>&nbsp;&nbsp;&nbsp;&nbsp;CASES -- Individual subject atlases. These are more varied; useful when ATLAS fails.
+  > <br>&nbsp;&nbsp;&nbsp;&nbsp;EARLY -- A pre-selection of useful small brains (GA=17-22 weeks). Can use for the smallest/earliest brains, though the script will also detect when the input is very small and use these instead.
+  > <br>&nbsp;&nbsp;&nbsp;&nbsp;[any supplied image.nii.gz] -- Alternatively you can target a specific image
+  > <br>-w Matches plus/minus 1 week GA, instead of exact match.
+  > <br>--ga [GA] allows you to specify a gestational age instead of having the script estimate it
 2. Look through output registrations and choose the best one, then run: `sh choosereg.sh [best reg]`<br>This copies the chosen registration as *atlas_t2final_CASEID.nii.gz* and throws out all other registration attempts[^1].
 
 # Segmentation

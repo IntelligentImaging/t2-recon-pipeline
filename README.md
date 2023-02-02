@@ -23,8 +23,8 @@ This script will create a case processing folder in *STUDY RECON DIR* and place 
 - Stacks in which the fetus changes orientation (from coronal to sagittal, for example) should be archived
 - Oblique stacks should be archived if there are better stacks
 - Only ~4-9 stacks are needed; if there are more they can be removed/ignored. 
-5. Create rough mask or ROI for recon initialization, named *mask_x.nii.gz*, where "x" is the corresponding stack number. I normally do this in ITK-SNAP.
-![Example of the recon ROI. It doesn't need to be exact.]<br>(images/example_mask.png)
+5. Create a rough ROI for reconstruction, named *mask_x.nii.gz*, where "x" is the corresponding stack number. I do this in ITK-SNAP.<br>
+![Example of the recon ROI. It doesn't need to be exact.](images/example_mask.png)
 6. Generate SVRTK docker run script: `sh svrtk-gen.sh [recon directory]`
 This script writes the SVRTK container command (*run-svrtk.sh*) to run the reconstruction. Looking at *recon directory*, it records all files named *fetus_\*nii.gz* as the inputs and a file named *mask_\*.nii.gz* to use as the ROI.
 ## Running the SVRTK reconstruction 

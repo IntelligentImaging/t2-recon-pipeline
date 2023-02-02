@@ -24,6 +24,7 @@ This script will create a case processing folder in *STUDY RECON DIR* and place 
 - Oblique stacks should be archived if there are better stacks
 - Only ~4-9 stacks are needed; if there are more they can be removed/ignored. 
 5. Create rough mask or ROI for recon initialization, named *mask_x.nii.gz*, where "x" is the corresponding stack number. I normally do this in ITK-SNAP.
+![Example of the recon ROI. It doesn't need to be exact.](example_mask.png)
 6. Generate SVRTK docker run script: `sh svrtk-gen.sh [recon directory]`
 This script writes the SVRTK container command (*run-svrtk.sh*) to run the reconstruction. Looking at *recon directory*, it records all files named *fetus_\*nii.gz* as the inputs and a file named *mask_\*.nii.gz* to use as the ROI.
 ## Running the SVRTK reconstruction 
@@ -49,7 +50,7 @@ This script writes the SVRTK container command (*run-svrtk.sh*) to run the recon
   - [any supplied image.nii.gz] -- Alternatively you can target a specific image
  - -w Matches plus/minus 1 week GA, instead of exact match.
  - -ga [GA] allows you to specify a gestational age instead of having the script estimate it<br>
-10. Look through output registrations and choose the best one, then run: `sh choosereg.sh [best reg]`<br>This copies the chosen registration as *atlas_t2final_CASEID.nii.gz* and throws out all other registration attempts. [^1]
+10. Look through output registrations and choose the best one, then run: `sh choosereg.sh [best reg]`<br>This copies the chosen registration as *atlas_t2final_CASEID.nii.gz* and throws out all other registration attempts[^1].
 
 # Segmentation
 14. Multi-atlas segmentation script for fetal data: `sh FetalAtlasSeg.sh [Imagelist] [OutputDir] [MaxThreads]`<br>
@@ -59,4 +60,4 @@ This script writes the SVRTK container command (*run-svrtk.sh*) to run the recon
 - Runs partial volume correction (PVC) on the *GEPZ segmentation* 
 - -f option runs Haoran's DL CP segmentation
 
-[^1]Sometimes it's hard to get a good registration. In these cases, we can run a second iteration of the registration. If you do this, there is an additional script to compose the part 1 and part 2 transforms into a single registration. Example: bmnxbSVRTK_subjID_FLIRTto_fxs1.nii.gz is used to create bmnxbSVRTK_subjID_FLIRTto_fxs1_FLIRTto_fys1.nii.gz. Run the script: `sh combineTransforms-t2pipeline.sh bmnxbSVRTK_subjID_FLIRTto_fxs1_FLIRTto_fys1.nii.gz`<br>This generates bmnxbSVRTK_subjID_FLIRTto_STA.nii.gz and bmnxbSVRTK_subjID_FLIRTto_STA.tfm. You can then safely use `sh choosereg bmnxbSVRTK_subjID_FLIRTto_STA.nii.gz
+[^1]: Sometimes it's hard to get a good registration. In these cases, we can run a second iteration of the registration. If you do this, there is an additional script to compose the part 1 and part 2 transforms into a single registration.<br>Example: bmnxbSVRTK_subjID_FLIRTto_fxs1.nii.gz is used to create bmnxbSVRTK_subjID_FLIRTto_fxs1_FLIRTto_fys1.nii.gz.<br>Run the script: `sh combineTransforms-t2pipeline.sh bmnxbSVRTK_subjID_FLIRTto_fxs1_FLIRTto_fys1.nii.gz`<br>This generates bmnxbSVRTK_subjID_FLIRTto_STA.nii.gz and bmnxbSVRTK_subjID_FLIRTto_STA.tfm.<br>You can then safely use `sh choosereg bmnxbSVRTK_subjID_FLIRTto_STA.nii.gz

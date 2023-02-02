@@ -14,7 +14,7 @@ RUNCHECK="$3"
 ID=`basename $RAW`
 DCMDIR="${RAW}/scans"
 NIIDIR="${RAW}/nii"
-# NET="/home/ch162835/Software/2Ddensenet"
+# NET="/fileserver/fetal/software/2Ddensenet"
 
 function DCMrename () {
 	TAG=`dcmdump \`find ${SERIES}/DICOM/ -type f -iname \*.dcm | head -n1\` | grep SeriesDesc`

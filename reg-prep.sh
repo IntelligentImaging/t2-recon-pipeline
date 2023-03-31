@@ -75,7 +75,7 @@ gzip -v $RECON
 RECONDIR=`dirname $RECON`
 REGDIR="${RECONDIR}/registration"
 BASE=`basename $RECON`
-LOG="${REGDIR}/run-reg-prep.txt"
+LOG="${REGDIR}/run-reg-prep.sh"
 # The chosen orientation is renamed to "best"
 if [[ ! $RECON = *"best"* ]] ; then
 	BEST=`echo $RECON | sed 's,fetus_,fetus_best_,g'`

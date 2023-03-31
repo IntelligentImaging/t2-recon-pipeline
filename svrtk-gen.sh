@@ -1,13 +1,56 @@
 #!/bin/bash
 
-if [[ $# -ne 1 ]]; then	
-	echo "Incorrect argument supplied!"
-	echo "usage: sh $0 [SVRTK recon dir]"
-    echo "Creates run scripts for reconstruction"
-    echo "[recon dir] should have T2 stacks named: fetus_02.nii.gz fetus_05.nii.gz ... fetus_k.nii.gz"
-    echo "If using mask, place mask_x.nii.gz in recon dir, where x refers to the reference stack"
+show_help () {
+cat << EOF
+    USAGE: sh ${0##*/} [-m mask_00x.nii.gz] [SVRTK recon dir]
+    Incorrect input supplied
+    
+    Creates run scripts for reconstruction
+    [recon dir] should have T2 stacks named: fetus_02.nii.gz fetus_05.nii.gz ... fetus_k.nii.gz
+    If using mask, place mask_x.nii.gz in recon dir, where x refers to the reference stack
+    Optional [-m mask_00x.nii.gz] specifies which T2 stack mask to use as the reference ROI.
+    Default behavior is to find the first file named "mask_*" and use that. 
+EOF
+}
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+while :; do
+    case $1 in
+        -h|-\?|--help)
+            show_help # help message
+            exit
+            ;;
+        -m|--mask)
+            if [[ -f "$2" ]] ; then
+                mask=$2 # Specify mask
+                shift
+            else
+                die 'error: Mask image not supplied'
+            fi
+            ;;
+        -n|--nomask)
+                let nomask=1 # Recon will run without mask
+            ;;
+        --) # end of optionals
+            shift
+            break
+            ;;
+        -)?*
+            printf 'warning: unknown option (ignored: %s\m' "$1" >&2
+            ;;
+        *) # default case, no optionals
+            break
+    esac
+    shift
+done
+
+if [ $# -ne 1 ]; then
+    show_help
     exit
-	fi
+fi 
 
 # Set variables
 t2dir=`readlink -f $1`
@@ -44,8 +87,14 @@ for stack in $t2s ; do
 done
 
 echo stack dir = "$t2dir"
-# Mask options
-mask=`find $t2dir -maxdepth 1 -type f -name mask_\*.nii\* | head -n1`
+
+# If default, search for mask. If nomask is set, we skip this
+if [[ ! -n $mask && $nomask -ne 1 ]] ; then
+    echo "Searching for mask"
+    mask=`find $t2dir -maxdepth 1 -type f -name mask_\*.nii\* | sort | head -n1`
+fi
+
+# Add mask to run script
 if [[ -f $mask ]] ; then
     tmp="${mask##*_}"
     refn="${tmp%%.*}"
@@ -56,6 +105,7 @@ if [[ -f $mask ]] ; then
     echo "-template ${ref} \\" >> $run
 else
     echo "No mask found. To reconstruct with mask, place mask named mask_x.nii.gz in recon directory"
+    echo "If no mask is OK, you can proceed"
 fi
 
 # Other options

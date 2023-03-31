@@ -87,4 +87,6 @@ $cmd
 #crlComposeAffineTransforms b0-t2_1272s1_ncc.tfm b0-t2_1272s1_ncc_part2.tfm b0-t2_1272s1_nccflirt.tfm 
 echo "Resample"
 crlResampler $MOV1 $TFMcom $FINAL bspline $output
-echo "Created $TFMcom and $output"
+echo "Created:"
+echo $TFMcom
+echo $output

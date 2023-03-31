@@ -65,9 +65,13 @@ noscan=`echo $id2 | sed 's,s.*,,g'`
 scan=`echo $id2 | sed 's,.*s\(.*\),\1,g'`
 arm=`echo $id | sed -e 's,.*s,,g' -e 's,\([0-9]\),scan0\1_arm_1,g'`
 di=`find $id -type d -name DICOM | head -n1`
-cervix=`find $di -type d -name 2_\* -o -iname \*CERVIX\* -o -iname \*localizer\* | head -n1`
-if [[ ! -n $cervix ]] ; then
-    echo "Couldn't find CERVIX or localizer scan, which we use for the DICOM tags- check script"
+if [[ ! -d $di ]] ; then
+    echo "Subject ID ${id2} - no DICOM folder"
+    die
+fi
+cervix=`find $di -type d -name 2_\* -o -iname \*CERVIX\* -o -iname \*localizer\* -o -iname \*PLANE_LOC\* | head -n1`
+if [[ ! -d $cervix ]] ; then
+    echo "Subject ID ${id2} No CERVIX or localizer scan"
     die
 fi
 dcm=`find $cervix -type f | head -n1`
@@ -92,6 +96,12 @@ skyra=`echo $mri | grep -i skyra`
 if [[ -n $skyra ]] ; then mri2="3" ; fi
 vida=`echo $mri | grep -i vida`
 if [[ -n $vida ]] ; then mri2="6" ; fi
+trio=`echo $mri | grep -i trio`
+if [[ -n $trio ]] ; then mri2="4" ; fi
+signa=`echo $mri | grep -i signa`
+if [[ -n $signa ]] ; then mri2="0" ; fi
+avanto=`echo $mri | grep -i avanto`
+if [[ -n $avanto ]] ; then mri2="1" ; fi
 if [[ ! -n $mri2 ]] ; then mri2="FIXSCRIPT" ; fi
 
 # translate location to Redcap code
@@ -118,20 +128,21 @@ if [[ $scan -ne 1 ]] ; then
 fi
 
 # if sequences are present in the DICOM folder, we'll add checkmarks to the redcap
-f_haste=`find $di -type d -iname \*T2_HASTE\*` ;     if [[ -n $f_haste ]] ;  then haste="1" ; fi # type__0
-f_dti=`find $di -type d -iname \*BRAIN-DTI\*` ;   if [[ -n $f_dti ]] ;    then dti="1" ; fi # type__5
-f_dtib=`find $di -type d -iname \*BRAIN-DTI\*1000 -o -iname \*DTI\*3Shells\* -o -iname \*DTI\*500\*750\*` ; if [[ -n $f_dtib ]] ;   then dtib="1" ; fi # brain_dwi_bvalues
-f_fmri=`find $di -type d -iname \*rs-fMRI\*` ;       if [[ -n $f_fmri ]] ;   then fmri="1" ; fi # type__10
-f_epi=`find $di -type d -iname \*EPI_highres\*` ;    if [[ -n $f_epi ]] ;    then epi="1" ; fi # type__4
-f_zoomit=`find $di -type d -iname \*zoom\*` ;       if [[ -n $f_zoomit ]] ;  then zoomit="1"; fi # type__21
-f_hasteDL=`find $di -type d -iname \*DLonur\*` ;   if [[ -n $f_hasteDL ]] ;  then hasteDL="1" ; fi # type__32
+f_haste=`find $di -type d -iname \*T2_HASTE\*` ;     if [[ -n $f_haste ]] ;  then haste="1" ; fi # type___0
+f_dti=`find $di -type d -iname \*BRAIN\?DTI\*` ;   if [[ -n $f_dti ]] ;    then dti="1" ; fi # type___5
+f_dtib=`find $di -type d -iname \*BRAIN\?DTI\*1000 -o -iname \*DTI\*3Shells\* -o -iname \*DTI\*500\*750\* -o -iname \*MultiB\*` ; if [[ -n $f_dtib ]] ;   then dti="1" ; dtib="1" ; fi # brain_dwi_bvalues
+f_fmri=`find $di -type d -iname \*rs\?fMRI\*` ;       if [[ -n $f_fmri ]] ;   then fmri="1" ; fi # type___10
+f_epi=`find $di -type d -iname \*EPI_highres\*` ;    if [[ -n $f_epi ]] ;    then epi="1" ; fi # type___4
+f_zoomit=`find $di -type d -iname \*zoom\*` ;       if [[ -n $f_zoomit ]] ;  then zoomit="1"; fi # type___21
+f_hasteDL=`find $di -type d -iname \*DLonur\* -o -iname \*HASTE_WIP\*` ;   if [[ -n $f_hasteDL ]] ;  then hasteDL="1" ; fi # type___32
+f_dualecho=`find $di -type d -iname \*dualecho\*` ;   if [[ -n $f_dualecho ]] ;  then dualecho="1" ; fi # type___11 
 
 # If CSV doesn't exist yet, write headers for Redcap
 if [[ ! -f $csv ]] ; then
-   echo "mrn,redcap_event_name,last_name,first_name,medical_record_number,dob,fetal_baby,research_clinical,irb_name,fund,scan_date,accession,scanner,site,patient_height,patient_weight,sex,brain_imagetype___0,brain_imagetype___5,brain_dwi_bvalues,brain_imagetype___10,brain_imagetype___4,brain_imagetype___21,brain_imagetype___23,pipelines___2,pipelines___5" > $csv
+   echo "mrn,redcap_event_name,last_name,first_name,medical_record_number,dob,fetal_baby,normal_abnormal,research_clinical,irb_name,fund,scan_date,accession,scanner,site,patient_height,patient_weight,sex,brain_imagetype___0,brain_imagetype___5,brain_dwi_bvalues,brain_imagetype___10,brain_imagetype___4,brain_imagetype___21,brain_imagetype___23,brain_imagetype___11,pipelines___2,pipelines___5" > $csv
 fi
 
 # Write subject rows for Redcap
-echo "$noscan,$arm,"$last","$first",$mrn,$birth,$fetal,$res,$irb,$fund,$dos,$acc,$mri2,$loc2,$height,$weight,$sex,$haste,$dti,$dtib,$fmri,$epi,$zoomit,$hasteDL,1,1" >> $csv
+echo "$noscan,$arm,"$last","$first",$mrn,$birth,$fetal,,$res,$irb,$fund,$dos,$acc,$mri2,$loc2,$height,$weight,$sex,$haste,$dti,$dtib,$fmri,$epi,$zoomit,$hasteDL,$dualecho,1,1" >> $csv
 # Echo result
-echo "$noscan,$arm,"$last","$first",$mrn,$birth,$fetal,$res,$irb,$fund,$dos,$acc,$mri2,$loc2,$height,$weight,$sex,$haste,$dti,$dtib,$fmri,$epi,$zoomit,$hasteDL,1,1"
+echo "$noscan,$arm,"$last","$first",$mrn,$birth,$fetal,,$res,$irb,$fund,$dos,$acc,$mri2,$loc2,$height,$weight,$sex,$haste,$dti,$dtib,$fmri,$epi,$zoomit,$hasteDL,$dualecho,1,1"

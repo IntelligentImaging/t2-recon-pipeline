@@ -44,15 +44,16 @@ cat << EOF
     Usage: sh ${0} [-h] [-a AtlasList.txt -l AtlasLabelsPrefix] [-p OutputSegPrefix] -- [Imagelist] [OutputDir] [MaxThreads]
     
         -h      display this help and exit
-        -a      [optional] supply a structual ATLAS text list, formatted like:
+        -a      supply a structual ATLAS text list, formatted like:
                     PATH/atlas30.nii.gz 30
                     PATH/atlas31.nii.gz 31 ... etc
         -l      [required if -a is specified] specify atlas label prefix. Label files need to be in the same directory as atlases and named like:
                     PATH/PREFIX-atlas30.nii.gz
                     PATH/PREFIX-atlas31.nii.gz ...etc
                     (defualt: all three of GEPZ, GEPZ-WMZ and REGION)
-        -p      [optional] specify output segmentation prefix (default: mas)
+        -p      specify output segmentation prefix (default: mas)
         -f|--fcps   Run Haoran Dou's FCPS (fetal cortical plate segmentation) code. Requires GPU's.
+        --noAt  Use the old ISA names (without "atlas_t2final")
 
         [Imagelist] A text file with a list of input images formatted with one image per row and GA, i.e.
                     PATH/image01.nii.gz 32
@@ -100,6 +101,9 @@ while :; do
             ;;
         -f|--fcps)
             let yesFCPS=1
+            ;;
+        --noAt)
+            tlist="/fileserver/fetal/segmentation/templates/STA_GEPZ/tlist_old.txt"
             ;;
         --) # end of optionals
             shift
@@ -187,7 +191,7 @@ if ! cmp -s $0 ${tools}/seg.sh ; then
 fi
 cp ${antspath}/ANTS -vu ${tools}/
 cp ${antspath}/WarpImageMultiTransform -vu ${tools}/
-cp ${tlist} -vu ${tools}/
+cp ${tlist} -v ${tools}/
 ANTS="${tools}/ANTS"
 WARP="${tools}/WarpImageMultiTransform"
 SEG="crlProbabilisticGMMSTAPLE"

@@ -105,4 +105,5 @@ echo "--dir-output srr/ \\" >> $shpipe
 echo "--alpha $alpha \\" >> $shpipe
 
 # Open permissions so docker sudo can access
+echo "Opening permissions for Docker"
 find ${nmic} -type d -exec chmod -c --preserve-root 777 {} \;

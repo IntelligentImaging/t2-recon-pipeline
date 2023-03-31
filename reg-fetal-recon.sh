@@ -11,8 +11,6 @@ cat << EOF
 
           REQUIRED ARGUMENTS
         [input] Input image which gets registered to atlas space
-        [ga]    Input image gestational age (22..38) OR "est", used for atlas selection
-                If you input "est", the script will estimate GA by comparing mask volume to the atlas images
           OPTIONAL ARGUMENTS
         -h      display help
         -m      supply a binary mask to crop the image (default: no mask)
@@ -22,6 +20,7 @@ cat << EOF
                 "EARLY" should be used for very small brains (~20 weeks and below)
                 (default: ATLAS)
         -c      FLIRT registration metric {mutualinfo,corratio,normcorr,normmi,leastsq,labeldiff,bbr} (default is corratio)
+        -ga     specify gestational age for atlas matching (default: estimate based on total volume)
         -w      Widens selection of targets to +/- one week GA (default: off)
 
 EOF
@@ -158,7 +157,7 @@ fi
 basebrain="${INPUT%%.*}"
 
 # AUTO-DETECT GA if no GA supplied 
-if [[ ! -n $GA ]] ; then
+if [[ ! -n $GA  && ! -f $TARGET ]] ; then
     # Compare mask volume to each STA mask volume and pick the closest
     echo "Estimating input GA"
     choose="/fileserver/fetal/segmentation/templates/STA_GEPZ/masks/choose.txt"

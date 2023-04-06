@@ -5,8 +5,8 @@ The T2 recon pipeline is a set of instructions and scripts for going from raw T2
 - Processing machines Clemente has used include (all CentOS7): zephyr, boreas, auster, eurus, dingo, anchorage (Clemente's workstation). Ubuntu machines such as barnes, french, saadi, iced may work but I'm not sure. Try using bash script.sh instead of sh script.sh.
 - Source CRkit in your bash profile
   
-	Something like: `source /opt/el7/pkgs/crkit/nightly/20220213/bin/crkit-env.sh`
-	
+    Something like: `source /opt/el7/pkgs/crkit/nightly/20220213/bin/crkit-env.sh`
+    
 - Have the fetal processing pipeline binary directory in your PATH: `/fileserver/fetal/software/bin`
 
 The servers above should be ready to go. If getting set up on a new machine, you will need:
@@ -20,16 +20,16 @@ Helpful tools:
 ## Data prep and setup
 1. Pull data to CRL server. This step will most likely already be completed by Clemente. Only applies to scans performed at BCH.
  
-	`sh retrieve-fetal.sh [MRN] [DOS] MR [OUTPUT DIRECTORY]`
+    `sh retrieve-fetal.sh [MRN] [DOS] MR [OUTPUT DIRECTORY]`
 1. Convert data from DICOM to NIFTI and set up recon directory:
 
-	`sh prep-fetal.sh [RAW CASE DIR] [STUDY RECON DIR]`<br>
-	This script will create a case processing folder in *STUDY RECON DIR* and place all T2 stacks in a subfolder *STUDY/CASEID/nii*. Henceforth this is referred to as the *recon directory*.
+    `sh prep-fetal.sh [RAW CASE DIR] [STUDY RECON DIR]`<br>
+    This script will create a case processing folder in *STUDY RECON DIR* and place all T2 stacks in a subfolder *STUDY/CASEID/nii*. Henceforth this is referred to as the *recon directory*.
 1. Check T2 stacks in the recon directory, archive bad stacks in *STUDY/CASEID/notgood*
-	- Stacks that do not have the entire brain should be archived
-	- Stacks in which the fetus changes orientation (from coronal to sagittal, for example) should be archived
-	- Oblique stacks should be archived if there are better stacks
-	- Only ~4-9 stacks are needed; if there are more they can be removed/ignored.  
+    - Stacks that do not have the entire brain should be archived
+    - Stacks in which the fetus changes orientation (from coronal to sagittal, for example) should be archived
+    - Oblique stacks should be archived if there are better stacks
+    - Only ~4-9 stacks are needed; if there are more they can be removed/ignored.  
 1. Create a rough ROI for reconstruction, named *mask_x.nii.gz*, where "x" is the corresponding stack number. I do this in ITK-SNAP.<br>
 ![Example of the recon ROI. It doesn't need to be exact.](images/example_mask.png)
 1. Generate SVRTK docker run script: `sh svrtk-gen.sh [recon directory]`
@@ -49,7 +49,7 @@ This script writes the SVRTK container command (*run-svrtk.sh*) to run the recon
 ## Registration to atlas-space
 1. Run the register script: `sh reg-fetal-recon.sh -m mask.nii.gz -n 2 -w [input]`
 
-	This script registers the input image to atlas images of similar gestational age. It estimates gestational age by measuring the total  volume of the brain.
+    This script registers the input image to atlas images of similar gestational age. It estimates gestational age by measuring the total  volume of the brain.
   > -m mask.nii.gz tells the script to crop the input using mask.nii.gz. If you already have a masked image you can omit this argument
   > <br>-n 2 tells the script to perform two more iterations of N4 intensity bias correction. Some data may not need bias correction
   > <br>-t [argument] can be used to specify a registration target:

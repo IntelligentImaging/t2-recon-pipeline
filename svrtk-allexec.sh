@@ -30,7 +30,7 @@ for f in $runs ; do
     idtmp="${dname%/nii*}"
     id="${idtmp##*/}"
     # Get output file from script and check if output already exists
-    output=`grep SVRTK $f | sed 's,.*\(SVRTK.*z\).*,\1,'`
+    output=`grep SVRTK $f | sed 's,.* \([a-zA-Z]*SVRTK.*z\).*,\1,'`
     if [ -f "${dname}/${output}" ] ; then
         echo $f already ran
     else

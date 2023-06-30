@@ -77,7 +77,8 @@ function convert () {
 		echo "Skipping: Files already exist in ${OUT}"
 	else
 		echo "Converting $DCM"
-		dcm2niix -z y -i y -f %d_%s -o "${OUT}/" "$DCM"
+		# dcm2niix -z y -i y -f %d_%s -o "${OUT}/" "$DCM"
+        mrconvert $DCM ${OUT}/${BASE}.nii.gz
 		fi
 	}
 
@@ -100,13 +101,15 @@ else
 # Copy T2 stacks to reconstruction folder
 RECON="${PROC}/${ID}/nii"
 mkdir -pv ${RECON}/../notgood
-for TERM in T2_HASTE CERVIX SSFSE_T2 ; do # Search terms
-    ARRAY=`find ${NIIDIR}/ -type f -name \*$TERM\*.nii\* -and ! -iname \*DLonur\* -and ! -iname \*_DL` # Make an array of found images
+for TERM in T2_HASTE CERVIX SSFSE_T2 DL_HASTE ; do # Search terms
+    ARRAY=`find ${NIIDIR}/ -type f -name \*$TERM\*.nii\*` # -and ! -iname \*DLonur\* -and ! -iname \*_DL` # Make an array of found images
     if [[ -n $ARRAY ]] ; then # exlcude empty arrays
         for IM in $ARRAY ; do
             base=`basename "$IM"`
-            end="${base##*_}"
-            new="fetus_${end}"
+            # end="${base##*_}"
+            num="${base%%_*}"
+            text=`echo $base | sed 's,[0-9]*_,,' | sed 's,\(........\).*,\1,'`
+            new="fetus_${text}_${num}.nii.gz"
             chk=`find ${PROC}/${ID} -type f -name $new`
             if [[ -z $chk ]] ; then
             cp ${IM} -v ${RECON}/${new} # copy to recon dir

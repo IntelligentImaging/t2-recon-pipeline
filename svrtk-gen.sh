@@ -98,11 +98,13 @@ fi
 if [[ -f $mask ]] ; then
     tmp="${mask##*_}"
     refn="${tmp%%.*}"
-    ref="fetus_${refn}.nii.gz"
+    ref=`find $t2dir -maxdepth 1 -type f -name fetus\*${refn}.nii.gz`
+    # ref="fetus_${refn}.nii.gz"
+    refbase=`basename $ref`
     mbase=`basename $mask`
     echo "mask = $mask"
     echo "-mask $mbase \\" >> $run
-    echo "-template ${ref} \\" >> $run
+    echo "-template ${refbase} \\" >> $run
 else
     echo "No mask found. To reconstruct with mask, place mask named mask_x.nii.gz in recon directory"
     echo "If no mask is OK, you can proceed"

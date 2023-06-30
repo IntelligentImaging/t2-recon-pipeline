@@ -10,7 +10,7 @@ if [[ $# -lt 2 || $# -gt 2 ]]; then
 
 RAW="$1"
 PROC="$2"
-RUNCHECK="$3"
+# RUNCHECK="$3"
 ID=`basename $RAW`
 DCMDIR="${RAW}/scans"
 NIIDIR="${RAW}/nii"

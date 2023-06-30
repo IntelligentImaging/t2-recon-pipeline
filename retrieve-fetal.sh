@@ -41,13 +41,18 @@ fi;
 export -f get_tag sortd
 
 #Return StudyInstanceUID for all studies with given PatientID, StudyDate, and Modality
+echo "Get study instance UID's"
 $DCMTK/findscu -od $output_dir -X +sr -aet RESEARCHPACS -aec PACSDCM -S -k "QueryRetrieveLevel=STUDY" -k "PatientID=$PatientID" -k "StudyDate=$StudyDate" -k "Modality=$Modality" -k StudyInstanceUID  pacsstor.tch.harvard.edu 104
 
 #Retrieve all matching studies for given DICOM query files
+echo "Retrieve DICOM's"
 for d in $output_dir/rsp*.dcm; do 
 	$DCMTK/getscu -od $output_dir -aet RESEARCHPACS -aec PACSDCM -S pacsstor.tch.harvard.edu 104 $d
 done 
 
 #Sort the DICOMs in output directory
+echo "Sort DICOM's"
 find "$output_dir" -maxdepth 1 -type f -print | /home/ch163210/bin/parallel -j `nproc` -k sortd
 
+echo "detox folder names"
+detox "$output_dir"/*/DICOM 

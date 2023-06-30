@@ -131,13 +131,14 @@ fi
 f_haste=`find $di -type d -iname \*T2_HASTE\*` ;     if [[ -n $f_haste ]] ;  then haste="1" ; fi # type___0
 f_dti=`find $di -type d -iname \*BRAIN\?DTI\*` ;   if [[ -n $f_dti ]] ;    then dti="1" ; fi # type___5
 f_dtib=`find $di -type d -iname \*BRAIN\?DTI\*1000 -o -iname \*DTI\*3Shells\* -o -iname \*DTI\*500\*750\* -o -iname \*MultiB\*` ; if [[ -n $f_dtib ]] ;   then dti="1" ; dtib="1" ; fi # brain_dwi_bvalues
-f_fmri=`find $di -type d -iname \*rs\?fMRI\*` ;       if [[ -n $f_fmri ]] ;   then fmri="1" ; fi # type___10
+f_fmri=`find $di -type d -iname \*fMRI\*` ;       if [[ -n $f_fmri ]] ;   then fmri="1" ; fi # type___10
 f_epi=`find $di -type d -iname \*EPI_highres\*` ;    if [[ -n $f_epi ]] ;    then epi="1" ; fi # type___4
 f_zoomit=`find $di -type d -iname \*zoom\*` ;       if [[ -n $f_zoomit ]] ;  then zoomit="1"; fi # type___21
 f_hasteDL=`find $di -type d -iname \*DLonur\* -o -iname \*HASTE_WIP\*` ;   if [[ -n $f_hasteDL ]] ;  then hasteDL="1" ; fi # type___32
 f_dualecho=`find $di -type d -iname \*dualecho\*` ;   if [[ -n $f_dualecho ]] ;  then dualecho="1" ; fi # type___11 
 
 # If CSV doesn't exist yet, write headers for Redcap
+# normal_abnormal (normal=0, ab=1), research_clinical (res=1, clin=2)
 if [[ ! -f $csv ]] ; then
    echo "mrn,redcap_event_name,last_name,first_name,medical_record_number,dob,fetal_baby,normal_abnormal,research_clinical,irb_name,fund,scan_date,accession,scanner,site,patient_height,patient_weight,sex,brain_imagetype___0,brain_imagetype___5,brain_dwi_bvalues,brain_imagetype___10,brain_imagetype___4,brain_imagetype___21,brain_imagetype___23,brain_imagetype___11,pipelines___2,pipelines___5" > $csv
 fi

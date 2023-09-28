@@ -1,8 +1,5 @@
 #!/bin/bash 
 
-#Set the path to DCMTK 
-export DCMTK="/opt/el7/pkgs/dcmtk/dcmtk-3.6.4/bin"
-
 show_help () {
 cat << EOF
     USAGE: sh ${0##*/} [-m MODALITY] -- [MRN] [DOS] [Output Subject Dir]
@@ -56,7 +53,7 @@ export PatientID StudyDate output_dir
 mkdir -vp $output_dir
 
 #Searches dcmdump for value of specific tag
-get_tag() { $DCMTK/dcmdump +P "$1" "$2" | grep -o -P '(?<=\[)(.*?)(?=\])'; }
+get_tag() { dcmdump +P "$1" "$2" | grep -o -P '(?<=\[)(.*?)(?=\])'; }
 
 #Sorts DICOMs by PatientID, Accession Number, and Series 
 sortd() { 
@@ -80,11 +77,11 @@ fi;
 export -f get_tag sortd
 
 #Return StudyInstanceUID for all studies with given PatientID, StudyDate, and Modality
-$DCMTK/findscu -od $output_dir -X +sr -aet RESEARCHPACS -aec PACSDCM -S -k "QueryRetrieveLevel=STUDY" -k "PatientID=$PatientID" -k "StudyDate=$StudyDate" -k "Modality=$Modality" -k StudyInstanceUID  pacsstor.tch.harvard.edu 104
+findscu -od $output_dir -X +sr -aet RESEARCHPACS -aec PACSDCM -S -k "QueryRetrieveLevel=STUDY" -k "PatientID=$PatientID" -k "StudyDate=$StudyDate" -k "Modality=$Modality" -k StudyInstanceUID  pacsstor.tch.harvard.edu 104
 
 #Retrieve all matching studies for given DICOM query files
 for d in $output_dir/rsp*.dcm; do 
-	$DCMTK/getscu -od $output_dir -aet RESEARCHPACS -aec PACSDCM -S pacsstor.tch.harvard.edu 104 $d
+	getscu -od $output_dir -aet RESEARCHPACS -aec PACSDCM -S pacsstor.tch.harvard.edu 104 $d
 done 
 
 #Sort the DICOMs in output directory

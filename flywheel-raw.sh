@@ -3,28 +3,19 @@
 # fw sync --include dicom fw://rollins/P8836-RollinsFetal flywheel
 # fw sync --include dicom fw://crl/P41916-fetalbrain flywheel
 
-CRL=/fileserver/fetal/raw
-FCB=/fileserver/fetal/FCB/raw
-fwCRL=/fileserver/fetal/flywheel/P41916-fetalbrain/SUBJECTS
-fwFCB=/fileserver/fetal/flywheel/P8836-RollinsFetal/SUBJECTS
+raw=/lab-share/Rad-Warfield-e2/Groups/fetalmri/scans/dicom
+fwCRL=/lab-share/Rad-Warfield-e2/Groups/fetalmri/scans/flywheel/fetalbrain-P00041916
+fwFCB=/lab-share/Rad-Warfield-e2/Groups/fetalmri/scans/flywheel/RollinsFetal-P00008836
 
-for f in ${fwCRL}/f???? ${fwFCB}/FCB??? ; do
+for f in ${fwCRL}/SUBJECTS/f???? ${fwFCB}/SUBJECTS/FCB??? ; do
     if [[ -d $f ]] ; then
         subj=`basename $f`
         for ses in ${f}/SESSIONS/s? ; do
             # infer full scan id from path
             scan=`basename $ses`
             id="${subj}${scan}"
-            # determine whether this is a CRL or FCB scan
-            if [[ $id == *FCB* ]] ; then
-                echo $id :  fcb subject
-                odir=$FCB
-            elif [[ $id == f* ]] ; then
-                echo $id : crl subject
-                odir=$CRL
-            fi
         # copy of the data for pipeline will go here
-        osub="${odir}/${id}"
+        osub="${raw}/${id}"
         mkdir -pv $osub
         odcm=`find $osub -maxdepth 2 -type d -name DICOM`
         # check if there's already a DICOM folder
@@ -45,7 +36,10 @@ for f in ${fwCRL}/f???? ${fwFCB}/FCB??? ; do
                 seriesout="${odcm}/${num}_${name}"
                 mkdir -pv ${seriesout}
                 # actually copy the data
-                rsync -a "${acq}"/FILES/* ${seriesout}/
+		if [[ -d ${acq}/FILES ]] ; then
+			rsync -a "${acq}"/FILES/* ${seriesout}/
+		else rsync -a "${acq}"/* ${seriesout}/
+		fi
             done
         fi
         done

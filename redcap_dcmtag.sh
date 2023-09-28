@@ -62,7 +62,7 @@ csv="$2"
 id=`basename $in`
 id2=`echo $in | sed 's,f,,g'`
 noscan=`echo $id2 | sed 's,s.*,,g'`
-scan=`echo $id2 | sed 's,.*s\(.*\),\1,g'`
+scan=`echo $id2 | sed -e 's,.*s\(.*\),\1,g' -e 's,\/,,g'`
 arm=`echo $id | sed -e 's,.*s,,g' -e 's,\([0-9]\),scan0\1_arm_1,g'`
 di=`find $id -type d -name DICOM | head -n1`
 if [[ ! -d $di ]] ; then
@@ -74,7 +74,7 @@ if [[ ! -d $cervix ]] ; then
     echo "Subject ID ${id2} No CERVIX or localizer scan"
     die
 fi
-dcm=`find $cervix -type f | head -n1`
+dcm=`find $cervix -type f -a ! -name \*zip | head -n1`
 
 # extract DICOM TAGS
 fullname="`dcmdump $dcm | grep -i PatientName | head -n1 | sed -e 's,.*\[,,g' -e 's,\].*,,g' -e 's,\^, ,g'`"
@@ -135,7 +135,7 @@ f_fmri=`find $di -type d -iname \*fMRI\*` ;       if [[ -n $f_fmri ]] ;   then f
 f_epi=`find $di -type d -iname \*EPI_highres\*` ;    if [[ -n $f_epi ]] ;    then epi="1" ; fi # type___4
 f_zoomit=`find $di -type d -iname \*zoom\*` ;       if [[ -n $f_zoomit ]] ;  then zoomit="1"; fi # type___21
 f_hasteDL=`find $di -type d -iname \*DLonur\* -o -iname \*HASTE_WIP\*` ;   if [[ -n $f_hasteDL ]] ;  then hasteDL="1" ; fi # type___32
-f_dualecho=`find $di -type d -iname \*dualecho\*` ;   if [[ -n $f_dualecho ]] ;  then dualecho="1" ; fi # type___11 
+f_dualecho=`find $di -type d -iname \*dualecho\* -o -iname \*dual_echo\*` ;   if [[ -n $f_dualecho ]] ;  then dualecho="1" ; fi # type___11 
 
 # If CSV doesn't exist yet, write headers for Redcap
 # normal_abnormal (normal=0, ab=1), research_clinical (res=1, clin=2)

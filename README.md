@@ -24,7 +24,7 @@ Helpful tools:
 1. Convert data from DICOM to NIFTI and set up recon directory:
 
     `sh prep-fetal.sh [RAW CASE DIR] [STUDY RECON DIR]`<br>
-    This script will create a case processing folder in *STUDY RECON DIR* and place all T2 stacks in a subfolder *STUDY/CASEID/nii*. Henceforth this is referred to as the *recon directory*.
+    This script will create a case processing folder in *STUDY RECON DIR* and place all T2 stacks in a subfolder *STUDY/CASEID/svrtk*. Henceforth this is referred to as the *recon directory*.
 1. Check T2 stacks in the recon directory, archive bad stacks in *STUDY/CASEID/notgood*
     - Stacks that do not have the entire brain should be archived
     - Stacks in which the fetus changes orientation (from coronal to sagittal, for example) should be archived

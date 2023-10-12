@@ -68,7 +68,7 @@ run="${t2dir}/run-svrtk.sh"
 if [ -f $run ] ; then rm -v $run ; fi
 
 # get list of stacks
-t2s=`find ${t2dir} -maxdepth 1 -type f -name fetus_\*z`
+t2s=`find ${t2dir} -maxdepth 1 -type f -name fetus\*z`
 n=`echo $t2s | wc -w`
 # Error message if no stacks
 if [[ $n -eq 0 ]] ; then
@@ -98,7 +98,7 @@ fi
 if [[ -f $mask ]] ; then
     tmp="${mask##*_}"
     refn="${tmp%%.*}"
-    ref=`find $t2dir -maxdepth 1 -type f -name fetus\*${refn}.nii.gz`
+    ref=`find $t2dir -maxdepth 1 -type f -name fetus\*_${refn}.nii.gz`
     # ref="fetus_${refn}.nii.gz"
     refbase=`basename $ref`
     mbase=`basename $mask`

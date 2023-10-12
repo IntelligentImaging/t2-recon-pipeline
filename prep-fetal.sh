@@ -99,17 +99,24 @@ else
 	fi
 
 # Copy T2 stacks to reconstruction folder
-RECON="${PROC}/${ID}/nii"
+RECON="${PROC}/${ID}/svrtk"
 mkdir -pv ${RECON}/../notgood
-for TERM in T2_HASTE CERVIX SSFSE_T2 DL_HASTE ; do # Search terms
+for TERM in T2_HASTE CERVIX SSFSE_T2 DL_HASTE iTSE_haste_dnf ; do # Search terms
     ARRAY=`find ${NIIDIR}/ -type f -name \*$TERM\*.nii\*` # -and ! -iname \*DLonur\* -and ! -iname \*_DL` # Make an array of found images
     if [[ -n $ARRAY ]] ; then # exlcude empty arrays
         for IM in $ARRAY ; do
             base=`basename "$IM"`
             # end="${base##*_}"
             num="${base%%_*}"
-            text=`echo $base | sed 's,[0-9]*_,,' | sed 's,\(........\).*,\1,'`
-            new="fetus_${text}_${num}.nii.gz"
+            text=`echo $base | sed -e 's,[0-9]*_,,' -e 's,\(........\).*,\1,' -e 's,_,,g'`
+		if [[ $text == "DLHASTE" ]] ; then
+			text="VFA"
+		elif [[ $text == "wip1062" ]] ; then
+			text="dnf"
+		elif [[ $text == "T2HASTE" ]] ; then
+			text="prod"
+		fi
+            new="fetus-${text}_${num}.nii.gz"
             chk=`find ${PROC}/${ID} -type f -name $new`
             if [[ -z $chk ]] ; then
             cp ${IM} -v ${RECON}/${new} # copy to recon dir

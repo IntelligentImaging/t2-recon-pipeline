@@ -54,7 +54,7 @@ fi
 
 # Set variables
 t2dir=`readlink -f $1`
-casepath="${t2dir%/nii*}"
+casepath="${t2dir%/svrtk*}"
 id="${casepath##*/}"
 if [ ! -d "${t2dir}" ]; then  
     echo "$t2dir directory not present"

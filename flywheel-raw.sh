@@ -37,8 +37,11 @@ for f in ${fwCRL}/SUBJECTS/f???? ${fwFCB}/SUBJECTS/FCB??? ; do
                 mkdir -pv ${seriesout}
                 # actually copy the data
 		if [[ -d ${acq}/FILES ]] ; then
+            detox ${acq}/FILES
 			rsync -a "${acq}"/FILES/* ${seriesout}/
-		else rsync -a "${acq}"/* ${seriesout}/
+		else
+            detox ${acq}
+            rsync -a "${acq}"/* ${seriesout}/
 		fi
             done
         fi

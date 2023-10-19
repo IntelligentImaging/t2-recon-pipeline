@@ -4,6 +4,7 @@ show_help () {
 cat << EOF
     USAGE: sh ${0##*/} [input fw scan] [output folder copy]
     Incorrect input supplied
+    output should probably be SUBJECTS/id/SESSIONS/sx/ACQUISITIONS/
 EOF
 }
 

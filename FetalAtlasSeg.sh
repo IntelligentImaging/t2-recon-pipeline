@@ -17,10 +17,10 @@
 shopt -s extglob
 
 # Binary/program directories
-antspath="/fileserver/fetal/atlas/ants/"
+# antspath="/fileserver/fetal/atlas/ants/"
 
 # Default STA atlas list # # # # # # # # # 
-tlist="/fileserver/fetal/segmentation/templates/STA_GEPZat/tlist_old.txt"
+tlist="${FETALREF}/STA_GEPZat/tlist_old.txt"
 # # # PREFIXES OF DEFAULT ATLAS LABELS # #
 # GEPZ = standard tissue seg
 # GEPZ-WMZ = with subplate, normally only used for GA < 32 weeks
@@ -103,7 +103,7 @@ while :; do
             let yesFCPS=1
             ;;
         --noAt)
-            tlist="/fileserver/fetal/segmentation/templates/STA_GEPZ/tlist_old.txt"
+            tlist="${FETALREF}/STA_GEPZ/tlist_old.txt"
             ;;
         --) # end of optionals
             shift
@@ -189,15 +189,15 @@ if ! cmp -s $0 ${tools}/seg.sh ; then
 	echo "Either use ${tools}/seg.sh or clear it if you're really sure you want to change the processing script"
 	exit
 fi
-cp ${antspath}/ANTS -vu ${tools}/
-cp ${antspath}/WarpImageMultiTransform -vu ${tools}/
+#cp ${antspath}/ANTS -vu ${tools}/
+#cp ${antspath}/WarpImageMultiTransform -vu ${tools}/
 cp ${tlist} -v ${tools}/
-ANTS="${tools}/ANTS"
-WARP="${tools}/WarpImageMultiTransform"
-SEG="crlProbabilisticGMMSTAPLE"
-PVC="/fileserver/fetal/software/bin/crlCorrectFetalPartialVoluming"
-VOL="/fileserver/fetal/software/bin/crlComputeVolume"
-MATH="crlImageAlgebra"
+#ANTS="${tools}/ANTS"
+#WARP="${tools}/WarpImageMultiTransform"
+SEG="${FETALSOFT}/crkit/bin/crlProbabilisticGMMSTAPLE"
+PVC="${FETALBIN}/crlCorrectFetalPartialVoluming"
+VOL="${FETALBIN}/crlComputeVolume"
+MATH="${FETALSOFT}/crkit/bin/crlImageAlgebra"
 baseTLIST=`basename $tlist`
 TLIST="${tools}/${baseTLIST}"
 
@@ -321,7 +321,7 @@ for lpref in $AllLabs ; do
                             echo "ANTS register ${ARRAY_T_NAME[$tcount]} to ${name}"
                         # Registration command
                         # This produces the "case123Warp.nii.gz", "case123InverseWarp.nii.gz", and "case123Affine.txt" files
-                        $ANTS 3 -m PR[${image}, ${ARRAY_T[$tcount]},1,2] -o ${outdir}/${name}/template_rT/r${ARRAY_T_NAME[$tcount]}_to_${name}\.nii.gz -r Gauss[3,0] --affine-metric-type MI -i 100x100x20 -t SyN[0.4] &
+                        ANTS 3 -m PR[${image}, ${ARRAY_T[$tcount]},1,2] -o ${outdir}/${name}/template_rT/r${ARRAY_T_NAME[$tcount]}_to_${name}\.nii.gz -r Gauss[3,0] --affine-metric-type MI -i 100x100x20 -t SyN[0.4] &
                     else
                         echo "Found transform for ${ARRAY_T_NAME[$tcount]} to ${name}. Skipping..."
                     fi
@@ -346,7 +346,7 @@ for lpref in $AllLabs ; do
                     if [[ ! -f "$outdir"/"$name"/template_rT/r${ARRAY_T_NAME[$tcount]}_to_${name}.nii.gz ]]; then
                         echo "Applying transform: ${ARRAY_T[$tcount]} to ${name}..."
                         # This produces the warped grayscale e.g. "template123_to_case123.nii.gz"
-                        $WARP 3 ${ARRAY_T[$tcount]} "$outdir"/"$name"/template_rT/r${ARRAY_T_NAME[$tcount]}_to_${name}.nii.gz -R ${image} "$outdir"/"$name"/template_rT/r${ARRAY_T_NAME[$tcount]}_to_${name}\Warp.nii.gz "$outdir"/"$name"/template_rT/r${ARRAY_T_NAME[$tcount]}_to_${name}\Affine.txt &
+                        WarpImageMultiTransform 3 ${ARRAY_T[$tcount]} "$outdir"/"$name"/template_rT/r${ARRAY_T_NAME[$tcount]}_to_${name}.nii.gz -R ${image} "$outdir"/"$name"/template_rT/r${ARRAY_T_NAME[$tcount]}_to_${name}\Warp.nii.gz "$outdir"/"$name"/template_rT/r${ARRAY_T_NAME[$tcount]}_to_${name}\Affine.txt &
                     else
                         echo "Atlas has been transformed. Skipping"
                     fi
@@ -370,7 +370,7 @@ for lpref in $AllLabs ; do
                     if [[ ! -f "$outdir"/"$name"/template_rT/r${ARRAY_S_NAME[$tcount]}_to_${name}.nii.gz && -f "${ARRAY_S[$tcount]}" ]]; then
                         echo "Transforming ${ARRAY_S[$tcount]} to ${name}"
                         # This produces the warped parcellation e.g. "template123parc_to_case123.nii.gz"
-                        $WARP 3 ${ARRAY_S[$tcount]} "$outdir"/"$name"/template_rT/r${ARRAY_S_NAME[$tcount]}_to_${name}.nii.gz -R ${image} "$outdir"/"$name"/template_rT/r${ARRAY_T_NAME[$tcount]}_to_"$name"\Warp.nii.gz "$outdir"/"$name"/template_rT/r${ARRAY_T_NAME[$tcount]}_to_"$name"\Affine.txt --use-NN &
+                        WarpImageMultiTransform 3 ${ARRAY_S[$tcount]} "$outdir"/"$name"/template_rT/r${ARRAY_S_NAME[$tcount]}_to_${name}.nii.gz -R ${image} "$outdir"/"$name"/template_rT/r${ARRAY_T_NAME[$tcount]}_to_"$name"\Warp.nii.gz "$outdir"/"$name"/template_rT/r${ARRAY_T_NAME[$tcount]}_to_"$name"\Affine.txt --use-NN &
                     elif [[ ! -f "${ARRAY_S[$tcount]}" ]] ; then
                         echo "No label file for ${ARRAY_T_NAME[$tcount]}"
                     else
@@ -473,8 +473,8 @@ for lpref in $AllLabs ; do
                     
                 # A check to compare output of PVC and confirm that is is decreasing CP volume as intended
                 echo "Checking PVC output..."
-                BEFORE=`crlComputeVolume ${OutSeg} ${LCP}`
-                AFTER=`crlComputeVolume ${OutPVC} ${LCP}`
+                BEFORE=`${VOL} ${OutSeg} ${LCP}`
+                AFTER=`${VOL} ${OutPVC} ${LCP}`
                 declare -a EARRAY
                 if (( $(echo "scale=2 ; 100-(${AFTER}/${BEFORE})*100 < 2" | bc -l) )) ; then
                     echo "  FAILURE: Problem detected. Change from SEG to PVC-it1 was less than 2%"
@@ -515,8 +515,8 @@ while read line; do
         echo "# # FetalCPSeg deep learning model for CP segmentation # #"
         # Location of the trained model
         FCPS="${outdir}/${name}/FCPS"
-        Fsrc="/fileserver/fetal/segmentation/FetalCPSeg/FetalCPSeg-Programe/"
-        Fenv="/fileserver/fetal/venv/HDLenv/bin/activate"
+        Fsrc="${FETALSOFT}/FetalCPSeg/FetalCPSeg-Programe/"
+        Fenv="${FETALENV}/HDLenv/bin/activate"
         Fin="${outdir}/${name}/FCPS/Input"
         Fsub="${Fin}/${name}"
         Fout="${FCPS}/FCPS_${name}.nii.gz"
@@ -534,7 +534,7 @@ while read line; do
             cd -
             deactivate
             echo "Resample model prediction"
-            crlCopyImageInformation ${Fsub}/predict.nii.gz ${Fsub}/cii.nii.gz ${Fsub}/image.nii.gz 1
+            ${FETALBIN}/crlCopyImageInformation ${Fsub}/predict.nii.gz ${Fsub}/cii.nii.gz ${Fsub}/image.nii.gz 1
             echo "FetalCPSeg complete"
             cp ${Fsub}/cii.nii.gz -v ${Fout}
         else echo "FCPS output found. Skipping..."
@@ -563,9 +563,9 @@ while read line; do
             CPparc="${calc}/CPparc.nii.gz"
             parcOUT="${calc}/${sub}"
             # Create CP mask from GEPZ
-            crlRelabelImages $parc $parc "112 113" "1 1" ${CPmask} 0
+            ${FETALSOFT}/crkit/bin/crlRelabelImages $parc $parc "112 113" "1 1" ${CPmask} 0
             # Create no-CP seg from GEPZ
-            crlRelabelImages $parc $parc "112 113" "0 0" ${CPnone}
+            ${FETALSOFT}/crkit/bin/crlRelabelImages $parc $parc "112 113" "0 0" ${CPnone}
             # Multiply region by CP
             $MATH ${CPmask} multiply $REGION ${CPparc}
             # Add parcellated CP back to full segmentation

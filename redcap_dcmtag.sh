@@ -84,7 +84,7 @@ fetal="1" # this script is for fetals
 dos=`dcmdump $dcm | grep -i StudyDate | head -n1   | sed -e 's,.*\[,,g' -e 's,\].*,,g' -e 's/./&-/4' -e 's/./&-/7'`
 weight=`dcmdump $dcm | grep -i Weight | head -n1   | sed -e 's,.*\[,,g' -e 's,\].*,,g'`
 height=`dcmdump $dcm | grep -i PatientSize | head -n1   | sed -e 's,.*\[,,g' -e 's,\].*,,g'`
-sex=`dcmdump $dcm | grep -i PatientSex | head -n1  | sed -e 's,.*\[,,g' -e 's,\].*,,g' -e 's,F,1,g' -e 's,M,2,g'`
+sex=`dcmdump $dcm | grep -i PatientSex | head -n1  | sed -e 's,.*\[,,g' -e 's,\].*,,g' -e 's,F,1,g' -e 's,M,2,g' -e 's,O,,g'`
 acc=`dcmdump $dcm | grep -i AccessionN | head -n1  | sed -e 's,.*\[,,g' -e 's,\].*,,g'`
 mri=`dcmdump $dcm | grep -i ModelName | head -n1   | sed -e 's,.*\[,,g' -e 's,\].*,,g'`
 loc=`dcmdump $dcm | grep -i StationN | head -n1    | sed -e 's,.*\[,,g' -e 's,\].*,,g'`
@@ -105,7 +105,7 @@ if [[ -n $avanto ]] ; then mri2="1" ; fi
 if [[ ! -n $mri2 ]] ; then mri2="FIXSCRIPT" ; fi
 
 # translate location to Redcap code
-if [[ $loc == "2BPMRI_1" ]] ; then
+if [[ $loc == "2BPMRI_1" || $loc == "AWP166200" ]] ; then
     loc2="5"
     # may need to add more elif statements here in the futre
 else loc2="1"
@@ -132,9 +132,9 @@ f_haste=`find $di -type d -iname \*T2_HASTE\*` ;     if [[ -n $f_haste ]] ;  the
 f_dti=`find $di -type d -iname \*BRAIN\?DTI\*` ;   if [[ -n $f_dti ]] ;    then dti="1" ; fi # type___5
 f_dtib=`find $di -type d -iname \*BRAIN\?DTI\*1000 -o -iname \*DTI\*3Shells\* -o -iname \*DTI\*500\*750\* -o -iname \*MultiB\*` ; if [[ -n $f_dtib ]] ;   then dti="1" ; dtib="1" ; fi # brain_dwi_bvalues
 f_fmri=`find $di -type d -iname \*fMRI\*` ;       if [[ -n $f_fmri ]] ;   then fmri="1" ; fi # type___10
-f_epi=`find $di -type d -iname \*EPI_highres\*` ;    if [[ -n $f_epi ]] ;    then epi="1" ; fi # type___4
+f_epi=`find $di -type d -iname \*EPI_highres\* -o -iname \*mbep2d\*` ;    if [[ -n $f_epi ]] ;    then epi="1" ; fi # type___4
 f_zoomit=`find $di -type d -iname \*zoom\*` ;       if [[ -n $f_zoomit ]] ;  then zoomit="1"; fi # type___21
-f_hasteDL=`find $di -type d -iname \*DLonur\* -o -iname \*HASTE_WIP\*` ;   if [[ -n $f_hasteDL ]] ;  then hasteDL="1" ; fi # type___32
+f_hasteDL=`find $di -type d -iname \*DLonur\* -o -iname \*DL_HASTE\* -o -iname \*HASTE_WIP\* -o -iname \*HASTE_VFA\* -o -iname \*haste_dnf\*` ;   if [[ -n $f_hasteDL ]] ;  then hasteDL="1" ; fi # type___32
 f_dualecho=`find $di -type d -iname \*dualecho\* -o -iname \*dual_echo\*` ;   if [[ -n $f_dualecho ]] ;  then dualecho="1" ; fi # type___11 
 
 # If CSV doesn't exist yet, write headers for Redcap

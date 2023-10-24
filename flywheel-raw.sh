@@ -1,5 +1,18 @@
 #!/bin/bash
 
+show_help () {
+cat << EOF
+    USAGE: sh ${0##*/} [optional: input fw scan]
+    Either matches the flywheel database with the local database
+    Or if you give an optional input fw subject, will only do that scan
+EOF
+}
+
+if [[ $# -ne 0 && $# -ne 1 ]]; then
+    show_help
+    exit
+fi 
+
 # fw sync --include dicom fw://rollins/P8836-RollinsFetal flywheel
 # fw sync --include dicom fw://crl/P41916-fetalbrain flywheel
 
@@ -7,13 +20,15 @@ raw=/lab-share/Rad-Warfield-e2/Groups/fetalmri/scans/dicom
 fwCRL=/lab-share/Rad-Warfield-e2/Groups/fetalmri/scans/flywheel/fetalbrain-P00041916
 fwFCB=/lab-share/Rad-Warfield-e2/Groups/fetalmri/scans/flywheel/RollinsFetal-P00008836
 
-for f in ${fwCRL}/SUBJECTS/f???? ${fwFCB}/SUBJECTS/FCB??? ; do
-    if [[ -d $f ]] ; then
-        subj=`basename $f`
-        for ses in ${f}/SESSIONS/s? ; do
-            # infer full scan id from path
-            scan=`basename $ses`
-            id="${subj}${scan}"
+function copy_to_raw {
+
+        # infer full scan id from path
+        scan=`basename $f` # "sx"
+        dir=`dirname $f` # "PATH/SUBJ/SESSIONS"
+        dir2=`dirname $dir` # "PATH/SUBJ"
+        subj=`basename $dir2` # "SUBJ"
+        id="${subj}${scan}"
+
         # copy of the data for pipeline will go here
         osub="${raw}/${id}"
         mkdir -pv $osub
@@ -27,7 +42,7 @@ for f in ${fwCRL}/SUBJECTS/f???? ${fwFCB}/SUBJECTS/FCB??? ; do
             odcm="${osub}/anon/DICOM"
             # for each sequence, pull the number and name
             # copied data will be named NUM_SEQUENCENAME
-            for acq in ${ses}/ACQUISITIONS/* ; do
+            for acq in ${f}/ACQUISITIONS/* ; do
                 echo Series: "$acq"
                 ex=`find "$acq" -type f -name \*.dcm | head -n1`
                 # Get seq name and number
@@ -36,17 +51,27 @@ for f in ${fwCRL}/SUBJECTS/f???? ${fwFCB}/SUBJECTS/FCB??? ; do
                 seriesout="${odcm}/${num}_${name}"
                 mkdir -pv ${seriesout}
                 # actually copy the data
-		if [[ -d ${acq}/FILES ]] ; then
+        if [[ -d ${acq}/FILES ]] ; then
             detox ${acq}/FILES
-			rsync -a "${acq}"/FILES/* ${seriesout}/
-		else
+            rsync -a "${acq}"/FILES/* ${seriesout}/
+        else
             detox ${acq}
             rsync -a "${acq}"/* ${seriesout}/
-		fi
+        fi
             done
         fi
-        done
-    fi
-done
+}
 
-
+if [[ -n $1 ]] ; then
+    for f in $1 ; do
+        if [[ -d $f ]] ; then
+            copy_to_raw
+        fi
+    done
+elif [[ -z $1 ]] ; then
+    for f in ${fwCRL}/SUBJECTS/f????/SESSIONS/s? ${fwFCB}/SUBJECTS/FCB???/SESSIONS/s? ; do
+        if [[ -d $f ]] ; then
+            copy_to_raw
+        fi
+    done
+fi

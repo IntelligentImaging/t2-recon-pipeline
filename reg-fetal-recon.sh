@@ -126,10 +126,11 @@ function register {
 CCMASK="${DIR}/mask_r3Drecon_registration.nii.gz"
 if [ $MASK ] ; then
     echo "Finalize mask (crlMaskConnectedComponents)"
-    crlMaskConnectedComponents ${MASK} ${CCMASK} 1 500
+    $FETALBIN/crlMaskConnectedComponents ${MASK} ${CCMASK} 1 500
     echo Masking image
     MASKED="${DIR}/m${BASE}"
-    crlMaskImage $INPUT $CCMASK $MASKED
+  #  $FETALBIN/crlMaskImage $INPUT $CCMASK $MASKED
+    fslmaths $INPUT -mul $CCMASK $MASKED
     INPUT=$MASKED
 fi
 
@@ -142,13 +143,13 @@ if [ $ITER ] ; then
     MAX="${DIR}/tmp_bm${BASE}"
     NEG="${DIR}/tmp_bm${BASE}"
     while [[ $count -lt ${ITER} ]] ; do
-        crlN4biasfieldcorrection $INPUT $OUT $CCMASK
+        $FETALBIN/crlN4biasfieldcorrection $INPUT $OUT $CCMASK
         INPUT="${OUT}"
         ((count++))
     done
     mv $OUT -v $CORR
-    crlMatchMaxImageIntensity /fileserver/fetal/segmentation/templates/STA_GEPZ/STA35.nii.gz $CORR $MAX 
-    crlNoNegativeValues ${MAX} ${NEG}
+    $FETALBIN/crlMatchMaxImageIntensity ${FETALREF}/STA_GEPZ/STA35.nii.gz $CORR $MAX 
+    $FETALBIN/crlNoNegativeValues ${MAX} ${NEG}
     mv -v ${NEG} ${CORR}
     INPUT=${CORR} 
 fi
@@ -160,11 +161,11 @@ basebrain="${INPUT%%.*}"
 if [[ ! -n $GA  && ! -f $TARGET ]] ; then
     # Compare mask volume to each STA mask volume and pick the closest
     echo "Estimating input GA"
-    choose="/fileserver/fetal/segmentation/templates/STA_GEPZ/masks/choose.txt"
+    choose="${FETALREF}/STA_GEPZ/masks/choose.txt"
     while read line ; do
         atlasGA=`echo $line | cut -d' ' -f1`
         avol=`echo $line | cut -d ' ' -f2`
-        invol=`crlComputeVolume $CCMASK 1`
+        invol=`$FETALBIN/crlComputeVolume $CCMASK 1`
         diff=`echo "($avol-$invol)/1" | bc`
         abs=${diff#-}
         # list all comparison results
@@ -195,13 +196,13 @@ fi
 # Else, we use a list with registration templates
 if   [[ $TARGET == "CASES" ]] ; then
 	echo "*** Registering $INPUT to same-age cases ***"
-    tlist="/fileserver/fetal/segmentation/templates/regtemplates/cases.csv"
+    tlist="${FETALREF}/regtemplates/cases.csv"
 elif [[ $TARGET == "ATLAS" ]] ; then
 	echo "*** Registering $INPUT to same-age STA images ***"
-    tlist="/fileserver/fetal/segmentation/templates/regtemplates/STA.csv"
+    tlist="${FETALREF}/regtemplates/STA.csv"
 elif [[ $TARGET == "EARLY" ]] ; then
     echo "*** Registering $INPUT to EARLY-ga cases ***"
-    tlist="/fileserver/fetal/segmentation/templates/regtemplates/early.csv"
+    tlist="${FETALREF}/regtemplates/early.csv"
     GA="21"
 elif [[ -f $TARGET ]] ; then
     echo "Registering to file"
@@ -219,7 +220,8 @@ if [[ $TARGET == "ATLAS" || $TARGET == "CASES" || $TARGET == "EARLY" ]] ; then
 	# inspect list of possible registration templates
 	while read line ; do 
 		# name of template
-		template=`readlink -f $(echo $line | awk -F' ' '{ print $1 }')`
+		templatetmp=$(echo ${line} | awk -F' ' '{ print $1 }')
+        template="${FETALREF}/${templatetmp}"
 		# GA of template
 		tga=`echo $line | awk -F' ' '{ print $2 }'`
 		# check if template GA is match for our input GA, if so run command

@@ -66,7 +66,7 @@ fi
 
 
 # N4 binary
-n4="crlN4biasfieldcorrection"
+n4="${FETALBIN}/crlN4biasfieldcorrection"
 
 # Set naming conventions
 RECON=`readlink -f $1`
@@ -126,10 +126,10 @@ echo "N4 bias correction done"
 # Intensity correction (N4 changes intensity range)
 REF="/lab-share/Rad-Warfield-e2/Groups/fetalmri/templates/ref/STA30.nii.gz"
 echo "Match image intensities to reference image"
-cmd="crlMatchMaxImageIntensity $REF $biascorr $maxcorr"
+cmd="${FETALBIN}/crlMatchMaxImageIntensity $REF $biascorr $maxcorr"
 $cmd
 echo $cmd >> $LOG
-cmd="crlNoNegativeValues $maxcorr $finalcorr"
+cmd="${FETALBIN}/crlNoNegativeValues $maxcorr $finalcorr"
 $cmd
 echo $cmd >> $LOG
 

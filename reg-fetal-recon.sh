@@ -148,7 +148,7 @@ if [ $ITER ] ; then
         ((count++))
     done
     mv $OUT -v $CORR
-    $FETALBIN/crlMatchMaxImageIntensity ${FETALREF}/STA_GEPZ/STA35.nii.gz $CORR $MAX 
+    $FETALBIN/crlMatchMaxImageIntensity /fileserver/fetal/segmentation/templates/STA_GEPZ/STA35.nii.gz $CORR $MAX 
     $FETALBIN/crlNoNegativeValues ${MAX} ${NEG}
     mv -v ${NEG} ${CORR}
     INPUT=${CORR} 
@@ -161,7 +161,7 @@ basebrain="${INPUT%%.*}"
 if [[ ! -n $GA  && ! -f $TARGET ]] ; then
     # Compare mask volume to each STA mask volume and pick the closest
     echo "Estimating input GA"
-    choose="${FETALREF}/STA_GEPZ/masks/choose.txt"
+    choose="/fileserver/fetal/segmentation/templates/STA_GEPZ/masks/choose.txt"
     while read line ; do
         atlasGA=`echo $line | cut -d' ' -f1`
         avol=`echo $line | cut -d ' ' -f2`
@@ -196,13 +196,13 @@ fi
 # Else, we use a list with registration templates
 if   [[ $TARGET == "CASES" ]] ; then
 	echo "*** Registering $INPUT to same-age cases ***"
-    tlist="${FETALREF}/regtemplates/cases.csv"
+    tlist="/fileserver/fetal/segmentation/templates/regtemplates/cases.csv"
 elif [[ $TARGET == "ATLAS" ]] ; then
 	echo "*** Registering $INPUT to same-age STA images ***"
-    tlist="${FETALREF}/regtemplates/STA.csv"
+    tlist="/fileserver/fetal/segmentation/templates/regtemplates/STA.csv"
 elif [[ $TARGET == "EARLY" ]] ; then
     echo "*** Registering $INPUT to EARLY-ga cases ***"
-    tlist="${FETALREF}/regtemplates/early.csv"
+    tlist="/fileserver/fetal/segmentation/templates/regtemplates/early.csv"
     GA="21"
 elif [[ -f $TARGET ]] ; then
     echo "Registering to file"
@@ -220,8 +220,7 @@ if [[ $TARGET == "ATLAS" || $TARGET == "CASES" || $TARGET == "EARLY" ]] ; then
 	# inspect list of possible registration templates
 	while read line ; do 
 		# name of template
-		templatetmp=$(echo ${line} | awk -F' ' '{ print $1 }')
-        template="${FETALREF}/${templatetmp}"
+		template=`readlink -f $(echo $line | awk -F' ' '{ print $1 }')`
 		# GA of template
 		tga=`echo $line | awk -F' ' '{ print $2 }'`
 		# check if template GA is match for our input GA, if so run command

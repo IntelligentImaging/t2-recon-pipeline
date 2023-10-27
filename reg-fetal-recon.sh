@@ -148,7 +148,7 @@ if [ $ITER ] ; then
         ((count++))
     done
     mv $OUT -v $CORR
-    $FETALBIN/crlMatchMaxImageIntensity /fileserver/fetal/segmentation/templates/STA_GEPZ/STA35.nii.gz $CORR $MAX 
+    $FETALBIN/crlMatchMaxImageIntensity ${FETALREF}/STA_GEPZ/STA35.nii.gz $CORR $MAX 
     $FETALBIN/crlNoNegativeValues ${MAX} ${NEG}
     mv -v ${NEG} ${CORR}
     INPUT=${CORR} 
@@ -161,7 +161,7 @@ basebrain="${INPUT%%.*}"
 if [[ ! -n $GA  && ! -f $TARGET ]] ; then
     # Compare mask volume to each STA mask volume and pick the closest
     echo "Estimating input GA"
-    choose="/fileserver/fetal/segmentation/templates/STA_GEPZ/masks/choose.txt"
+    choose="${FETALREF}/STA_GEPZ/masks/choose.txt"
     while read line ; do
         atlasGA=`echo $line | cut -d' ' -f1`
         avol=`echo $line | cut -d ' ' -f2`
@@ -196,13 +196,13 @@ fi
 # Else, we use a list with registration templates
 if   [[ $TARGET == "CASES" ]] ; then
 	echo "*** Registering $INPUT to same-age cases ***"
-    tlist="/fileserver/fetal/segmentation/templates/regtemplates/cases.csv"
+    tlist="${FETALREF}/regtemplates/cases.csv"
 elif [[ $TARGET == "ATLAS" ]] ; then
 	echo "*** Registering $INPUT to same-age STA images ***"
-    tlist="/fileserver/fetal/segmentation/templates/regtemplates/STA.csv"
+    tlist="${FETALREF}/regtemplates/STA.csv"
 elif [[ $TARGET == "EARLY" ]] ; then
     echo "*** Registering $INPUT to EARLY-ga cases ***"
-    tlist="/fileserver/fetal/segmentation/templates/regtemplates/early.csv"
+    tlist="${FETALREF}/regtemplates/early.csv"
     GA="21"
 elif [[ -f $TARGET ]] ; then
     echo "Registering to file"

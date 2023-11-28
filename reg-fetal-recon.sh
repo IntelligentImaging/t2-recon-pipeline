@@ -205,6 +205,7 @@ elif [[ $TARGET == "EARLY" ]] ; then
     tlist="${FETALREF}/regtemplates/early.csv"
     GA="21"
 elif [[ -f $TARGET ]] ; then
+    # ONLY USED IF INDIVIDUAL TARGET FILE IS USED (THIS IS WHY WHY READLINK THE VAR)
     echo "Registering to file"
 	template=`readlink -f $TARGET`
 	tga="NA"
@@ -220,7 +221,7 @@ if [[ $TARGET == "ATLAS" || $TARGET == "CASES" || $TARGET == "EARLY" ]] ; then
 	# inspect list of possible registration templates
 	while read line ; do 
 		# name of template
-		template=`readlink -f $(echo $line | awk -F' ' '{ print $1 }')`
+		template=`readlink -f $(echo ${FETALREF}/${line} | awk -F' ' '{ print $1 }')`
 		# GA of template
 		tga=`echo $line | awk -F' ' '{ print $2 }'`
 		# check if template GA is match for our input GA, if so run command

@@ -96,10 +96,14 @@ fi
 
 # Add mask to run script
 if [[ -f $mask ]] ; then
-    tmp="${mask##*_}"
-    refn="${tmp%%.*}"
-    ref=`find $t2dir -maxdepth 1 -type f -name fetus\*_${refn}.nii.gz`
-    # ref="fetus_${refn}.nii.gz"
+    ref=`echo $mask | sed 's,mask_,fetus_,g'`
+    #tmp="${mask##*_}"
+    #refn="${tmp%%.*}"
+    #ref=`find $t2dir -maxdepth 1 -type f -name fetus\*_${refn}.nii.gz`
+    if [[ ! -n $ref ]] ; then
+        echo ref not found, choosing an arbitrary image instead
+        ref=`find $t2dir -maxdepth 1 -type f -name fetus\*z | sort | head -n1`
+    fi
     refbase=`basename $ref`
     mbase=`basename $mask`
     echo "mask = $mask"

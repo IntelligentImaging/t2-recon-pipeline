@@ -108,8 +108,10 @@ mv -v ${tmpdir}/${base}.* ${dir}/
 rmdir -v ${tmpdir}
 
 full=`readlink -f $best`
-sdir="${full%%/nii*}"
-id=`basename $sdir`
+regdir=`dirname $full`
+recondir=`dirname $regdir`
+iddir=`dirname $recondir`
+id=`basename $iddir`
 cp $best -v ${dir}/atlas_t2final_${id}.nii.gz
 
 run="${dir}/run-reg.sh"

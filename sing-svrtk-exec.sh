@@ -21,22 +21,10 @@ if [[ ! -f ${mpath}/run-svrtk.sh ]] ; then
     exit 1
 fi
 
-# Path to mount inside container
-conpath="/home/data"
-# random string
-dockname="SVRTK-$RANDOM"
-
-echo "Container will be named $dockname"
-echo "Mount path within container: $conpath"
-echo "Initializing SVRTK Docker container"
-docker run -id --name $dockname --rm --mount type=bind,source=${mpath},target=${conpath} fetalsvrtk/svrtk /bin/bash
-echo
-echo "Executing SVRTK run script within container"
-date
-docker exec -t -i -w /home/data $dockname sh -c "sh run-svrtk.sh"
+cd $mpath
+echo "Running SVRTK container"
+singularity exec docker://fetalsvrtk/svrtk /bin/sh run-svrtk.sh
 echo
 echo "Recon done"
+cd -
 date
-echo "Stopping docker image"
-docker stop $dockname
-echo

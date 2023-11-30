@@ -4,6 +4,7 @@
 show_help () {
 cat << EOF
     USAGE: sh ${0##*/} [input]
+    Use this script after fl-download.sh
     Incorrect input supplied
 EOF
 }
@@ -55,7 +56,7 @@ if [[ $noUNZIP -ne 1 ]] ; then
     sh $scripts/flywheel-unzip.sh $INPUT $out
 fi
 
-if [[ $noCOPY -ne 1 ]] then
+if [[ $noCOPY -ne 1 ]] ; then
     echo flywheel copy to raw
     sh $scripts/flywheel-raw.sh $out2
 fi

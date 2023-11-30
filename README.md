@@ -71,3 +71,11 @@ This script writes the SVRTK container command (*run-svrtk.sh*) to run the recon
   - -f option runs Haoran's DL CP segmentation
 
 [^1]: Sometimes it's hard to get a good registration. In these cases, we can run a second iteration of the registration. So:<br>`sh reg-fetal -w bmnxbSVRTK_subjID_FLIRTto_fxs1.nii.gz`<br>Then, we take the twice-registered image and combine the part 1 and part 2 transforms:<br>`sh combineTransforms-t2pipeline.sh bmnxbSVRTK_subjID_FLIRTto_fxs1_FLIRTto_fys1.nii.gz`<br>This generates bmnxbSVRTK_subjID_FLIRTto_STA.nii.gz and bmnxbSVRTK_subjID_FLIRTto_STA.tfm.<br>You can then safely use `sh choosereg bmnxbSVRTK_subjID_FLIRTto_STA.nii.gz
+
+# Flywheel Data Management 
+flywheel-*.sh scripts are used to manage data downloads from FlyWheel.
+- `flywheel-sync.sh` is the sync command for the e2 copy of the flywheel projects. This command seems broken and flywheel IT hasn't been able to help me. I recommend using `flywheel-dl.sh` instead
+- `flywheel-dl.sh` downloads a specified dataset to a tar file. Unpack with `tar -xvf download.tar`.
+- `flywheel-add.sh` is a convenience script. After unpacking a downloaded scan (which will be in a folder named `scitran`), run `sh flywheel-add.sh scitran/study/subject/scan` to copy the files over to the master directory on e2. Automates two scripts:
+- - `flywheel-unzip.sh`, which unpacks the .zip files in which flywheel transmits the files 
+- - `flywheel-raw.sh`, which matches the e2 flywheel directory with the e2 dicom directory

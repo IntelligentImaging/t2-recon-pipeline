@@ -91,12 +91,12 @@ echo stack dir = "$t2dir"
 # If default, search for mask. If nomask is set, we skip this
 if [[ ! -n $mask && $nomask -ne 1 ]] ; then
     echo "Searching for mask"
-    mask=`find $t2dir -maxdepth 1 -type f -name mask_\*.nii\* | sort | head -n1`
+    mask=`find $t2dir -maxdepth 1 -type f -name mask_\*.nii\* -o -name mask-\*.nii\* | sort | head -n1`
 fi
 
 # Add mask to run script
 if [[ -f $mask ]] ; then
-    ref=`echo $mask | sed 's,mask_,fetus_,g'`
+    ref=`echo $mask | sed 's,mask\(.\),fetus\1,g'`
     #tmp="${mask##*_}"
     #refn="${tmp%%.*}"
     #ref=`find $t2dir -maxdepth 1 -type f -name fetus\*_${refn}.nii.gz`

@@ -183,7 +183,12 @@ mkdir -pv "$outdir"
 tools="${outdir}/tools"
 mkdir -pv "$tools"
 cp $0 -nv ${tools}/seg.sh
-
+# check to see if processing script has changed
+if ! cmp -s $0 ${tools}/seg.sh ; then
+	echo "The segmentation script has changed"
+	echo "Either use ${tools}/seg.sh or clear it if you're really sure you want to change the processing script"
+	exit
+fi
 #cp ${antspath}/ANTS -vu ${tools}/
 #cp ${antspath}/WarpImageMultiTransform -vu ${tools}/
 cp ${tlist} -v ${tools}/
@@ -312,11 +317,11 @@ for lpref in $AllLabs ; do
             while ( [ $npr -lt $NThreads ] ) ; do
                 if [ $tcount -lt $count ] ; then
                     # Skip if this reg is already done
-                    if [[ ! -e ${outdir}/${name}/template_rT/r${ARRAY_T_NAME[$tcount]}_to_${name}.nii.gz ]] ; then
+                    if [[ ! -e ${outdir}/${name}/template_rT/r${ARRAY_T_NAME[$tcount]}_to_${name}Warpxvec.nii.gz || ! -e ${outdir}/${name}/template_rT/r${ARRAY_T_NAME[$tcount]}_to_${name}InverseWarpxvec.nii.gz || ! -e ${outdir}/${name}/template_rT/r${ARRAY_T_NAME[$tcount]}_to_${name}Affine.txt ]] ; then
                             echo "ANTS register ${ARRAY_T_NAME[$tcount]} to ${name}"
                         # Registration command
                         # This produces the "case123Warp.nii.gz", "case123InverseWarp.nii.gz", and "case123Affine.txt" files
-                        ANTS 3 -m PR[${image}, ${ARRAY_T[$tcount]},1,2] -o ${outdir}/${name}/template_rT/r${ARRAY_T_NAME[$tcount]}_to_${name}.nii.gz -r Gauss[3,0] --affine-metric-type MI -i 100x100x20 -t SyN[0.4] &
+                        ANTS 3 -m PR[${image}, ${ARRAY_T[$tcount]},1,2] -o ${outdir}/${name}/template_rT/r${ARRAY_T_NAME[$tcount]}_to_${name}\.nii.gz -r Gauss[3,0] --affine-metric-type MI -i 100x100x20 -t SyN[0.4] &
                     else
                         echo "Found transform for ${ARRAY_T_NAME[$tcount]} to ${name}. Skipping..."
                     fi
@@ -408,7 +413,7 @@ for lpref in $AllLabs ; do
         # Start a new T2 input case loop
         while read line; do 
             # Get path, name, and GA
-            image=`readlink -f $(echo $line | awk -F' ' '{ print $1 }')`
+            image=${FETALREF}/`readlink -f $(echo $line | awk -F' ' '{ print $1 }')`
             echo "time : `date`"
             echo "segmentation scheme: $OutPre2"
             echo "image : ${image}"

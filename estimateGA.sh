@@ -9,7 +9,7 @@ if [[ $# -lt 1 || $# -gt 2 || ! -f $1 ]]; then
 
 input=`readlink -f $1`
 # A text file with the atlas volumes in column 2
-choose="/fileserver/fetal/segmentation/templates/STA_GEPZ/masks/choose.txt"
+choose="${FETALREF}/STA_GEPZ/masks/choose.txt"
 base=`basename $input`
 # Binary threshold the recon to get a rough volume
 if [[ $2 == "-m" ]] ; then

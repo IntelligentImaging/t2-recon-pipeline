@@ -124,7 +124,7 @@ fi
 echo "N4 bias correction done"
 
 # Intensity correction (N4 changes intensity range)
-REF="${FETALREF}/templates/ref/STA30.nii.gz"
+REF="${FETALREF}/ref/STA30.nii.gz"
 echo "Match image intensities to reference image"
 cmd="${FETALBIN}/crlMatchMaxImageIntensity $REF $biascorr $maxcorr"
 $cmd

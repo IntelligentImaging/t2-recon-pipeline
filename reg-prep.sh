@@ -8,12 +8,13 @@ cat << EOF
     Incorrect input supplied
 
 	Incorrect argument supplied!
-	usage: sh $0 [-n] [-t] [-m] -- [Best Recon Orientation] 
+	usage: sh $0 [-n] [-t] [-m] [-s] -- [Best Recon Orientation] 
     Sets up recon registration to atlas space including directory tree and N4 bias correction
 
         [-n] number of N4 b0-inhomogeneity correction recursive loops (DEFAULT=3)
         [-t] if set, temporary recurions will be preserved (biastemp0, biastemp1, etc)
         [-m] performs Davood Karimi brain extraction (mask segmentation)
+        [-s] use singularity to run container (REQUIRED FOR E2)
 EOF
 }
 
@@ -38,6 +39,9 @@ while :; do
                 die 'error: "-n" requires a (whole) number of iterations'
                 exit
             fi
+            ;;
+        -s|--singularity)
+            SING="YES"
             ;;
         -t|--temp)
             TEMP="YES"
@@ -137,14 +141,20 @@ echo $cmd >> $LOG
 find ${REGDIR} -type d -exec chmod -c --preserve-root 775 {} \;
 
 # Davood Karimi Brain Extraction
-if [[ $MASK == "YES" ]] ; then
+if [[ $MASK == "YES" || $SING == "YES" ]] ; then
     work="${REGDIR}/BE"
+    workpath=`readlink -f $work`
     mkdir -pv $work
     cp ${finalcorr} -v ${work}/
     # Open permission for docker
     chmod 777 $work
-    echo "Running Davood Karimi brain extraction docker"
-    docker run --mount src=$work,target=/src/test_images/,type=bind davoodk/brain_extraction
+    if [[ ! $SING == "YES" ]] ; then 
+        echo "Running Davood Karimi brain extraction docker"
+        docker run --mount src=$work,target=/src/test_images/,type=bind davoodk/brain_extraction
+    else
+        echo "Running brain extraction docker, with singularity"
+        singularity run --bind ${workpath}:/src/test_images/ docker://arfentul/maskrecon:first
+    fi
     seg=`find ${work}/segmentations -type f -name \*segmentation.nii.gz`
     cp ${seg} -v ${REGDIR}/mask.nii.gz
 else echo "Brain extraction option not set"

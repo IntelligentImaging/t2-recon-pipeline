@@ -11,13 +11,14 @@
 # into OutputDir/seg/ . "PVC" stands for partial volume correction and will be placed into
 # OutputDir/PVC/ (ask Ali for details).
 # 
-# Clemente Velasco-Annis, 2016, 2017"
+# Clemente Velasco-Annis, 2016, 2023"
 # clemente.velasco-annis@childrens.harvard.edu"
 
 shopt -s extglob
 
 # Binary/program directories
-# antspath="/fileserver/fetal/atlas/ants/"
+# Set env variables FETALSOFT, FETALBIN, FETALREF in .bashrc
+# The path to these directories on e2 may be: /lab-share/Rad-Warfield-e2/Groups/fetalmri/ [software] [software/bin] [templates], respectively
 
 # Default STA atlas list # # # # # # # # # 
 tlist="${FETALREF}/STA_GEPZat/tlist_old.txt"
@@ -99,8 +100,8 @@ while :; do
                 die 'error: "-p" requires prefix be specified'
             fi
             ;;
-        -f|--fcps)
-            let yesFCPS=1
+        -f|--fcps) 
+            let yesFCPS=1 # Runs Haoran Dao's cortical plate segmentation. Requires GPU.
             ;;
         --noAt)
             tlist="${FETALREF}/STA_GEPZ/tlist_old.txt"
@@ -129,7 +130,7 @@ inputs="$1"
 outdir="$2"
 NThreads="$3"
 
-# If optional atlas labels given, use those instead
+# If optional atlas labels given, use those instead of the default found in FETALREF
 if [[ -n $userlabs ]] ; then
     AllLabs="$userlabs"
 fi
@@ -160,6 +161,7 @@ while read CHECK ; do
 done < $tlist
 if [[ "$CheckTemplates" = "ERROR" ]] ; then
 	echo "Couldn't find template(s). Check the paths in template list."
+    echo "You may be able to set symbolic links to make this work"
     exit 1
 fi
 
@@ -180,30 +182,26 @@ fi
 echo "Making case directory, setting some variables, starting template propagation..."
 # Create output DIR and copy scripts and binaries
 mkdir -pv "$outdir"
-tools="${outdir}/tools"
+tools="${outdir}/tools" # we save some files here for archival reasons
 mkdir -pv "$tools"
-cp $0 -nv ${tools}/seg.sh
+cp $0 -nv ${tools}/seg.sh # make a copy of this script
+cp ${tlist} -v ${tools}/ # copy the input template list
 
-#cp ${antspath}/ANTS -vu ${tools}/
-#cp ${antspath}/WarpImageMultiTransform -vu ${tools}/
-cp ${tlist} -v ${tools}/
-#ANTS="${tools}/ANTS"
-#WARP="${tools}/WarpImageMultiTransform"
-SEG="${FETALSOFT}/crkit/bin/crlProbabilisticGMMSTAPLE"
-PVC="${FETALBIN}/crlCorrectFetalPartialVoluming"
-VOL="${FETALBIN}/crlComputeVolume"
-MATH="${FETALSOFT}/crkit/bin/crlImageAlgebra"
+SEG="${FETALSOFT}/crkit/bin/crlProbabilisticGMMSTAPLE" # STAPLE binary
+PVC="${FETALBIN}/crlCorrectFetalPartialVoluming" # Partial Volume Correction binary
+VOL="${FETALBIN}/crlComputeVolume" # Used for checking PVC output
+MATH="${FETALSOFT}/crkit/bin/crlImageAlgebra" # Used for parcellating cortical plate
 baseTLIST=`basename $tlist`
 TLIST="${tools}/${baseTLIST}"
 
-# Default output prefix
+# Default output segmentation prefix
 if [ -n $OutputPrefix] ; then
     OutputPrefix="MAS"
 fi
 
 # Begin 'for loop' for each atlas segmentation scheme
 # default labels are specified at top of script
-# probably GEPZ, GEPZ-WMZ, and regions
+# defaults are GEPZ, GEPZ-WMZ, and regions
 for lpref in $AllLabs ; do
     echo
     echo "## Process registrations for all cases for atlas segmentation $lpref ##"
@@ -245,9 +243,9 @@ for lpref in $AllLabs ; do
         echo "$line" > ${caseout}/log/inputGA-${OutPre2}_${GA}.txt
         # "Run" script for this case only
         echo "sh ${tools}/seg.sh -a ${TLIST} -l "${AllLabs}" -p ${OutPre2} ${caseout}/log/inputGA-${OutPre2}_${GA}.txt ${outdir} ${NThreads}" > ${caseout}/log/run-${OutPre2}_${name}.sh
-        # Registrations go here
+        # Registered images and labels go here
         mkdir -pv ${caseout}/template_rT
-        # Make a case dir copy of the image - we'll use the copy for processing
+        # Make a copy of the input image
         casebase=`basename $image`
         caseim=${caseout}/${casebase}
         cp ${image} -nv ${caseim}
@@ -260,28 +258,27 @@ for lpref in $AllLabs ; do
         # File names without paths or extensions
         declare -a ARRAY_T_NAME
         declare -a ARRAY_S_NAME
+
         let count=0
         # For each template in the template list, compare GA to input case
         while read LINE ; do
-            # Grab GA of template
-            GAtemplate=`echo $LINE | awk -F' ' '{ print $2 }'`
+            GAtemplate=`echo $LINE | awk -F' ' '{ print $2 }'` # Grab GA of template from TLIST
             casebase=`basename ${image}`
             PathOfT=${FETALREF}/`echo $LINE | awk -F' ' '{ print $1 }'`
             baseT=`basename ${PathOfT}`
             dirT=`dirname ${PathOfT}`
+
             # We only select atlases within 1 week GA and don't share the same filename as the input case
             if [[ ( ${GAtemplate} == ${GA} || ${GAtemplate} == ${GAm} || ${GAtemplate} == ${GAp} ) && ! ${casebase} == ${baseT} ]] ; then
-                # Grab template full path
-                ARRAY_T[${count}]=${PathOfT}
-                # Chop off directory path
-                tmpName=${ARRAY_T[$count]##*/}
-                # Chop off extension
-                ARRAY_T_NAME[$count]=${tmpName%%.*}
+                ARRAY_T[${count}]=${PathOfT} # Full template path
+                tmpName=${ARRAY_T[$count]##*/} # Chop off directory path
+                ARRAY_T_NAME[$count]=${tmpName%%.*} # Chop off extension
+
                 # Get the atlas label name by adding label prefix 
-             #   ARRAY_S_NAME[$count]=`echo ${ARRAY_T_NAME[$count]} | sed "s,${ARRAY_T_NAME[$count]},${lpref}-${ARRAY_T_NAME[$count]},"`
                 ARRAY_S_NAME[$count]=${lpref}-${ARRAY_T_NAME[$count]}
                 # Get full path by searching for the label name in same directory as the atlas
                 ARRAY_S[$count]=`find ${dirT} -type f -name ${ARRAY_S_NAME[$count]}.nii\* | head -n1`
+
                 ((count++))
             fi
         done < "${TLIST}"
@@ -303,7 +300,8 @@ for lpref in $AllLabs ; do
             continue
         fi
         echo
-        # Multithreading ANTS, which creates warp files for registration of template grayscale and parcellation to the target image
+
+        # Multithreading ANTS- create warp files for registration of template grayscale and parcellation to the target image
         # Number of threads maxes out at the user defined number
         let npr=0
         echo "Staring non-rigid registration (ANTS)..."
@@ -394,8 +392,9 @@ for lpref in $AllLabs ; do
             fi	
         done
         
-        # End of T2 input list loop (atlas label loop still running)
         done < $inputs 
+        # End of T2 input list loop. Reference label scheme loop still going.
+        # We now have all of the needed registrations to run segmentation for this label scheme.
 
     ## STAPLE multiatlas segmentation ##
     if [[ $segmentation = "ON" ]] ; then
@@ -484,9 +483,8 @@ for lpref in $AllLabs ; do
         fi
         echo
 
-
-        # This is the end of the T2 inputs loop for segmentation for this label scheme
         done < $inputs
+        # This is the end of the T2 inputs loop for segmentation for this label scheme
     else
         echo ""
         echo "Segmentation turned off - open the script in a text editor to turn it on (there is a switch near the top)"
@@ -510,7 +508,7 @@ while read line; do
         echo "# # FetalCPSeg deep learning model for CP segmentation # #"
         # Location of the trained model
         FCPS="${outdir}/${name}/FCPS"
-        Fsrc="${FETALSOFT}/FetalCPSeg/FetalCPSeg-Programe/"
+        Fsrc="${FETALSOFT}/FetalCPSeg/FetalCPSeg-Program/"
         Fenv="${FETALENV}/HDLenv/bin/activate"
         Fin="${outdir}/${name}/FCPS/Input"
         Fsub="${Fin}/${name}"
@@ -525,7 +523,7 @@ while read line; do
             echo "Source virtual environment"
             source $Fenv
             cd ${FCPS}
-            python FetalCPSeg-Programe/Test/infer_novel.py
+            python FetalCPSeg-Program/Test/infer_novel.py
             cd -
             deactivate
             echo "Resample model prediction"

@@ -17,7 +17,7 @@ for run_nm in $runs ; do
 	mpath=`dirname $run_nm`
     id=`basename $mpath`
     run_sfb="${mpath}/run-sfb.sh"
-    echo $id
+    echo $id $mpath
     if [ ! -f $run_sfb ] ; then
         echo "${mpath}/run-sfb.sh not found"
         echo "Re-run script generator for this case and try again"
@@ -57,13 +57,13 @@ for run_nm in $runs ; do
         echo
         # If there were masks missing, run sfb first
         if [[ $sfb > 0 ]] ; then
-            echo "Case $id : Running segment-fetal-brains (lo-res t2 stacks) within container"
+            echo "Case $id $mpath : Running segment-fetal-brains (lo-res t2 stacks) within container"
             date
             docker exec -t -i -w /home/data $dockname sh -c "sh run-sfb.sh"
             echo
             echo "segment-fetal-brains complete"
         fi
-        echo "Case $id : Run NiftyMIC reconstruction within container"
+        echo "Case $id $mpath : Run NiftyMIC reconstruction within container"
         docker exec -t -i -w /home/data $dockname sh -c "sh run-nm.sh"
         echo
         echo "NiftyMIC recon done"

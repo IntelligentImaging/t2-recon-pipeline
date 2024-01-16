@@ -36,7 +36,7 @@ Helpful tools:
 This script writes the SVRTK container command (*run-svrtk.sh*) to run the reconstruction. Looking at *recon directory*, it records all files named *fetus_\*nii.gz* as the inputs and a file named *mask_\*.nii.gz* to use as the ROI.
 ## Running the SVRTK reconstruction 
 - Method A) Script to run a single recon: `sh svrtk-exec.sh [recon directory]`
-- RUNNING SVRTK THROUGH SINGULARITY: `singularity exec docker://fetalsvrtk/svrtk /bin/sh run-svrtk.sh`
+- While on the e2 server, you must use Singularity instead of Docker: `sh svrtk-exec.sh -s [recon directory]`
 <br>OR Method B) Use this convenient script to search for all run-svrtk.sh files and run any for which the corresponding output cannot be found: `sh svrtk-allexec.sh [STUDY DIRECTORY]`<br>
 *study directory* is the folder which holds all of the individual subject recon directories<br>
 - Check recon output. If necessary (recon is poor), change the stack selection and/or mask, and re-run SVRTK.

@@ -70,7 +70,7 @@ This script writes the SVRTK container command (*run-svrtk.sh*) to run the recon
   - Runs partial volume correction (PVC) on the *GEPZ segmentation* 
   - -f option runs Haoran's DL CP segmentation
 
-[^1]: Sometimes it's hard to get a good registration. In these cases, we can run a second iteration of the registration. So:<br>`sh reg-fetal -w bmnxbSVRTK_subjID_FLIRTto_fxs1.nii.gz`<br>Then, we take the twice-registered image and combine the part 1 and part 2 transforms:<br>`sh combineTransforms-t2pipeline.sh bmnxbSVRTK_subjID_FLIRTto_fxs1_FLIRTto_fys1.nii.gz`<br>This generates bmnxbSVRTK_subjID_FLIRTto_STA.nii.gz and bmnxbSVRTK_subjID_FLIRTto_STA.tfm.<br>You can then safely use `sh choosereg bmnxbSVRTK_subjID_FLIRTto_STA.nii.gz
+[^1]: Sometimes it's hard to get a good registration. In these cases, we can run a second iteration of the registration. So:<br>`sh reg-fetal -w bmnxbSVRTK_subjID_FLIRTto_fxs1.nii.gz`<br>Then, we take the twice-registered image and combine the part 1 and part 2 transforms:<br>`sh combineTransforms-t2pipeline.sh bmnxbSVRTK_subjID_FLIRTto_fxs1_FLIRTto_fys1.nii.gz`<br>This generates bmnxbSVRTK_subjID_FLIRTto_STA.nii.gz and bmnxbSVRTK_subjID_FLIRTto_STA.tfm.<br>You can then safely use `sh choosereg.sh bmnxbSVRTK_subjID_FLIRTto_STA.nii.gz`
 
 # Flywheel Data Management 
 flywheel-*.sh scripts are used to manage data downloads from FlyWheel.

@@ -153,7 +153,7 @@ if [[ $MASK == "YES" || $SING == "YES" ]] ; then
         docker run --mount src=$work,target=/src/test_images/,type=bind davoodk/brain_extraction
     else
         echo "Running brain extraction docker, with singularity"
-        singularity run --bind ${workpath}:/src/test_images/ docker://arfentul/maskrecon:first
+        singularity run --bind ${workpath}:/src/inputs/ docker://arfentul/maskrecon:0.02
     fi
     seg=`find ${work}/segmentations -type f -name \*segmentation.nii.gz`
     cp ${seg} -v ${REGDIR}/mask.nii.gz

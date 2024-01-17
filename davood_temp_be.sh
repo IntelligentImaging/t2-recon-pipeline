@@ -46,7 +46,7 @@ chmod 777 $work
 workf=`readlink -f $work`
 
 if [[ $SING -eq 1 ]] ; then
-    singularity run --bind ${workf}/BE:/src/test_images/ docker://arfentul/maskrecon:first
+    singularity run --bind ${workf}:/src/inputs/ docker://arfentul/maskrecon:0.02
 else
     docker run --mount src=$workf,target=/src/test_images/,type=bind davoodk/brain_extraction
 fi

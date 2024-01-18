@@ -1,18 +1,14 @@
 # T2 Fetal Recon Pipeline
 The T2 recon pipeline is a set of instructions and scripts for going from raw T2 fetal data stacks to a super resolution 3D reconstruction (Gholipour et al. 2017). It's generally more efficient to run these steps for groups of images one section at a time. For example, first do Recon Setup for all scans, then run SVRTK for all scans, then do registration pre-processing for all scans, etc.
 ## Prequisites
-- Be on a CRL server machine
-- Processing machines Clemente has used include (all CentOS7): zephyr, boreas, auster, eurus, dingo, anchorage (Clemente's workstation). Ubuntu machines such as barnes, french, saadi, iced may work but I'm not sure. Try using bash script.sh instead of sh script.sh.
 - Source CRkit in your bash profile
   
-    Something like: `source /opt/el7/pkgs/crkit/nightly/20220213/bin/crkit-env.sh`
+    Something like: `source /lab-share/Rad-Warfield-e2/Groups/fetalmri/software/crkit/bin/crkit-env.sh`
     
-- Have the fetal processing pipeline binary directory in your PATH: `/fileserver/fetal/software/bin`
-
-The servers above should be ready to go. If getting set up on a new machine, you will need:
+- Have the fetal processing pipeline binary directory in your FETALBIN: `/lab-share/Rad-Warfield-e2/Groups/fetalmri/software/bin`
 - Docker: https://docs.docker.com/engine/install/
 - The SVRTK Docker image: https://github.com/SVRTK/svrtk-docker-gpu
-- Davood's recon brain extraction docker: https://hub.docker.com/r/davoodk/brain_extraction
+- Davood's recon brain extraction docker: https://hub.docker.com/r/arfentul/maskrecon
 
 Helpful tools:
 - ITK-SNAP (for viewing images and drawing/editing ROI's)
@@ -81,6 +77,9 @@ Sometimes the initial registration does not succeeed. I have a few strategies fo
 `sh reg-fetal -w bmnxbSVRTK_subjID_FLIRTto_fxs1.nii.gz`<br>Then, we take the twice-registered image and combine the part 1 and part 2 transforms:<br>`sh combineTransforms-t2pipeline.sh bmnxbSVRTK_subjID_FLIRTto_fxs1_FLIRTto_fys1.nii.gz`<br>This generates bmnxbSVRTK_subjID_FLIRTto_STA.nii.gz and bmnxbSVRTK_subjID_FLIRTto_STA.tfm.<br>You can then safely use `sh choosereg.sh bmnxbSVRTK_subjID_FLIRTto_STA.nii.gz`
 
 The latter (#3) is likely the best option in terms of quality and consistency.
+
+## Bash error: "[[: not found"
+This happens on Ubuntu sometimes. Try calling the script with `bash script.sh` instead of `sh script.sh`
 
 # Flywheel Data Management 
 flywheel-*.sh scripts are used to manage data downloads from FlyWheel.

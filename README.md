@@ -60,7 +60,9 @@ This script writes the SVRTK container command (*run-svrtk.sh*) to run the recon
   > <br>&nbsp;&nbsp;&nbsp;&nbsp;[any supplied image.nii.gz] -- Alternatively you can target a specific image
   > <br>-w Matches plus/minus 1 week GA, instead of exact match.
   > <br>--ga [GA] allows you to specify a gestational age instead of having the script estimate it
-2. Look through output registrations and choose the best one, then run: `sh choosereg.sh [best reg]`<br>This copies the chosen registration as *atlas_t2final_CASEID.nii.gz* and throws out all other registration attempts[^1].
+2. Look through output registrations and choose the best one, then run: `sh choosereg.sh [best reg]`<br>This copies the chosen registration as *atlas_t2final_CASEID.nii.gz* and throws out all other registration attempts.
+The output registration should be orthogonal and have axial, coronal, sagittal arranged like the below example.
+![Example of a correctly oriented, atlas-oriented image.](images/reg.png)
 
 # Segmentation
 - Multi-atlas segmentation script for fetal data: `sh FetalAtlasSeg.sh [Imagelist] [OutputDir] [MaxThreads]`<br>
@@ -70,7 +72,13 @@ This script writes the SVRTK container command (*run-svrtk.sh*) to run the recon
   - Runs partial volume correction (PVC) on the *GEPZ segmentation* 
   - -f option runs Haoran's DL CP segmentation
 
-[^1]: Sometimes it's hard to get a good registration. In these cases, we can run a second iteration of the registration. So:<br>`sh reg-fetal -w bmnxbSVRTK_subjID_FLIRTto_fxs1.nii.gz`<br>Then, we take the twice-registered image and combine the part 1 and part 2 transforms:<br>`sh combineTransforms-t2pipeline.sh bmnxbSVRTK_subjID_FLIRTto_fxs1_FLIRTto_fys1.nii.gz`<br>This generates bmnxbSVRTK_subjID_FLIRTto_STA.nii.gz and bmnxbSVRTK_subjID_FLIRTto_STA.tfm.<br>You can then safely use `sh choosereg.sh bmnxbSVRTK_subjID_FLIRTto_STA.nii.gz`
+# FAQ / Troubleshooting
+## Help! Registration is not working.
+Sometimes the initial registration does not succeeed. I have a few strategies for approaching these cases:
+1. Re-run registration with `-t cases` to increase the number of registration targets
+1. For very small brains, re-run registration with `-t early`
+1. Run a second iteration of the registration. So:<br>`sh reg-fetal -w bmnxbSVRTK_subjID_FLIRTto_fxs1.nii.gz`<br>Then, we take the twice-registered image and combine the part 1 and part 2 transforms:<br>`sh combineTransforms-t2pipeline.sh bmnxbSVRTK_subjID_FLIRTto_fxs1_FLIRTto_fys1.nii.gz`<br><br>This generates bmnxbSVRTK_subjID_FLIRTto_STA.nii.gz and bmnxbSVRTK_subjID_FLIRTto_STA.tfm.<br>You can then safely use `sh choosereg.sh bmnxbSVRTK_subjID_FLIRTto_STA.nii.gz`
+The latter is likely the best option in terms of quality and consistency.
 
 # Flywheel Data Management 
 flywheel-*.sh scripts are used to manage data downloads from FlyWheel.

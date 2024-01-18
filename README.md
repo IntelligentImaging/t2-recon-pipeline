@@ -77,8 +77,10 @@ The output registration should be orthogonal and have axial, coronal, sagittal a
 Sometimes the initial registration does not succeeed. I have a few strategies for approaching these cases:
 1. Re-run registration with `-t cases` to increase the number of registration targets
 1. For very small brains, re-run registration with `-t early`
-1. Run a second iteration of the registration. So:<br>`sh reg-fetal -w bmnxbSVRTK_subjID_FLIRTto_fxs1.nii.gz`<br>Then, we take the twice-registered image and combine the part 1 and part 2 transforms:<br>`sh combineTransforms-t2pipeline.sh bmnxbSVRTK_subjID_FLIRTto_fxs1_FLIRTto_fys1.nii.gz`<br><br>This generates bmnxbSVRTK_subjID_FLIRTto_STA.nii.gz and bmnxbSVRTK_subjID_FLIRTto_STA.tfm.<br>You can then safely use `sh choosereg.sh bmnxbSVRTK_subjID_FLIRTto_STA.nii.gz`
-<br>The latter is likely the best option in terms of quality and consistency.
+1. Run a second iteration of the registration. So:<br><br>
+`sh reg-fetal -w bmnxbSVRTK_subjID_FLIRTto_fxs1.nii.gz`<br>Then, we take the twice-registered image and combine the part 1 and part 2 transforms:<br>`sh combineTransforms-t2pipeline.sh bmnxbSVRTK_subjID_FLIRTto_fxs1_FLIRTto_fys1.nii.gz`<br>This generates bmnxbSVRTK_subjID_FLIRTto_STA.nii.gz and bmnxbSVRTK_subjID_FLIRTto_STA.tfm.<br>You can then safely use `sh choosereg.sh bmnxbSVRTK_subjID_FLIRTto_STA.nii.gz`
+
+The latter (#3) is likely the best option in terms of quality and consistency.
 
 # Flywheel Data Management 
 flywheel-*.sh scripts are used to manage data downloads from FlyWheel.

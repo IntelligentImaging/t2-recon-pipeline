@@ -62,7 +62,7 @@ This script writes the SVRTK container command (*run-svrtk.sh*) to run the recon
   > <br>--ga [GA] allows you to specify a gestational age instead of having the script estimate it
 2. Look through output registrations and choose the best one, then run: `sh choosereg.sh [best reg]`<br>This copies the chosen registration as *atlas_t2final_CASEID.nii.gz* and throws out all other registration attempts.
 The output registration should be orthogonal and have axial, coronal, sagittal arranged like the below example.
-![Example of a correctly oriented, atlas-oriented image.](images/reg.png)
+<img src="images/reg.png" width="33%">
 
 # Segmentation
 - Multi-atlas segmentation script for fetal data: `sh FetalAtlasSeg.sh [Imagelist] [OutputDir] [MaxThreads]`<br>

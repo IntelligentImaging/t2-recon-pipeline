@@ -68,6 +68,14 @@ if [ ! -e $1 ] ; then
     exit 1
 fi
 
+function depend () {
+    binary=$1    
+    binout=`which $1 2>/dev/null`
+    if [[ ! -n $binout ]] ; then
+        die "dependency $binary not found - did you mean to switch docker/singularity?"
+    else echo dependency $binary found
+    fi
+}
 
 # N4 binary
 n4="${FETALBIN}/crlN4biasfieldcorrection"
@@ -149,9 +157,11 @@ if [[ $MASK == "YES" || $SING == "YES" ]] ; then
     # Open permission for docker
     chmod 777 $work
     if [[ ! $SING == "YES" ]] ; then 
+        depend docker
         echo "Running Davood Karimi brain extraction docker"
         docker run --mount src=$work,target=/src/test_images/,type=bind davoodk/brain_extraction
     else
+        depend singularity
         echo "Running brain extraction docker, with singularity"
         singularity run --bind ${workpath}:/src/inputs/ docker://arfentul/maskrecon:0.02
     fi

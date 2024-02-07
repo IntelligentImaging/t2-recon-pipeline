@@ -13,7 +13,7 @@ PROC="$2"
 # RUNCHECK="$3"
 ID=`basename $RAW`
 DCMDIR="${RAW}/scans"
-NIIDIR="${RAW}/nii"
+NIIDIR="${RAW}/svrtk"
 # NET="/fileserver/fetal/software/2Ddensenet"
 
 function DCMrename () {
@@ -60,7 +60,7 @@ else
 	fi
 
 # Copy T2 stacks to reconstruction folder
-RECON="${PROC}/${ID}/nii"
+RECON="${PROC}/${ID}/svrtk"
 mkdir -pv ${RECON} ${RECON}/../notgood
 find ${RECON}/../ -type d -exec chmod -c --preserve-root 777 {} \;
 for IM in ${NIIDIR}/*T2*/*.nii.gz ; do

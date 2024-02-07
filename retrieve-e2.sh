@@ -2,7 +2,7 @@
 
 show_help () {
 cat << EOF
-    USAGE: sh ${0##*/} [-m MODALITY] -- [MRN] [DOS] [Output Subject Dir]
+    USAGE: sh ${0##*/} [-m MODALITY] -- [MRN] [DOS] [Output Dir]
     Incorrect input supplied
     -m      Modality (default=MR)
 EOF
@@ -61,7 +61,7 @@ patient=`get_tag PatientID $1`
 study=`get_tag StudyID $1` 
 series=`get_tag SeriesDescription $1` 
 seriesnum=`get_tag SeriesNumber $1`
-dpath="$output_dir"/"$patient"/"DICOM"/"$seriesnum"_"$series"
+dpath="$output_dir"/"$patient"/"$study"/"DICOM"/"$seriesnum"_"$series"
 if [[ ! "$patient" == "" ]] && [[ ! "$study" == "" ]] && [[ ! "$seriesnum" == "" ]] && [[ ! "$series" == "" ]] ; then 
  if [[ ! -d "$dpath" ]]; then
   mkdir -vp "$dpath"

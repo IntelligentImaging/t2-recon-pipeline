@@ -187,6 +187,7 @@ mkdir -pv "$tools"
 cp $0 -nv ${tools}/seg.sh # make a copy of this script
 cp ${tlist} -v ${tools}/ # copy the input template list
 
+source /lab-share/Rad-Warfield-e2/Groups/fetalmri/software/crkit/bin/crkit-env.sh
 SEG="${FETALSOFT}/crkit/bin/crlProbabilisticGMMSTAPLE" # STAPLE binary
 PVC="${FETALBIN}/crlCorrectFetalPartialVoluming" # Partial Volume Correction binary
 VOL="${FETALBIN}/crlComputeVolume" # Used for checking PVC output

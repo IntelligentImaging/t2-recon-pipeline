@@ -5,6 +5,7 @@ if [[ $1 == "" ]] || [[ $2 == "" ]] || [[ $3 == "" ]]; then
     echo "searches out all files in DICOM DIRECTORY"
     echo "makes copies in OUTPUT DIRECTORY"
     echo "replaces patientID with STUDY IDENTIFIER"
+    echo "maybe STUDY IDENTIFIER should just be xxx"
 	exit 
 fi
 
@@ -56,9 +57,11 @@ for dcm in `find $IN -type f`; do
 		PerformedProcedureStepStartDate=\(0040\,0244\)
 		PerformedProcedureStepStartTime=\(0040\,0245\)
 		PerformedProcedureStepID=\(0040\,0253\)
+        FrameAcquisitionDateTime="(0018,9074)"
+        FrameReferenceDateTime="(0018,9151)"
 		RequestingPhysician=\(0032\,1032\)
-		StudyInstanceUID=\(0020\,000d\)
-		SeriesInstanceUID=\(0020\,000e\) 
+		StudyInstanceUID="(0020,000d)"
+		SeriesInstanceUID="(0020,000e)"
 		StudyID=\(0020\,0010\)
 		RequestingService=\(0032\,1033\)
 #		TransmitCoilName=\(0018\,1251\)
@@ -67,7 +70,16 @@ for dcm in `find $IN -type f`; do
 		StudyDescription=\(0008\,1030\)
 		InstitutionalDepartmentName=\(0008\,1040\)
 #		ManufacturerModelName=\(0008\,1090\)
-		for x in $InstanceCreationDate $SeriesDate $AcquisitionDate $ContentDate $AccessionNumber $InstitutionName $InstitutionAddress $ReferringPhysicianName $StationName $PhysiciansOfRecord $PerformingPhysicianName $OperatorsName $PatientBirthDate $PatientSex $PatientAge $IssuerOfPatientID $OtherPatientIDs $PatientAddress $PatientTelephoneNumbers $PerformedProcedureStepStartDate $PerformedProcedureStepStartTime $PerformedProcedureStepID $RequestingPhysician $StudyInstanceUID $SeriesInstanceUID $StudyID $RequestingService $DeviceSerialNumber $StudyDescription $InstitutionalDepartmentName ; do 
+        MediaStorageSOPInstanceUID="(0002,0003)"
+        SOPInstanceUID="(0008,0018)"
+        AcquisitionDateTime="(0008,002a)"
+        ReferencedSOPInstanceUID=\(0008\,1155\)
+        FrameOfReferenceUID="(0020,0052)"
+        DimensionOrganizationUID="(0020,9164)"
+        PerformedProcedureStepEndDate="(0040,0250)"
+        IssueDateOfImagingServiceRequest="(0040,2004)"
+        UnkTime="(0021,1060)"
+		for x in $InstanceCreationDate $SeriesDate $AcquisitionDate $ContentDate $AccessionNumber $InstitutionName $InstitutionAddress $ReferringPhysicianName $StationName $PhysiciansOfRecord $PerformingPhysicianName $OperatorsName $PatientBirthDate $PatientSex $PatientAge $IssuerOfPatientID $OtherPatientIDs $PatientAddress $PatientTelephoneNumbers $PerformedProcedureStepStartDate $PerformedProcedureStepStartTime $PerformedProcedureStepID $RequestingPhysician $StudyInstanceUID $SeriesInstanceUID $StudyID $RequestingService $DeviceSerialNumber $StudyDescription $InstitutionalDepartmentName $FrameAcquisitionDateTime $FrameReferenceDateTime $MediaStorageSOPInstanceUID $SOPInstanceUID $AcquisitionDateTime $ReferencedSOPInstanceUID $FrameOfReferenceUID $DimensionOrganizationUID $PerformedProcedureStepEndDate $IssueDateOfImagingServiceRequest $UnkTime ; do 
 			removetags=("${removetags[@]}" -e "$x")
 		done
 		dcmodify -imt -nb "${modifytags[@]}" "${removetags[@]}"  "$OUT"/"$dicomdir"/`basename "$dcm"`

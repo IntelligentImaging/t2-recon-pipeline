@@ -65,8 +65,10 @@ for f in $runs ; do
         mpath=`readlink -f $dname` # Server directory to be mounted
 
         if [[ $SING = 1 ]] ; then
+            cd $mpath
             echo "Running singularity SVRTK"
-            singularity exec docker://fetalsvrtk/svrtk /bin/sh ${mpath}/run-svrtk.sh
+            singularity exec docker://fetalsvrtk/svrtk /bin/sh run-svrtk.sh
+            cd -
         else
             conpath="/home/data" # Path to mount inside container
             dockname="SVRTK-$RANDOM" # random string

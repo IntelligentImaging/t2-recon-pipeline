@@ -14,10 +14,10 @@ runs="`find $DIR -mindepth 1 -maxdepth 3 -type f -name run-nm.sh`"
 
 echo "Process cases"
 for run_nm in $runs ; do
-	mpath=`dirname $run_nm`
-    id=`basename $mpath`
+	mpath=`dirname $run_nm` # This folder will probably be called "niftymic"
+	subjdir=`dirname $mpath` # One level up is the subject dir
+	id=`basename $subjdir` # This should be the subject ID...
     run_sfb="${mpath}/run-sfb.sh"
-    echo $id $mpath
     if [ ! -f $run_sfb ] ; then
         echo "${mpath}/run-sfb.sh not found"
         echo "Re-run script generator for this case and try again"
@@ -53,20 +53,26 @@ for run_nm in $runs ; do
         echo "Container will be named $dockname"
         echo "Mount path within container: $conpath"
         echo "Initializing SVRTK Docker container"
+	echo $mpath
         docker run -id --name $dockname --rm --mount type=bind,source=${mpath},target=${conpath} renbem/niftymic /bin/bash
         echo
         # If there were masks missing, run sfb first
         if [[ $sfb > 0 ]] ; then
-            echo "Case $id $mpath : Running segment-fetal-brains (lo-res t2 stacks) within container"
+            echo "Case $id : Running segment-fetal-brains (lo-res t2 stacks) within container"
             date
+	    echo $mpath
             docker exec -t -i -w /home/data $dockname sh -c "sh run-sfb.sh"
             echo
             echo "segment-fetal-brains complete"
+	else
+		echo "Brain masks found"
         fi
-        echo "Case $id $mpath : Run NiftyMIC reconstruction within container"
+	
+        echo "Case $id : Run NiftyMIC reconstruction within container"
+	echo $mpath
         docker exec -t -i -w /home/data $dockname sh -c "sh run-nm.sh"
         echo
-        echo "NiftyMIC recon done"
+        echo "NiftyMIC recon done, Case $id"
         echo "Killing docker image"
         docker kill $dockname
         echo

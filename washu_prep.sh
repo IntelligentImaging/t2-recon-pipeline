@@ -13,7 +13,7 @@ PROC="$2"
 # RUNCHECK="$3"
 ID=`basename $RAW`
 DCMDIR="${RAW}/scans"
-NIIDIR="${RAW}/svrtk"
+NIIDIR="${RAW}/nii"
 # NET="/fileserver/fetal/software/2Ddensenet"
 
 function DCMrename () {

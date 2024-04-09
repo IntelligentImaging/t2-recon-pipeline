@@ -9,6 +9,7 @@ cat << EOF
 
     -h      Display this help and exit
     -d      Set up diffusion processing directory in the specified location. Do not put subject ID here.
+    -e      Take series number from END of folder names, instead of start (default=start)
     [DEPRECIATED] --dense  Setup 2D Densenet dir
     [DEPRECIATED] --mask   Start 2D Densenet brain extraction
 EOF
@@ -30,6 +31,12 @@ while :; do
             dwi="Y"
             dwipath="$2"
             shift
+            ;;
+        -e)
+            end="Y"
+            ;;
+        -a|--anonymize)
+            let anon=1
             ;;
         # --dense)
         #     dense="Y"
@@ -60,8 +67,10 @@ RAW="$1"
 PROC="$2"
 ID=`basename "$RAW"`
 DCMDIR=`find ${RAW} -type d -name DICOM | head -n1`
-NIIDIR="`dirname $DCMDIR`/nii"
+IMAGEDIR=`dirname $DCMDIR`
+NIIDIR="${IMAGEDIR}/nii"
 NET="/fileserver/fetal/software/2Ddensenet"
+SHDIR=`dirname $0`
 
 if [[ ! -d $RAW ]] ; then
 	die "error: Raw case directory $RAW doesn't exist"
@@ -78,7 +87,7 @@ function convert () {
 	else
 		echo "Converting $DCM"
 		# dcm2niix -z y -i y -f %d_%s -o "${OUT}/" "$DCM"
-        mrconvert $DCM ${OUT}/${BASE}.nii.gz
+        echo 1 | mrconvert $DCM ${OUT}/${BASE}.nii.gz
 		fi
 	}
 
@@ -98,6 +107,12 @@ else
 	echo Conversion step error: DICOM files were not found
 	fi
 
+if [[ $anon = 1 ]] ; then
+    echo "Deidentify images:"
+    sh $SHDIR/deidentify.sh $DCMDIR ${IMAGEDIR}/deid xxx
+fi
+
+
 # Copy T2 stacks to reconstruction folder
 RECON="${PROC}/${ID}/svrtk"
 mkdir -pv ${RECON}/../notgood
@@ -107,8 +122,13 @@ for TERM in T2_HASTE CERVIX SSFSE_T2 DL_HASTE iTSE_haste_dnf ; do # Search terms
         for IM in $ARRAY ; do
             base=`basename "$IM"`
             # end="${base##*_}"
-            num="${base%%_*}"
-            text=`echo $base | sed -e 's,[0-9]*_,,' -e 's,\(........\).*,\1,' -e 's,_,,g'`
+            if [[ $end == "Y" ]] ; then
+                num=`echo ${base##*_} | sed -e 's,\.nii.*,,g'`
+            else
+                num=`echo ${base%%_*}`
+            fi
+            #text=`echo $base | sed -e 's,[0-9]*_,,' -e 's,\(........\).*,\1,' -e 's,_,,g'`
+            text=`echo ${base#*_} | sed -e 's,\(........\).*,\1,' -e 's,_,,g'`
 		if [[ $text == "DLHASTE" ]] ; then
 			text="VFA"
 		elif [[ $text == "wip1062" ]] ; then

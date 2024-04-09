@@ -9,7 +9,7 @@ cat << EOF
     stacks there, then run this script
 
     Optional argument:
-        [ -a || --alpha ]   Set regularization for recon. Default is 0.01. 
+        [ -a || --alpha ]   Set regularization for recon. Default is 0.04. 
 
 EOF
 }
@@ -61,7 +61,7 @@ maskdir="${nmic}/mask"
 mkdir -pv ${maskdir}
 srrdir="${nmic}/srr"
 if [[ ! -n $alpha ]] ; then
-    alpha="0.01"
+    alpha="0.04" # default alpha
 fi
 
 # Run scripts
@@ -71,7 +71,7 @@ if [ -f $shsfb ] ; then rm -v $shsfb ; fi
 if [ -f $shpipe ] ; then rm -v $shpipe ; fi
 
 # get list of stacks
-t2s=`find ${t2dir} -type f -name fetus_\*z`
+t2s=`find ${t2dir} -type f -name fetus\*z`
 # write segment fetal brains script
 echo "#!/bin/bash" >> $shsfb
 echo "niftymic_segment_fetal_brains --filenames \\" >> $shsfb

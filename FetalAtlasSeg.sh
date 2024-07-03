@@ -285,8 +285,8 @@ for lpref in $AllLabs ; do
         done < "${TLIST}"
 
         # Print out atlas information for this case
-        echo Number of atlas images: ${#ARRAY_T[@]:0:$count}
-        echo Number of atlas labels: ${#ARRAY_S[@]:0:$count}
+        #echo Number of atlas images: ${#ARRAY_T[@]:0:$count}
+        #echo Number of atlas labels: ${#ARRAY_S[@]:0:$count}
         echo "  Atlases:"
         printf '%s\n' "${ARRAY_T[@]:0:$count}"
         echo "  Applicable Labels:"
@@ -509,7 +509,7 @@ while read line; do
         echo "# # FetalCPSeg deep learning model for CP segmentation # #"
         # Location of the trained model
         FCPS="${outdir}/${name}/FCPS"
-        Fsrc="${FETALSOFT}/FetalCPSeg/FetalCPSeg-Program/"
+        Fsrc="${FETALSOFT}/FetalCPSeg-Program/"
         Fenv="${FETALENV}/HDLenv/bin/activate"
         Fin="${outdir}/${name}/FCPS/Input"
         Fsub="${Fin}/${name}"

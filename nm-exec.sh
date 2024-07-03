@@ -1,10 +1,39 @@
 #!/bin/bash
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+while :; do
+    case $1 in
+        -h|-\?|--help)
+            show_help # help message
+            exit
+            ;;
+        -s|--singularity)
+            let SING=1
+            ;;
+        --) # end of optionals
+            shift
+            break
+            ;;
+        -)?*
+            printf 'warning: unknown option (ignored: %s\m' "$1" >&2
+            ;;
+        *) # default case, no optionals
+            break
+    esac
+    shift
+done
+
+
 if [ $# -ne 1 ]; then	
 	echo "Incorrect argument supplied!"
-	echo "usage: sh $0 [DATA MOUNT PATH]"
+	echo "usage: sh $0 [-s || --singularity] -- [DATA MOUNT PATH]"
     echo "This script is used after running nm-gen.sh to generate 'run-sfb.sh' and run-nm.sh"
     echo "Supply a recon directory which has the run scripts plus a folder named 't2' with the fetus_*.nii.gz stacks"
-    echo "Creates a detached NiftyMIC docker image, and then uses it to execute the run script, then deletes the container"
+    echo "Runs docker/singularity container for NiftyMIC"
+    echo "-s    Use Singularity instead of Docker (required for e2 server)"
 	exit
 	fi
 
@@ -43,24 +72,37 @@ conpath="/home/data"
 # random string
 dockname="NIFTYMIC-$RANDOM"
 
-echo "Container will be named $dockname"
-echo "Mount path within container: $conpath"
-echo "Initializing SVRTK Docker container"
-docker run -id --name $dockname --rm --mount type=bind,source=${mpath},target=${conpath} renbem/niftymic /bin/bash
-echo
+# Initialize Docker if using Docker mode
+if [[ $SING -ne 1 ]] ; then
+    echo "Container will be named $dockname"
+    echo "Mount path within container: $conpath"
+    echo "Initializing SVRTK Docker container"
+    docker run -id --name $dockname --rm --mount type=bind,source=${mpath},target=${conpath} renbem/niftymic /bin/bash
+    echo
+fi
+
 # If there were masks missing, run sfb first
 if [[ $sfb > 0 ]] ; then
     echo "Executing NiftyMIC segment fetal brains (run-sfb) script within container"
     date
-    docker exec -t -i -w /home/data $dockname sh -c "sh run-sfb.sh"
+    if [[ $SING -eq 1 ]] ; then
+        singularity exec docker://arfentul/niftymic.sing:first /bin/sh ${mpath}/run-sfb.sh
+    else docker exec -t -i -w /home/data $dockname sh -c "sh run-sfb.sh"
+    fi
 fi
+
 echo
 echo "Segment fetal brains done"
 date
 echo "Executing NiftyMIC recon (run-nm) script within container"
-docker exec -t -i -w /home/data $dockname sh -c "sh run-nm.sh"
+
+if [[ $SING -eq 1 ]] ; then
+    singularity exec docker://arfentul/niftymic.sing:first /bin/sh ${mpath}/run-nm.sh
+else docker exec -t -i -w /home/data $dockname sh -c "sh run-nm.sh"
+    echo "Killing docker image"
+    docker kill $dockname
+fi
+
 echo
 echo "NiftyMIC recon done"
-echo "Killing docker image"
-docker kill $dockname
 echo

@@ -61,7 +61,7 @@ maskdir="${nmic}/mask"
 mkdir -pv ${maskdir}
 srrdir="${nmic}/srr"
 if [[ ! -n $alpha ]] ; then
-    alpha="0.04" # default alpha
+    alpha="0.04"
 fi
 
 # Run scripts

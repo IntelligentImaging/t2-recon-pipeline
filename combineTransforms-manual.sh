@@ -30,7 +30,7 @@ TFMcom="$6"
 # fi
 
 # programs and scripts
-c3d="/fileserver/fetal/bin/c3d_affine_tool"
+c3d="${FETALBIN}/c3d_affine_tool"
 affineSH="${FETALDTI}/changeTFMnameInFileToAffine.py"
 compose="crlComposeAffineTransforms"
 LOG="run-combineTFM.sh"

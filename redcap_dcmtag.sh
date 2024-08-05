@@ -136,14 +136,15 @@ f_epi=`find $di -type d -iname \*EPI_highres\* -o -iname \*mbep2d\*` ;    if [[ 
 f_zoomit=`find $di -type d -iname \*zoom\*` ;       if [[ -n $f_zoomit ]] ;  then zoomit="1"; fi # type___21
 f_hasteDL=`find $di -type d -iname \*DLonur\* -o -iname \*DL_HASTE\* -o -iname \*HASTE_WIP\* -o -iname \*HASTE_VFA\* -o -iname \*haste_dnf\*` ;   if [[ -n $f_hasteDL ]] ;  then hasteDL="1" ; fi # type___32
 f_dualecho=`find $di -type d -iname \*dualecho\* -o -iname \*dual_echo\*` ;   if [[ -n $f_dualecho ]] ;  then dualecho="1" ; fi # type___11 
+f_vibe=`find $di -type d -iname \*t1_vibe\*` ;       if [[ -n $f_vibe ]] ;  then vibe="1"; fi # type___18
 
 # If CSV doesn't exist yet, write headers for Redcap
 # normal_abnormal (normal=0, ab=1), research_clinical (res=1, clin=2)
 if [[ ! -f $csv ]] ; then
-   echo "mrn,redcap_event_name,last_name,first_name,medical_record_number,dob,fetal_baby,normal_abnormal,research_clinical,irb_name,fund,scan_date,accession,scanner,site,patient_height,patient_weight,sex,brain_imagetype___0,brain_imagetype___5,brain_dwi_bvalues,brain_imagetype___10,brain_imagetype___4,brain_imagetype___21,brain_imagetype___23,brain_imagetype___11,pipelines___2,pipelines___5" > $csv
+   echo "mrn,redcap_event_name,last_name,first_name,medical_record_number,dob,fetal_baby,normal_abnormal,research_clinical,irb_name,fund,scan_date,accession,scanner,site,patient_height,patient_weight,sex,brain_imagetype___0,brain_imagetype___5,brain_dwi_bvalues,brain_imagetype___10,brain_imagetype___4,brain_imagetype___21,brain_imagetype___23,brain_imagetype___11,brain_imagetype___18,pipelines___2,pipelines___5" > $csv
 fi
 
 # Write subject rows for Redcap
-echo "$noscan,$arm,"$last","$first",$mrn,$birth,$fetal,,$res,$irb,$fund,$dos,$acc,$mri2,$loc2,$height,$weight,$sex,$haste,$dti,$dtib,$fmri,$epi,$zoomit,$hasteDL,$dualecho,1,1" >> $csv
+echo "$noscan,$arm,"$last","$first",$mrn,$birth,$fetal,,$res,$irb,$fund,$dos,$acc,$mri2,$loc2,$height,$weight,$sex,$haste,$dti,$dtib,$fmri,$epi,$zoomit,$hasteDL,$dualecho,$vibe,1,1" >> $csv
 # Echo result
-echo "$noscan,$arm,"$last","$first",$mrn,$birth,$fetal,,$res,$irb,$fund,$dos,$acc,$mri2,$loc2,$height,$weight,$sex,$haste,$dti,$dtib,$fmri,$epi,$zoomit,$hasteDL,$dualecho,1,1"
+echo "$noscan,$arm,"$last","$first",$mrn,$birth,$fetal,,$res,$irb,$fund,$dos,$acc,$mri2,$loc2,$height,$weight,$sex,$haste,$dti,$dtib,$fmri,$epi,$zoomit,$hasteDL,$dualecho,$vibe,1,1"

@@ -131,7 +131,8 @@ done
 wait
 
 echo Remove rsp and report files
-rm -fv ${output_dir}/rsp*dcm ${output_dir}/SR*
+rm -fv ${output_dir}/rsp*dcm ${output_dir}/SR* ${output_dir}/PS* ${output_dir}/RAW.*
  
 echo Detox DICOM folder
-detox ${output_dir}/*/DICOM ${output_dir}/*/*/DICOM
+find $output_dir -type d -name DICOM -exec detox {} \;
+#detox ${output_dir}/*/DICOM ${output_dir}/*/*/DICOM

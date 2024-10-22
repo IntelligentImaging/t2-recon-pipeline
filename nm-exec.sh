@@ -92,7 +92,11 @@ if [[ $sfb > 0 ]] ; then
 fi
 
 echo
-echo "Segment fetal brains done"
+echo "# # # # # # # # # # # # # # # # #"
+echo "#   Segment fetal brains done   #"
+echo "# # # # # # # # # # # # # # # # #"
+echo
+
 date
 echo "Executing NiftyMIC recon (run-nm) script within container"
 

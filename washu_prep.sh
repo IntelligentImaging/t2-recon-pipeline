@@ -16,6 +16,16 @@ DCMDIR="${RAW}/scans"
 NIIDIR="${RAW}/nii"
 # NET="/fileserver/fetal/software/2Ddensenet"
 
+function depchk () {
+	if command -v $1 >/dev/null 2>&1 ; then
+	    echo "$1 found"
+	    echo "version: $($1 --version)"
+	else
+	    echo "$1 not found"
+	    exit 1
+	fi
+	}
+
 function DCMrename () {
 	TAG=`dcmdump \`find ${SERIES}/DICOM/ -type f -iname \*.dcm | head -n1\` | grep SeriesDesc`
 	EDIT1=${TAG#*[}
@@ -36,6 +46,9 @@ function convert () {
 		dcm2niix -z y -f %d_%s -o "${OUT}/" $DCM
 		fi
 	}
+
+depchk rename
+depchk dcm2niix
 
 # Rename DICOM directories and move them to a subfolder
 rename -v secondary DICOM ${RAW}/*/secondary
@@ -69,6 +82,13 @@ for IM in ${NIIDIR}/*T2*/*.nii.gz ; do
         new="fetus_${end}"
         cp ${IM} -v ${RECON}/${new}
         done
+
+
+# Set up niftymic folder
+mkdir -pv ${RECON}/../niftymic/{t2,mask}
+cp ${RECON}/fetus*z -vup ${RECON}/../niftymic/t2/
+
+
 
 # # Install 2D Densenet to recon directory
 # cp ${NET} -rv ${RECON}

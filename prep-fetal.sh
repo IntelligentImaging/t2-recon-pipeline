@@ -146,6 +146,10 @@ for TERM in T2_HASTE CERVIX SSFSE_T2 DL_HASTE iTSE_haste_dnf ; do # Search terms
     fi
 done
 
+# Set up niftymic folder
+mkdir -pv ${RECON}/../niftymic/{t2,mask}
+cp ${RECON}/fetus*z -vup ${RECON}/../niftymic/t2/
+
 # Set up diffusion processing directory
 DCMPATH=`readlink -f $DCMDIR`
 if [[ $dwi == "Y" ]] ; then

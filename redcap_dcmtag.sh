@@ -77,17 +77,17 @@ fi
 dcm=`find $cervix -type f -a ! -name \*zip | head -n1`
 
 # extract DICOM TAGS
-fullname="`dcmdump $dcm | grep -i PatientName | head -n1 | sed -e 's,.*\[,,g' -e 's,\].*,,g' -e 's,\^, ,g'`"
-mrn=`dcmdump $dcm | grep -i PatientID | head -n1   | sed -e 's,.*\[,,g' -e 's,\].*,,g'`
-birth=`dcmdump $dcm | grep -i BirthDate | head -n1 | sed -e 's,.*\[,,g' -e 's,\].*,,g' -e 's/./&-/4' -e 's/./&-/7'`
+fullname="`dcmdump $dcm | grep -i PatientName | head -n1 | sed -e 's,.*\[,,' -e 's,\].*,,' -e 's,\^, ,g'`"
+mrn=`dcmdump $dcm | grep -i PatientID | head -n1   | sed -e 's,.*\[,,' -e 's,\].*,,'`
+birth=`dcmdump $dcm | grep -i BirthDate | head -n1 | sed -e 's,.*\[,,' -e 's,\].*,,' -e 's/./&-/4' -e 's/./&-/7'`
 fetal="1" # this script is for fetals
-dos=`dcmdump $dcm | grep -i StudyDate | head -n1   | sed -e 's,.*\[,,g' -e 's,\].*,,g' -e 's/./&-/4' -e 's/./&-/7'`
-weight=`dcmdump $dcm | grep -i Weight | head -n1   | sed -e 's,.*\[,,g' -e 's,\].*,,g'`
-height=`dcmdump $dcm | grep -i PatientSize | head -n1   | sed -e 's,.*\[,,g' -e 's,\].*,,g'`
-sex=`dcmdump $dcm | grep -i PatientSex | head -n1  | sed -e 's,.*\[,,g' -e 's,\].*,,g' -e 's,F,1,g' -e 's,M,2,g' -e 's,O,,g'`
-acc=`dcmdump $dcm | grep -i AccessionN | head -n1  | sed -e 's,.*\[,,g' -e 's,\].*,,g'`
-mri=`dcmdump $dcm | grep -i ModelName | head -n1   | sed -e 's,.*\[,,g' -e 's,\].*,,g'`
-loc=`dcmdump $dcm | grep -i StationN | head -n1    | sed -e 's,.*\[,,g' -e 's,\].*,,g'`
+dos=`dcmdump $dcm | grep -i StudyDate | head -n1   | sed -e 's,.*\[,,' -e 's,\].*,,' -e 's/./&-/4' -e 's/./&-/7'`
+weight=`dcmdump $dcm | grep -i Weight | head -n1   | sed -e 's,.*\[,,' -e 's,\].*,,'`
+height=`dcmdump $dcm | grep -i PatientSize | head -n1   | sed -e 's,.*\[,,' -e 's,\].*,,'`
+sex=`dcmdump $dcm | grep -i PatientSex | head -n1  | sed -e 's,.*\[,,' -e 's,\].*,,' -e 's,F,1,' -e 's,M,2,' -e 's,O,,g'`
+acc=`dcmdump $dcm | grep -i AccessionN | head -n1  | sed -e 's,.*\[,,' -e 's,\].*,,'`
+mri=`dcmdump $dcm | grep -i ModelName | head -n1   | sed -e 's,.*\[,,' -e 's,\].*,,'`
+loc=`dcmdump $dcm | grep -i StationN | head -n1    | sed -e 's,.*\[,,' -e 's,\].*,,'`
 
 # translate scanner name to Redcap code
 prisma=`echo $mri | grep -i prisma`
@@ -102,7 +102,9 @@ signa=`echo $mri | grep -i signa`
 if [[ -n $signa ]] ; then mri2="0" ; fi
 avanto=`echo $mri | grep -i avanto`
 if [[ -n $avanto ]] ; then mri2="1" ; fi
-if [[ ! -n $mri2 ]] ; then mri2="FIXSCRIPT" ; fi
+sola=`echo $mri | grep -i sola`
+if [[ -n $sola ]] ; then mri2="7" ; fi
+if [[ ! -n $mri2 ]] ; then mri2="SCANNER_NOT_FOUND" ; fi
 
 # translate location to Redcap code
 if [[ $loc == "2BPMRI_1" || $loc == "AWP166200" ]] ; then

@@ -93,7 +93,15 @@ The latter (#3) is likely the best option in terms of quality and consistency.
 ## Bash error: "[[: not found"
 This happens on Ubuntu sometimes. Try calling the script with `bash script.sh` instead of `sh script.sh`
 
-# Flywheel Data Management 
+## Niftymic failures
+If Niftymic reconstruction has failed spectacularly, or if the signal looks good but is blocked off by black bars, the stack brain masking may be at fault.
+You can look at and edit the mask files found in niftymic/mask, for example:
+`is -g t2/fetus_10.nii.gz -s mask/fetus_10.nii.gz`
+Make sure the file permissions of the mask folder allow you to write, since Docker saves things as the root user. You may also want to back up your edited files.
+Once ready, simply clear the `ssr` output folder and re-run nm-exec.sh. It will see the mask_* files already exist and skip the stack segmentation step.
+You could also insert your own brain masks, made completely by another program this way.
+
+# Flywheel Data Management (deprecated)
 flywheel-*.sh scripts are used to manage data downloads from FlyWheel.
 - `flywheel-sync.sh` is the sync command for the e2 copy of the flywheel projects. This command seems broken and flywheel IT hasn't been able to help me. I recommend using `flywheel-dl.sh` instead
 - `flywheel-dl.sh` downloads a specified dataset to a tar file. Unpack with `tar -xvf download.tar`.

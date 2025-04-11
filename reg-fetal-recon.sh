@@ -117,7 +117,7 @@ function register {
                 echo "output files are ${output##*/}"
                 echo "reg metric is $METRIC"
                 echo "Running FLIRT!"
-                cmd="flirt -dof 6 -cost $METRIC -in $INPUT -ref ${template} -omat ${output}.mat -out ${output}"
+                cmd="flirt.fsl -dof 6 -cost $METRIC -in $INPUT -ref ${template} -omat ${output}.mat -out ${output}"
 		echo $cmd >> $SCRIPT
 		$cmd
                 }
@@ -129,8 +129,8 @@ if [ $MASK ] ; then
     $FETALBIN/crlMaskConnectedComponents ${MASK} ${CCMASK} 1 500
     echo Masking image
     MASKED="${DIR}/m${BASE}"
-  #  $FETALBIN/crlMaskImage $INPUT $CCMASK $MASKED
-    fslmaths $INPUT -mul $CCMASK $MASKED
+    crlMaskImage $INPUT $CCMASK $MASKED
+    #fslmaths.fsl $INPUT -mul $CCMASK $MASKED
     INPUT=$MASKED
 fi
 

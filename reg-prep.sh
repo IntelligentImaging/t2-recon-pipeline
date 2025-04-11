@@ -111,8 +111,8 @@ echo "N4 bias correction"
 tempmask="${REGDIR}/TEMPmask_${BASE}"
 echo "Creating mask"
 # Threshold the entire image to get mask
-# cmd="crlBinaryThreshold ${inN4} ${tempmask} 0.5 40000 1 0"
-cmd="fslmaths ${inN4} -thr 0.5 -uthr 40000 -bin ${tempmask}"
+cmd="crlBinaryThreshold ${inN4} ${tempmask} 0.5 40000 1 0"
+# cmd="fslmaths.fsl ${inN4} -thr 0.5 -uthr 40000 -bin ${tempmask}"
 $cmd
 echo $cmd > $LOG
 while [[ $i -lt $ITS ]] ; do

@@ -14,12 +14,12 @@ base=`basename $input`
 # Binary threshold the recon to get a rough volume
 if [[ $2 == "-m" ]] ; then
     mask=$1
-    vol=`crlComputeVolume $mask 1`
+    vol=`${FETALBIN}/crlComputeVolume $mask 1`
 else
     # No mask specified
     mask="TEMPestimateMASK_${base}"
     crlBinaryThreshold $input $mask 150 20000 1 0
-    vol=`crlComputeVolume $mask 1`
+    vol=`${FETALBIN}/crlComputeVolume $mask 1`
     rm $mask
 fi
 # compare input mask volume to each STA mask volume and pick the smallest (absolute) difference

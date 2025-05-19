@@ -93,6 +93,11 @@ The latter (#3) is likely the best option in terms of quality and consistency.
 ## Bash error: "[[: not found"
 This happens on Ubuntu sometimes. Try calling the script with `bash script.sh` instead of `sh script.sh`
 
+## WARNING: FSLOUTPUTTYPE environment variable is not set.
+If using FSL on the cluster, the installed version requires this variable to be set.
+In your .bashrc, add the following line:
+`export FSLOUTPUTTYPE=NIFTI_GZ`
+
 ## Niftymic failures
 If Niftymic reconstruction has failed spectacularly, or if the signal looks good but is blocked off by black bars, the stack brain masking may be at fault.
 You can look at and edit the mask files found in niftymic/mask, for example:

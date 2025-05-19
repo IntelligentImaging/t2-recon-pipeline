@@ -54,7 +54,7 @@ dockname="SVRTK-$RANDOM"
 
 if [[ $SING = 1 ]] ; then
     echo Running singularity svrtk container
-    singularity exec docker://fetalsvrtk/svrtk /bin/sh ${mpath}/run-svrtk.sh
+    singularity exec --cwd $mpath docker://fetalsvrtk/svrtk /bin/sh ${mpath}/run-svrtk.sh
 else
     echo "Container will be named $dockname"
     echo "Mount path within container: $conpath"

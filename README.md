@@ -3,9 +3,9 @@ The T2 recon pipeline is a set of instructions and scripts for going from raw T2
 ## Prequisites
 - Source CRkit in your bash profile
   
-    Something like: `source /lab-share/Rad-Warfield-e2/Groups/fetalmri/software/crkit/bin/crkit-env.sh`
+    Something like: `source /lab-share/Rad-Gholipour-e2/Public/fetalmri/software/crkit/bin/crkit-env.sh`
     
-- Have the fetal processing pipeline binary directory in your FETALBIN: `/lab-share/Rad-Warfield-e2/Groups/fetalmri/software/bin`
+- Have the fetal processing pipeline binary directory in your FETALBIN: `/lab-share/Rad-Gholipour-e2/Public/fetalmri/software/bin`
 - Docker: https://docs.docker.com/engine/install/
 - The SVRTK Docker image: https://github.com/SVRTK/svrtk-docker-gpu
 - Davood's recon brain extraction docker: https://hub.docker.com/r/arfentul/maskrecon

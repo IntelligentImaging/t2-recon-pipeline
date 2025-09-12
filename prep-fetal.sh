@@ -86,8 +86,8 @@ function convert () {
 		echo "Skipping: Files already exist in ${OUT}"
 	else
 		echo "Converting $DCM"
-		# dcm2niix -z y -i y -f %d_%s -o "${OUT}/" "$DCM"
-        echo 1 | mrconvert $DCM ${OUT}/${BASE}.nii.gz
+		dcm2niix -z y -i y -f %d_%s -o "${OUT}/" "$DCM"
+        	#echo 1 | mrconvert -clear_property comments $DCM ${OUT}/${BASE}.nii.gz
 		fi
 	}
 

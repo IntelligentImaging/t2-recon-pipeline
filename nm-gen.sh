@@ -9,7 +9,8 @@ cat << EOF
     stacks there, then run this script
 
     Optional argument:
-        [ -a || --alpha ]   Set regularization for recon. Default is 0.04. 
+	[ -a || --alpha ]   Set regularization for recon (default is 0.04) 
+	[ -r || --resolution ]	Output resolution (default is .8)
 
 EOF
 }
@@ -32,9 +33,17 @@ while :; do
                 shift
             else
                 die 'error: --alpha requires a number'
-                exit
             fi
             ;;
+	 -r|--resolution)
+	    if [[ "$2" ]] ; then
+		    reso=$2
+		    echo resolution set to $reso
+		    shift
+	    else
+	       die 'error: --resolution requires a number'
+	    fi
+	    ;;
          -?*)
              printf 'warning: unknown option -- ignored: %s\n' "$1" >&2
              ;;
@@ -103,6 +112,7 @@ for stack in $t2s ; do
 done
 echo "--dir-output srr/ \\" >> $shpipe
 echo "--alpha $alpha \\" >> $shpipe
+echo "--isotropic-resolution $reso \\" >> $shpipe
 
 # Open permissions so docker sudo can access
 echo "Opening permissions for Docker"

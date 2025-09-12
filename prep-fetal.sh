@@ -97,7 +97,7 @@ function convert () {
 		if [[ $CONV == "dcm2niix" ]] ; then
 			dcm2niix -z y -i y -f %d_%s -o "${OUT}/" "$DCM"
 		else
-			echo 1 | mrconvert $DCM ${OUT}/${BASE}.nii.gz
+			echo 1 | mrconvert -clear_property comments $DCM ${OUT}/${BASE}.nii.gz
 		fi
 	fi
 	}

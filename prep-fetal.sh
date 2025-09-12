@@ -9,7 +9,9 @@ cat << EOF
 
     -h      Display this help and exit
     -d      Set up diffusion processing directory in the specified location. Do not put subject ID here.
+    -c	    Use specified converter ( -c dcm2niix )
     -e      Take series number from END of folder names, instead of start (default=start)
+    -a      Also create an Anonymized DICOM folder. VALIDATE ANONYMIZATION. 
     [DEPRECIATED] --dense  Setup 2D Densenet dir
     [DEPRECIATED] --mask   Start 2D Densenet brain extraction
 EOF
@@ -32,8 +34,14 @@ while :; do
             dwipath="$2"
             shift
             ;;
+        -c|--converter)
+            if [[ $2 == dcm2niix ]] ; then
+		    CONV="$2"
+	    fi
+            shift
+            ;;
         -e)
-            end="Y"
+            let end=1
             ;;
         -a|--anonymize)
             let anon=1
@@ -86,9 +94,12 @@ function convert () {
 		echo "Skipping: Files already exist in ${OUT}"
 	else
 		echo "Converting $DCM"
-		dcm2niix -z y -i y -f %d_%s -o "${OUT}/" "$DCM"
-        	#echo 1 | mrconvert -clear_property comments $DCM ${OUT}/${BASE}.nii.gz
+		if [[ $CONV == "dcm2niix" ]] ; then
+			dcm2niix -z y -i y -f %d_%s -o "${OUT}/" "$DCM"
+		else
+			echo 1 | mrconvert $DCM ${OUT}/${BASE}.nii.gz
 		fi
+	fi
 	}
 
 # Detox DICOM dir
@@ -114,21 +125,22 @@ fi
 
 
 # Copy T2 stacks to reconstruction folder
+echo "COPY TO RECON FOLDER # # #"
 RECON="${PROC}/${ID}/svrtk"
 mkdir -pv ${RECON}/../notgood
-for TERM in T2_HASTE CERVIX SSFSE_T2 DL_HASTE iTSE_haste_dnf ; do # Search terms
-    ARRAY=`find ${NIIDIR}/ -type f -name \*$TERM\*.nii\*` # -and ! -iname \*DLonur\* -and ! -iname \*_DL` # Make an array of found images
+for TERM in SSh T2_HASTE CERVIX SSFSE DL_HASTE iTSE_haste_dnf ; do # Search terms
+    ARRAY=`find ${NIIDIR}/ -type f -name \*$TERM\*.nii\* -a ! -iname \*LOC -a ! -iname \*DTI\* -a ! -iname \*CINCI\* -a ! -iname \*T1W\*` # -and ! -iname \*DLonur\* -and ! -iname \*_DL` # Make an array of found images
     if [[ -n $ARRAY ]] ; then # exlcude empty arrays
         for IM in $ARRAY ; do
             base=`basename "$IM"`
-            # end="${base##*_}"
-            if [[ $end == "Y" ]] ; then
+            if [[ $end = 1 ]] ; then
                 num=`echo ${base##*_} | sed -e 's,\.nii.*,,g'`
+		text=`echo ${base%_*} | sed -e 's,\(........\).*,\1,' -e 's,_,,g'`
             else
                 num=`echo ${base%%_*}`
+		text=`echo ${base#*_} | sed -e 's,\(........\).*,\1,' -e 's,_,,g'`
             fi
             #text=`echo $base | sed -e 's,[0-9]*_,,' -e 's,\(........\).*,\1,' -e 's,_,,g'`
-            text=`echo ${base#*_} | sed -e 's,\(........\).*,\1,' -e 's,_,,g'`
 		if [[ $text == "DLHASTE" ]] ; then
 			text="VFA"
 		elif [[ $text == "wip1062" ]] ; then
@@ -145,10 +157,6 @@ for TERM in T2_HASTE CERVIX SSFSE_T2 DL_HASTE iTSE_haste_dnf ; do # Search terms
         done
     fi
 done
-
-# Set up niftymic folder
-mkdir -pv ${RECON}/../niftymic/{t2,mask}
-cp ${RECON}/fetus*z -vup ${RECON}/../niftymic/t2/
 
 # Set up diffusion processing directory
 DCMPATH=`readlink -f $DCMDIR`

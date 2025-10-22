@@ -69,9 +69,8 @@ fi
 maskdir="${nmic}/mask"
 mkdir -pv ${maskdir}
 srrdir="${nmic}/srr"
-if [[ ! -n $alpha ]] ; then
-    alpha="0.04"
-fi
+if [[ ! -n $alpha ]] ; then alpha="0.04" ; fi
+if [[ ! -n $reso ]] ; then reso=".8" ; fi
 
 # Run scripts
 shsfb="${nmic}/run-sfb.sh"

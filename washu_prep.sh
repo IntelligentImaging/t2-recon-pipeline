@@ -32,7 +32,7 @@ function DCMrename () {
 	EDIT2=${EDIT1%]*}
 	DESC=`echo $EDIT2 | sed 's/ /_/g'`
 	# rename the directory
-	mv -v ${SERIES} ${DCMDIR}/${BASESERIES}_${DESC}
+	mv -v ${SERIES}/secondary ${DCMDIR}/${BASESERIES}_${DESC}
 	}
 
 function convert () {
@@ -51,7 +51,7 @@ depchk rename
 depchk dcm2niix
 
 # Rename DICOM directories and move them to a subfolder
-rename -v secondary DICOM ${RAW}/*/secondary
+# rename -v secondary DICOM ${RAW}/*/secondary
 mkdir -pv ${DCMDIR}
 for SERIES in ${RAW}/* ; do
 	BASESERIES=`basename $SERIES`

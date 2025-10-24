@@ -3,12 +3,14 @@ The T2 recon pipeline is a set of instructions and scripts for going from raw T2
 ## Prequisites
 - Source CRkit in your bash profile
   
-    Something like: `source /lab-share/Rad-Gholipour-e2/Public/fetalmri/software/crkit/bin/crkit-env.sh`
+    Something like: `source /lab-share/Rad-Warfield-e2/Groups/fetalmri/software/crkit/bin/crkit-env.sh`
     
-- Have the fetal processing pipeline binary directory in your FETALBIN: `/lab-share/Rad-Gholipour-e2/Public/fetalmri/software/bin`
-- Docker: https://docs.docker.com/engine/install/
-- The SVRTK Docker image: https://github.com/SVRTK/svrtk-docker-gpu
-- Davood's recon brain extraction docker: https://hub.docker.com/r/arfentul/maskrecon
+- Have the fetal processing pipeline binary directory in your FETALBIN: `export FETALBIN=/lab-share/Rad-Gholipour-e2/Public/fetalmri/software/bin`
+- Apptainer/Singularity https://apptainer.org/ or Docker: https://docs.docker.com/engine/install/
+
+Helpful tools:
+- ITK-SNAP (for viewing images and drawing/editing ROI's)
+- detox (convenient tool to fix directory names with special characters)
 
 Helpful tools:
 - ITK-SNAP (for viewing images and drawing/editing ROI's)
@@ -17,8 +19,8 @@ Helpful tools:
 1. Pull data to CRL server. This step will most likely already be completed by Clemente. Only applies to scans performed at BCH.
  
     `sh retrieve-par.sh -a -n [MRN] [DOS] [OUTPUT DIRECTORY]`
-  > -a Tells the script to not use patient MRN/exam accession in the folder names
-  > <br> -n Puts the output files directory in OUTPUT DIRECTORY, instead of sorting by exam (obviously, don't do this if you do want the script to sort by visit nunmber)
+  > `-a` Tells the script to not use patient MRN/exam accession in the folder names
+  > <br> `-n` Puts the output files directory in OUTPUT DIRECTORY, instead of sorting by exam (obviously, don't do this if you do want the script to sort by visit nunmber)
 2. Convert data from DICOM to NIFTI and set up recon directory:
 
     `sh prep-fetal.sh [RAW CASE DIR] [STUDY RECON DIR]`<br>
@@ -27,17 +29,19 @@ Helpful tools:
     - Stacks that do not have the entire brain should be archived
     - Stacks in which the fetus changes orientation (from coronal to sagittal, for example) should be archived
     - Oblique stacks should be archived if there are better stacks
-    - Only ~4-9 stacks are needed; if there are more they can be removed/ignored.  
+    - Only ~4-9 stacks are needed; if there are more they can be removed/ignored.
+1. Process reconstruction with either SVRTK or Niftymic  
+## Reconstruction with SVRTK
 1. Create a rough ROI for reconstruction, named *mask_x.nii.gz*, where "x" is the corresponding stack number. I do this in ITK-SNAP.<br>
 ![Example of the recon ROI. It doesn't need to be exact.](images/example_mask.png)
 1. Generate SVRTK docker run script: `sh svrtk-gen.sh [recon directory]`
-This script writes the SVRTK container command (*run-svrtk.sh*) to run the reconstruction. Looking at *recon directory*, it records all files named *fetus_\*nii.gz* as the inputs and a file named *mask_\*.nii.gz* to use as the ROI.
-## Running the SVRTK reconstruction 
-- Method A) Script to run a single recon: `sh svrtk-exec.sh [recon directory]`
-  - While on the e2 server, you must use Singularity instead of Docker: `sh svrtk-exec.sh -s [recon directory]`
-- Method B) Use this convenient script to search for all run-svrtk.sh files and run any for which the corresponding output cannot be found: `sh svrtk-allexec.sh [STUDY DIRECTORY]`<br>
-*study directory* is the folder which holds all of the individual subject recon directories<br>
-- Check recon output. If necessary (recon is poor), change the stack selection and/or mask, and re-run SVRTK.
+This script writes the SVRTK container command (*run-svrtk.sh*) to run the reconstruction. It records all files named *fetus_\*nii.gz* in `[recon directory]` as the inputs and a file named *mask_\*.nii.gz* to use as the ROI.
+1. Execute the run script
+- Method A) Script to run a single recon: `sh svrtk-exec.sh -s [recon directory]`
+  - `-s` option uses Singularity rather than Docker. While on the e2 server, you must use Singularity.
+- Method B) Use the convenience to run all run-svrtk.sh files in subdirectories for unfinished recons: `sh svrtk-allexec.sh [STUDY DIRECTORY]`
+
+- Check recon output. If necessary (recon is poor), change the stack selection and/or mask, and re-run reconstruction.
 
 ## Normalization and prep for atlas-space registration
 - Bias correct and generate a precise brain mask for the reconstructed image`sh reg-prep.sh -n 1 -m [SVRTK_subjID.nii.gz]`<br>This script does the following:
@@ -63,14 +67,15 @@ This script writes the SVRTK container command (*run-svrtk.sh*) to run the recon
 The output registration should be orthogonal and have axial, coronal, sagittal arranged like the below example.
 <img src="images/reg.png" width="33%">
 
-# Running Niftymic Reconstruction
-Niftymic is a little more self-sufficient, featuring built-in pipelines to run some of the steps above without user input, including atlas registration. The image quality is also pretty good. The downside of Niftymic is that it's slower and harder to troubleshoot problems.
+# Reconstruction with Niftymic 
+Niftymic is more self-sufficient, featuring built-in pipelines to run some of the steps above without user input, including atlas registration. The image quality is also pretty good. The downside of Niftymic is that it's slower and harder to troubleshoot problems with individual scans.
 1. Make a niftymic folder in the same place you would make the "svrtk" folder, with "t2" and "mask" subfolders
 - `mkdir -pv STUDY/CASEID/niftymic/{t2,mask}`
-1. Copy the t2 stacks you want to reconstruct to the t2 folder
-1. `sh nm-gen.sh STUDY/CASEID/niftymic` to make the run scripts (separate scripts generated for stack brain masking ("run-sfb.sh" and recon pipeline (run-nm.sh)
-1. `sh nm-exec.sh STUDY/CASEID/niftymic` to run the pipeline. That's it! Use `sh nm-exec.sh -s STUDY/CASEID/niftymic` for Apptainer when on the cluster.
-- Note that Niftymic does not produce a final, masked reconstruction. You will need to do this yourself (like `crlMaskImage niftymic/srr/recon_template_space/srr_template.nii.gz niftymic/srr/recon_template_space/srr_template_mask.nii.gz your-final-masked-recon.nii.gz`)
+1. Copy the t2 stacks you want to reconstruct to the `niftymic/t2` folder
+1. `sh nm-gen.sh STUDY/CASEID/niftymic` to make the run scripts (separate scripts generated for stack brain masking (`run-sfb.sh` and recon pipeline `run-nm.sh`)
+1. `sh nm-exec.sh -s STUDY/CASEID/niftymic` to run the pipeline. That's it!
+1. Note that Niftymic does not produce a final, masked reconstruction. You will need to do this yourself.
+- `[study folder] $ sh collectNM.sh [input list of CASEID's to pull]`
 
 # Segmentation
 - Multi-atlas segmentation script for fetal data: `sh FetalAtlasSeg.sh [Imagelist] [OutputDir] [MaxThreads]`<br>

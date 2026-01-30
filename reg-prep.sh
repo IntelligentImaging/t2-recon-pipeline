@@ -13,8 +13,9 @@ cat << EOF
 
         [-n] number of N4 b0-inhomogeneity correction recursive loops (DEFAULT=3)
         [-t] if set, temporary recurions will be preserved (biastemp0, biastemp1, etc)
-        [-m] performs Davood Karimi brain extraction (mask segmentation)
+	[-m] DISABLED-- performs Davood Karimi brain extraction (mask segmentation)
         [-s] use singularity to run container (REQUIRED FOR E2)
+	    [-k] use crkit container for CRL tools
 EOF
 }
 
@@ -46,8 +47,11 @@ while :; do
         -t|--temp)
             TEMP="YES"
             ;;
-        -m|--mask)
-            MASK="YES"
+#        -m|--mask)
+#            MASK="YES"
+#            ;;
+        -k|--crkit)
+            CRKITCON="YES"
             ;;
         -?*)
             printf 'warning: unknown option -- ignored: %s\n' "$1" >&2
@@ -113,14 +117,24 @@ echo "Creating mask"
 # Threshold the entire image to get mask
 cmd="crlBinaryThreshold ${inN4} ${tempmask} 0.5 40000 1 0"
 # cmd="fslmaths.fsl ${inN4} -thr 0.5 -uthr 40000 -bin ${tempmask}"
-$cmd
+
+if [[ $CRKITCON=1 ]] ; then
+	singularity exec docker://arfentul/crkit:latest /bin/bash -c "$cmd"
+else $cmd
+fi
+
 echo $cmd > $LOG
 while [[ $i -lt $ITS ]] ; do
     biastemp="${REGDIR}/biastemp${i}_${BASE}"
     echo "Bias correction step ${i} ..."
     # N4 binary
     cmd="$n4 $inN4 $biastemp $tempmask"
-    $cmd
+
+	if [[ $CRKITCON=1 ]] ; then
+     	   singularity exec docker://arfentul/crkit:latest /bin/bash -c "$cmd"
+	else $cmd
+	fi
+
     echo $cmd >> $LOG
     echo "Created $biastemp!"
     # Recurse
@@ -139,10 +153,20 @@ echo "N4 bias correction done"
 REF="${FETALREF}/ref/STA30.nii.gz"
 echo "Match image intensities to reference image"
 cmd="${FETALBIN}/crlMatchMaxImageIntensity $REF $biascorr $maxcorr"
-$cmd
+
+if [[ $CRKITCON=1 ]] ; then
+        singularity exec docker://arfentul/crkit:latest /bin/bash -c "$cmd"
+else $cmd
+fi
+
 echo $cmd >> $LOG
 cmd="${FETALBIN}/crlNoNegativeValues $maxcorr $finalcorr"
-$cmd
+
+if [[ $CRKITCON=1 ]] ; then
+        singularity exec docker://arfentul/crkit:latest /bin/bash -c "$cmd"
+else $cmd
+fi
+
 echo $cmd >> $LOG
 
 # Open permissions for group to write

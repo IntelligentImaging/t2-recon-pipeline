@@ -22,6 +22,7 @@ cat << EOF
         -c      FLIRT registration metric {mutualinfo,corratio,normcorr,normmi,leastsq,labeldiff,bbr} (default is corratio)
         -ga     specify gestational age for atlas matching (default: estimate based on total volume)
         -w      Widens selection of targets to +/- one week GA (default: off)
+        -k      Use crkit container for CRL tools
 
 EOF
 }
@@ -81,6 +82,9 @@ while :; do
         -w|--wide)
             WIDE="YES"
             ;;
+        -k|--crkit)
+            let CRKITCON=1
+            ;;
         -?*)
             printf 'warning: unknown option (ignored): %s\n' "$1" >&2
             ;;
@@ -106,6 +110,7 @@ DIR=`dirname $INPUT`
 BASE=`basename $INPUT`
 SCRIPT="${DIR}/run-reg.sh"
 if [[ ! -n $METRIC ]] ; then METRIC="corratio" ; fi
+if [[ ! -n $CRKITCON ]] ; then let CRKITCON=0  ; fi
 
 # registration command to be called later
 function register {
@@ -117,7 +122,7 @@ function register {
                 echo "output files are ${output##*/}"
                 echo "reg metric is $METRIC"
                 echo "Running FLIRT!"
-                cmd="flirt.fsl -dof 6 -cost $METRIC -in $INPUT -ref ${template} -omat ${output}.mat -out ${output}"
+                cmd="flirt -dof 6 -cost $METRIC -in $INPUT -ref ${template} -omat ${output}.mat -out ${output}"
 		echo $cmd >> $SCRIPT
 		$cmd
                 }
@@ -126,10 +131,17 @@ function register {
 CCMASK="${DIR}/mask_r3Drecon_registration.nii.gz"
 if [ $MASK ] ; then
     echo "Finalize mask (crlMaskConnectedComponents)"
-    $FETALBIN/crlMaskConnectedComponents ${MASK} ${CCMASK} 1 500
+    #$FETALBIN/crlMaskConnectedComponents ${MASK} ${CCMASK} 1 500
+    maskfilter -largest ${MASK} connect ${CCMASK} -force
     echo Masking image
     MASKED="${DIR}/m${BASE}"
-    crlMaskImage $INPUT $CCMASK $MASKED
+
+    cmd="crlMaskImage $INPUT $CCMASK $MASKED"
+    if [[ $CRKITCON = 1 ]] ; then
+        singularity exec docker://arfentul/crkit:latest /bin/bash -c "$cmd"
+    else $cmd
+    fi
+
     #fslmaths.fsl $INPUT -mul $CCMASK $MASKED
     INPUT=$MASKED
 fi
@@ -143,15 +155,40 @@ if [ $ITER ] ; then
     MAX="${DIR}/tmp_bm${BASE}"
     NEG="${DIR}/tmp_bm${BASE}"
     while [[ $count -lt ${ITER} ]] ; do
-        $FETALBIN/crlN4biasfieldcorrection $INPUT $OUT $CCMASK
+
+
+        cmd="${FETALBIN}/crlN4biasfieldcorrection $INPUT $OUT $CCMASK"
+        if [[ $CRKITCON = 1 ]] ; then
+            singularity exec docker://arfentul/crkit:latest /bin/bash -c "$cmd"
+        else $cmd
+        fi
+
         INPUT="${OUT}"
         ((count++))
     done
     mv $OUT -v $CORR
-    $FETALBIN/crlMatchMaxImageIntensity ${FETALREF}/STA_GEPZ/STA35.nii.gz $CORR $MAX 
-    $FETALBIN/crlNoNegativeValues ${MAX} ${NEG}
-    mv -v ${NEG} ${CORR}
-    INPUT=${CORR} 
+
+
+    cmd="crlBinaryThreshold $CORR ${DIR}/tmp_noNegMask.nii.gz -10000 0 0 1"
+    if [[ $CRKITCON = 1 ]] ; then
+        singularity exec docker://arfentul/crkit:latest /bin/bash -c "$cmd"
+    else $cmd
+    fi
+
+    cmd="crlMaskImage $CORR ${DIR}/tmp_noNegMask.nii.gz ${NEG}"
+    if [[ $CRKITCON = 1 ]] ; then
+        singularity exec docker://arfentul/crkit:latest /bin/bash -c "$cmd"
+    else $cmd
+    fi
+    
+    mrhistmatch scale ${NEG} ~/fetalmri/templates/ref/STA30.nii.gz ${MAX} -force 
+    mv -v ${MAX} ${CORR}   
+
+    #$FETALBIN/crlMatchMaxImageIntensity ${FETALREF}/STA_GEPZ/STA35.nii.gz $CORR $MAX 
+    #$FETALBIN/crlNoNegativeValues ${MAX} ${NEG}
+    #mv -v ${NEG} ${CORR}
+    INPUT=${CORR}
+    rm -v ${DIR}/tmp_noNegMask.nii.gz 
 fi
 
 # used to name output files

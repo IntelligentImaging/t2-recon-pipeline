@@ -106,14 +106,15 @@ function convert () {
 echo "Removing special characters from DICOM folder names"
 detox ${DCMDIR}
 
-# Convert to NIFTI with dcm2niix
+# Convert to NIFTI
 mkdir -pv ${NIIDIR}
 if [[ ! -z `find ${DCMDIR} -mindepth 2 -type f` ]] ; then
 	for DCM in ${DCMDIR}/* ; do
-		if [[ -d ${DCM} ]] ; then
+		if [[ -d ${DCM} && ! $DCM == *"_ColFA" && ! $DCM == *"_FA" && ! $DCM == *"_ADC" && ! $DCM == *"TRACEW" && ! $DCM == *"TENSOR"* && ! $DCM == *"TRUFISP"* && ! $DCM == *"PLANE_LOC"* && ! $DCM == *"localizer"* ]] ; then
 			convert		
-			fi
-		done
+		else echo skipping $DCM...
+        fi
+	done
 else
 	echo Conversion step error: DICOM files were not found
 	fi
@@ -128,7 +129,7 @@ fi
 echo "COPY TO RECON FOLDER # # #"
 RECON="${PROC}/${ID}/svrtk"
 mkdir -pv ${RECON}/../notgood
-for TERM in SSh T2_HASTE CERVIX SSFSE DL_HASTE iTSE_haste_dnf ; do # Search terms
+for TERM in SSh T2_HASTE CERVIX SSFSE DL_HASTE iTSE_haste_dnf T2_FETAL ; do # Search terms
     ARRAY=`find ${NIIDIR}/ -type f -name \*$TERM\*.nii\* -a ! -iname \*LOC -a ! -iname \*DTI\* -a ! -iname \*CINCI\* -a ! -iname \*T1W\*` # -and ! -iname \*DLonur\* -and ! -iname \*_DL` # Make an array of found images
     if [[ -n $ARRAY ]] ; then # exlcude empty arrays
         for IM in $ARRAY ; do

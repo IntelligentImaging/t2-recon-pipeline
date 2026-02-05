@@ -51,7 +51,7 @@ while :; do
 #            MASK="YES"
 #            ;;
         -k|--crkit)
-            CRKITCON="YES"
+            let CRKITCON=1
             ;;
         -?*)
             printf 'warning: unknown option -- ignored: %s\n' "$1" >&2

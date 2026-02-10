@@ -52,6 +52,9 @@ cat << EOF
                     PATH/PREFIX-atlas30.nii.gz
                     PATH/PREFIX-atlas31.nii.gz ...etc
                     (defualt: all three of GEPZ, GEPZ-WMZ and REGION)
+
+		Please note any user-added template files or directory should be located in the FETALREF environment variable directory!
+
         -p      specify output segmentation prefix (default: mas)
         -f|--fcps   Run Haoran Dou's FCPS (fetal cortical plate segmentation) code. Requires GPU's.
         --noAt  Use the old ISA names (without "atlas_t2final")
@@ -187,7 +190,7 @@ mkdir -pv "$tools"
 cp $0 -nv ${tools}/seg.sh # make a copy of this script
 cp ${tlist} -v ${tools}/ # copy the input template list
 
-source /lab-share/Rad-Gholipour-e2/Public/fetalmri/software/crkit/bin/crkit-env.sh
+source ${FETALSOFT}/crkit/bin/crkit-env.sh
 SEG="${FETALSOFT}/crkit/bin/crlProbabilisticGMMSTAPLE" # STAPLE binary
 PVC="${FETALBIN}/crlCorrectFetalPartialVoluming" # Partial Volume Correction binary
 VOL="${FETALBIN}/crlComputeVolume" # Used for checking PVC output

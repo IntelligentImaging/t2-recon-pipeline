@@ -144,6 +144,8 @@ if [ $MASK ] ; then
 
     #fslmaths.fsl $INPUT -mul $CCMASK $MASKED
     INPUT=$MASKED
+else
+    echo No mask supplied
 fi
 
 # If optional N4 bias is supplied, do N4 bias correction n times

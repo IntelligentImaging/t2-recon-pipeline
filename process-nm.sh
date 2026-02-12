@@ -4,7 +4,7 @@
 show_help () {
 cat << EOF
     USAGE: sh ${0##*/} [-s] [-m] [-a||--all] -- [case niftymic directory]
-    Incorrect input supplied
+    Incorrect input supplied 
 
 	Must select at least one step to run. Each step requires the output from the previous:
 	-s	NiftyMIC reconstruction using the images in the input directory

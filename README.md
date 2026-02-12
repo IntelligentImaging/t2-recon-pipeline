@@ -9,7 +9,7 @@ The T2 recon pipeline is a set of instructions and scripts for going from raw T2
 - Apptainer/Singularity https://apptainer.org/ or Docker: https://docs.docker.com/engine/install/
 
 Helpful tools:
-- ITK-SNAP (for viewing images and drawing/editing ROI's)
+- ITK-SNAP (for viewing images and drawing/editing ROI's) 
 - detox (convenient tool to fix directory names with special characters)
 
 ## Data prep and setup

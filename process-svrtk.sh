@@ -10,7 +10,7 @@ cat << EOF
 	-s	SVRTK reconstruction using the images in the input directory
 	-m 	T2 recon mask segmentation for the SVRTK recon
 	-r	Normalize intensity and register masked recon to atlas
-    --all   Do all
+	--all   Do all
  
     You should inspect the input stacks first and remove those you don't need. ~6-9 stacks is plenty.
 EOF

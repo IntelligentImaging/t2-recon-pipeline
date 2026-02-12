@@ -9,7 +9,7 @@ cat << EOF
 	Must select at least one step to run. Each step requires the output from the previous:
 	-s	NiftyMIC reconstruction using the images in the input directory
 	-m 	Mask nm recons with the mask and copy to output directory
-    	--all   Do all
+    	--all   Do all 
  
     You should inspect the input stacks first and remove those you don't need. ~6-9 stacks is plenty.
 EOF

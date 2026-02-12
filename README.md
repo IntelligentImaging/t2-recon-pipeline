@@ -12,15 +12,12 @@ Helpful tools:
 - ITK-SNAP (for viewing images and drawing/editing ROI's)
 - detox (convenient tool to fix directory names with special characters)
 
-Helpful tools:
-- ITK-SNAP (for viewing images and drawing/editing ROI's)
-- detox (convenient tool to fix directory names with special characters)
 ## Data prep and setup
-1. Pull data to CRL server. This step will most likely already be completed by Clemente. Only applies to scans performed at BCH.
+1. Pull data to CRL server. Only applies to scans on BCH PACS.
  
     `sh retrieve-par.sh -a -n [MRN] [DOS] [OUTPUT DIRECTORY]`
   > `-a` Tells the script to not use patient MRN/exam accession in the folder names
-  > <br> `-n` Puts the output files directory in OUTPUT DIRECTORY, instead of sorting by exam (obviously, don't do this if you do want the script to sort by visit nunmber)
+  > <br> `-n` Puts the output files directory in OUTPUT DIRECTORY, instead of sorting by exam (obviously, don't do this if you do want the script to sort by visit ID)
 2. Convert data from DICOM to NIFTI and set up recon directory:
 
     `sh prep-fetal.sh [RAW CASE DIR] [STUDY RECON DIR]`<br>
@@ -63,19 +60,26 @@ This script writes the SVRTK container command (*run-svrtk.sh*) to run the recon
   > <br>&nbsp;&nbsp;&nbsp;&nbsp;[any supplied image.nii.gz] -- Alternatively you can target a specific image
   > <br>-w Matches plus/minus 1 week GA, instead of exact match.
   > <br>--ga [GA] allows you to specify a gestational age instead of having the script estimate it
-2. Look through output registrations and choose the best one, then run: `sh choosereg.sh [best reg]`<br>This copies the chosen registration as *atlas_t2final_CASEID.nii.gz* and throws out all other registration attempts.
+2. Look through output registrations and choose the best one, then run: `sh choosereg.sh [best reg].nii.gz`<br>This copies the chosen registration as *atlas_t2final_CASEID.nii.gz* and throws out all other registration attempts.
 The output registration should be orthogonal and have axial, coronal, sagittal arranged like the below example.
 <img src="images/reg.png" width="33%">
 
 # Reconstruction with Niftymic 
 Niftymic is more self-sufficient, featuring built-in pipelines to run some of the steps above without user input, including atlas registration. The image quality is also pretty good. The downside of Niftymic is that it's slower and harder to troubleshoot problems with individual scans.
-1. Make a niftymic folder in the same place you would make the "svrtk" folder, with "t2" and "mask" subfolders
+1. Make a niftymic folder in the same place you would make the "svrtk" folder, with "t2" and "mask" subfolders (prep-fetal.sh currently takes all HASTE scans and places them  in t2/)
 - `mkdir -pv STUDY/CASEID/niftymic/{t2,mask}`
 1. Copy the t2 stacks you want to reconstruct to the `niftymic/t2` folder
 1. `sh nm-gen.sh STUDY/CASEID/niftymic` to make the run scripts (separate scripts generated for stack brain masking (`run-sfb.sh` and recon pipeline `run-nm.sh`)
 1. `sh nm-exec.sh -s STUDY/CASEID/niftymic` to run the pipeline. That's it!
 1. Note that Niftymic does not produce a final, masked reconstruction. You will need to do this yourself.
 - `[study folder] $ sh collectNM.sh [input list of CASEID's to pull]`
+
+# Reconstruction with [https://github.com/daviddmc/NeSVoR NeSVoR]
+NeSVoR performs GPU accelerated SVR. By default the resulting reconstruction is in atlas space. You may need to run a registration afterwards to improve alignment.
+1. Put the T2 stacks for reconstruction in a directory `mkdir -pv STUDY/CASEID/nesvor`
+1. Run the container `sh nesvor.sh -s STUDY/CASEID/nesvor`
+1. Refine registration `sh reg-fetal-recon.sh -w STUDY/CASEID/nesvor/nesvor.nii.gz`
+1. Choose best alignment `sh choosereg.sh [best reg].nii.gz`
 
 # Segmentation
 - Multi-atlas segmentation script for fetal data: `sh FetalAtlasSeg.sh [Imagelist] [OutputDir] [MaxThreads]`<br>

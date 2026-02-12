@@ -75,7 +75,7 @@ if [[ ${STEPsvr}=1 ]] ; then
     bash ${shdir}/nm-gen.sh ${nmic} # creates the run script
 
     if [[ -f ${nmic}/run-nm.sh ]] ; then
-        bash ${shdir}/nm-exec.sh -s ${nmic} # -s runs the container with apptainer
+        bash ${shdir}/nm-allexec.sh -s ${nmic} # -s runs the container with apptainer
     else die "Run script for recon not found"
     fi
 

@@ -25,7 +25,7 @@ output=${indir}/nesvor.nii.gz
 
 echo Running NeSVoR reconstruction: $indir
 if [[ ! -f $output ]] ; then
-    singularity exec --nv docker://junshenxu/nesvor nesvor reconstruct --input-stacks ${indir}/fetus*z --output-volume ${indir}/nesvor.nii.gz --segmentation --bias-field-correction --output-resolution 0.5
+    singularity exec --nv docker://junshenxu/nesvor nesvor reconstruct --input-stacks ${indir}/fetus*z --output-volume ${indir}/nesvor.nii.gz --segmentation --bias-field-correction --output-resolution 0.8
 echo recon done!
 else
     echo $output already exists

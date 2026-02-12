@@ -19,6 +19,10 @@ die() {
     printf '%s\n' "$1" >&2
     exit 1
 }
+
+let STEPsvr=0
+let STEPmask=0
+
 while :; do
     case $1 in
         -h|-\?|--help)
@@ -52,7 +56,7 @@ if [ $# -ne 1 ]; then
     exit
 fi 
 
-if [[ ${STEPsvr}+${STEPmask} = 0 ]] ; then die 'Need to specify at least one step to run' ; fi
+if (( ${STEPsvr} + ${STEPmask} == 0 )) ; then die 'Need to specify at least one step to run' ; fi
 
 shdir=`dirname $0`
 

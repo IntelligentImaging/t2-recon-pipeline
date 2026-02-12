@@ -120,4 +120,5 @@ if [[ ${STEPreg}=1 ]] ; then
     # You could add "-t [CASES|EARLY]" to change the registration target to individual subjects or early-GA subjects
 
     echo "++ atlas registration done ++"
+    echo "Now run sh ${shdir}/choosereg.sh on ${svrtk}/registration/bmnxbSVRTK[id]_FLIRTto_STA[ga].nii.gz if you are happy with the result"
 fi

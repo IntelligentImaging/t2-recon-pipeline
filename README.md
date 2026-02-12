@@ -81,6 +81,13 @@ NeSVoR performs GPU accelerated SVR. By default the resulting reconstruction is 
 1. Refine registration `sh reg-fetal-recon.sh -w STUDY/CASEID/nesvor/nesvor.nii.gz`
 1. Choose best alignment `sh choosereg.sh [best reg].nii.gz`
 
+# Pipeline automation scripts
+Rather than run each pipeline step individually, you can run a single controller script which will run through all steps with default settings.
+* SVRTK: `sh process-svrtk.sh --all STUDY/CASEID/svrtk`
+* NiftyMIC: `sh process-nm.sh --all`
+* NeSVoR: work in progress
+You can also use these scripts for specific pipeline steps.
+
 # Segmentation
 - Multi-atlas segmentation script for fetal data: `sh FetalAtlasSeg.sh [Imagelist] [OutputDir] [MaxThreads]`<br>
   - Image list is a path list of post-processed T2 recons (as done above) with GA's, for example:

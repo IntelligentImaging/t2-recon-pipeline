@@ -114,9 +114,10 @@ if [[ ${STEPreg}=1 ]] ; then
 
     # -n 2 runs two more iterations of N4 bias correction
     # -m takes the mask from step 2
-    # -w Widens the registration template selection to plus and minus one week GA
-    bash ${shdir}/reg-fetal-recon.sh -n 2 -m ${subjmask} -w ${subjrecon}
+    bash ${shdir}/reg-fetal-recon.sh -n 2 -m ${subjmask} ${subjrecon}
     # This script once again matches intensities to template range.
+    # You could add "-w" to Widen the registration template selection to plus and minus one week GA
+    # You could add "-t [CASES|EARLY]" to change the registration target to individual subjects or early-GA subjects
 
     echo "++ atlas registration done ++"
 fi

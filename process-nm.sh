@@ -97,6 +97,16 @@ if [[ ${STEPmask}=1 ]] ; then
     mkdir -pv ${output}
 
     #mrmath $subj_srr $subj_mask product ${output}/${subj}-msrr_subject.nii.gz
-    mrmath $atlas_srr $atlas_mask product ${output}/${subj}-msrr_template.nii.gz -force
+    EDIT="${output}/${subj}-srr_template_maskEDIT.nii.gz"
 
+    if [[ -f ${EDIT} ]] ; then
+	    cropmask=${EDIT}
+    else echo "Using automatic mask. If you want to use an edited mask, put it in niftymic/output as: ${subj}-srr_template_maskEDIT.nii.gz"
+	    cropmask=$atlas_mask
+    fi
+
+    echo Masking image with $atlas_mask
+    mrmath $atlas_srr $cropmask product ${output}/${subj}-msrr_template.nii.gz -force
+
+    echo "++ SVR cropping step done ++"
 fi

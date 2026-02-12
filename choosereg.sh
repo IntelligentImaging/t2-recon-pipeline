@@ -59,7 +59,7 @@ function compose {
         echo "couldn't find combineTransforms-t2pipeline.sh in your script dir, exiting"
         exit
     fi
-    sh ${scriptdir}/combineTransforms-t2pipeline.sh $best
+    bash ${scriptdir}/combineTransforms-t2pipeline.sh $best
     }
 
 

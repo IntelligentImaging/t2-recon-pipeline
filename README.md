@@ -83,7 +83,7 @@ Rather than run each pipeline step individually, you can run a single controller
 * SVRTK: `sh process-svrtk.sh --all STUDY/CASEID/svrtk`
 * NiftyMIC: `sh process-nm.sh --all STUDY/CASEID/niftymic`
 * NeSVoR: `sh process-nesvor.sh --all STUDY/CASEID/nesvor`
-You can also use these scripts for specific pipeline steps.
+<br>You can also use these scripts for specific pipeline steps.
 
 # Segmentation
 - Multi-atlas segmentation script for fetal data: `sh FetalAtlasSeg.sh [Imagelist] [OutputDir] [MaxThreads]`<br>

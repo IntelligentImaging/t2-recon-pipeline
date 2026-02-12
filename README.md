@@ -71,7 +71,7 @@ Niftymic is more self-sufficient, featuring built-in pipelines to run some of th
 1. Note that Niftymic does not produce a final, masked reconstruction. You will need to do this yourself.
 - `[study folder] $ sh collectNM.sh [input list of CASEID's to pull]`
 
-# Reconstruction with [NeSVoR]([https://github.com/daviddmc/NeSVoR)
+# Reconstruction with [NeSVoR](https://github.com/daviddmc/NeSVoR)
 NeSVoR performs GPU accelerated SVR. By default the resulting reconstruction is in atlas space. You may need to run a registration afterwards to improve alignment.
 1. Put the T2 stacks for reconstruction in a directory `mkdir -pv STUDY/CASEID/nesvor`
 1. Run the container `sh nesvor.sh -s STUDY/CASEID/nesvor`
@@ -81,7 +81,7 @@ NeSVoR performs GPU accelerated SVR. By default the resulting reconstruction is 
 # Pipeline automation scripts
 Rather than run each pipeline step individually, you can run a single controller script which will run through all steps with default settings.
 * SVRTK: `sh process-svrtk.sh --all STUDY/CASEID/svrtk`
-* NiftyMIC: `sh process-nm.sh --all`
+* NiftyMIC: `sh process-nm.sh --all STUDY/CASEID/niftymic`
 * NeSVoR: work in progress
 You can also use these scripts for specific pipeline steps.
 

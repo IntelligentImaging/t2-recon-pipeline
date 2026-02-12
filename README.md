@@ -82,7 +82,7 @@ NeSVoR performs GPU accelerated SVR. By default the resulting reconstruction is 
 Rather than run each pipeline step individually, you can run a single controller script which will run through all steps with default settings.
 * SVRTK: `sh process-svrtk.sh --all STUDY/CASEID/svrtk`
 * NiftyMIC: `sh process-nm.sh --all STUDY/CASEID/niftymic`
-* NeSVoR: work in progress
+* NeSVoR: `sh process-nesvor.sh --all STUDY/CASEID/nesvor`
 You can also use these scripts for specific pipeline steps.
 
 # Segmentation

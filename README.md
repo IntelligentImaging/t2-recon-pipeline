@@ -74,7 +74,7 @@ Niftymic is more self-sufficient, featuring built-in pipelines to run some of th
 1. Note that Niftymic does not produce a final, masked reconstruction. You will need to do this yourself.
 - `[study folder] $ sh collectNM.sh [input list of CASEID's to pull]`
 
-# Reconstruction with [https://github.com/daviddmc/NeSVoR NeSVoR]
+# Reconstruction with [NeSVoR]([https://github.com/daviddmc/NeSVoR)
 NeSVoR performs GPU accelerated SVR. By default the resulting reconstruction is in atlas space. You may need to run a registration afterwards to improve alignment.
 1. Put the T2 stacks for reconstruction in a directory `mkdir -pv STUDY/CASEID/nesvor`
 1. Run the container `sh nesvor.sh -s STUDY/CASEID/nesvor`

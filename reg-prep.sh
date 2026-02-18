@@ -112,18 +112,6 @@ biascorr="${REGDIR}/b${BASE}"
 maxcorr="${REGDIR}/xb${BASE}"
 finalcorr="${REGDIR}/nxb${BASE}"
 finalcorrBASE=`basename $finalcorr`
-echo "N4 bias correction"
-#tempmask="${REGDIR}/TEMPmask_${BASE}"
-#echo "Creating mask"
-# Threshold the entire image to get mask
-#cmd="crlBinaryThreshold ${inN4} ${tempmask} 0.5 40000 1 0"
-
-#if [[ $CRKITCON=1 ]] ; then
-#	singularity exec docker://arfentul/crkit:latest /bin/bash -c "$cmd"
-#else $cmd
-#fi
-
-#echo $cmd > $LOG
 
 echo "N4 bias correction"
 while [[ $i -lt $ITS ]] ; do
@@ -143,6 +131,7 @@ while [[ $i -lt $ITS ]] ; do
     inN4="$biastemp"
     ((i++))
 done
+
 # Cleanup N4 temp files
 cp -v $inN4 $biascorr
 #rm -v $tempmask

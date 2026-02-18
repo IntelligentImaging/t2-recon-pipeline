@@ -162,7 +162,7 @@ if [ $ITER ] ; then
     while [[ $count -lt ${ITER} ]] ; do
 
 
-        cmd="python $n4 -i $INPUT -o $OUT -m $CCMASK"
+        cmd="python3 $n4 -i $INPUT -o $OUT -m $CCMASK"
         if [[ $CRKITCON = 1 ]] ; then
             singularity exec docker://arfentul/crkit:latest /bin/bash -c "$cmd"
         else $cmd

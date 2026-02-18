@@ -8,7 +8,6 @@ import os
 import argparse
 import SimpleITK as sitk
 
-#def main():
 def main(args):
     parser = argparse.ArgumentParser(description='Applies N4 bias correciton with sITK')
     parser.add_argument('-i', '--input', type=str, help='Specify input image')

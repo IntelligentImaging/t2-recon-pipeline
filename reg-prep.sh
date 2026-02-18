@@ -124,11 +124,13 @@ echo "N4 bias correction"
 #fi
 
 #echo $cmd > $LOG
+
+echo "N4 bias correction"
 while [[ $i -lt $ITS ]] ; do
     biastemp="${REGDIR}/biastemp${i}_${BASE}"
-    echo "Bias correction step ${i} ..."
+    echo "Step ${i} ..."
     # N4 binary
-    cmd="python $n4 -i $inN4 -o $biastemp"
+    cmd="python3 $n4 -i $inN4 -o $biastemp"
 
 	if [[ $CRKITCON=1 ]] ; then
      	   singularity exec docker://arfentul/crkit:latest /bin/bash -c "$cmd"

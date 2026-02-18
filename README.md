@@ -2,7 +2,10 @@
 The T2 recon pipeline is a set of instructions and scripts for going from raw T2 fetal data stacks to a super resolution 3D reconstruction (Gholipour et al. 2017). It's generally more efficient to run these steps for groups of images one section at a time. For example, first do Recon Setup for all scans, then run SVRTK for all scans, then do registration pre-processing for all scans, etc.
 ## Prequisites
 Needed for some scripts:
-- Have the fetal processing pipeline binary directory in your FETALBIN: `export FETALBIN=/lab-share/Rad-Gholipour-e2/Public/fetalmri/software/bin`
+- Have the fetal processing pipeline directories set as environment variables:
+`export FETALSOFT=/lab-share/Rad-Gholipour-e2/Public/fetalmri/software`
+`export FETALBIN=${FETALSOFT}/bin`
+`export FETALREF=/lab-share/Rad-Gholipour-e2/Public/fetalmri/templates`
 - Apptainer/Singularity https://apptainer.org/ or Docker: https://docs.docker.com/engine/install/
 
 Helpful tools:

@@ -28,37 +28,30 @@ def main(args):
     image = sitk.ReadImage(args.input, sitk.sitkFloat32)
 
     if args.mask is not None:
-        print('mask provided')
         maskImage = sitk.ReadImage(args.mask, sitk.sitkUInt8)
     else:
-        print('no mask provided')
-        maskImage = sitk.OtsuThreshold(image, 0, 1, 200)
+        maskImage = sitk.OtsuThreshold(image, 0, 1, 200) # this thresholds the image, value may need to be adjusted, default was 200
+        #sitk.WriteImage(maskImage, 'otsu.nii.gz')
 
     shrinkFactor = 1
     if args.shrink is not None:
         shrinkFactor = int(args.shrink)
         if shrinkFactor > 1:
-            image = sitk.Shrink(args.input, [shrinkFactor] * image.GetDimension())
+            image = sitk.Shrink(image, [shrinkFactor] * image.GetDimension())
             maskImage = sitk.Shrink(
                 maskImage, [shrinkFactor] * image.GetDimension()
             )
-    else:
-        print('no shrink factor provided, setting to 1')
-
 
     corrector = sitk.N4BiasFieldCorrectionImageFilter()
 
     numberFittingLevels = 4
     if args.levels is not None:
-        numberFittingLevels = int([args.levels])
-    else:
-        print('no fitting levels provided, setting to 4')
+        numberFittingLevels = int(args.levels)
 
     if args.iter is not None:
-        corrector.SetMaximumNumberOfIterations([args.iter] * numberFittingLevels)
-    else:
-        print('no iteration limit set')
+        corrector.SetMaximumNumberOfIterations([int(args.iter)] * numberFittingLevels)
 
+    print('mask =', args.mask, ', shrink =', shrinkFactor, ', fittinglevels =', numberFittingLevels, ', iterations =', args.iter)
     corrected_image = corrector.Execute(image, maskImage)
 
     print(image)

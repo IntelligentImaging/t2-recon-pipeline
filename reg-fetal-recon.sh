@@ -112,6 +112,9 @@ SCRIPT="${DIR}/run-reg.sh"
 if [[ ! -n $METRIC ]] ; then METRIC="corratio" ; fi
 if [[ ! -n $CRKITCON ]] ; then let CRKITCON=0  ; fi
 
+SHDIR=`dirname $0`
+n4="${SHDIR}/n4biascorrect.py"
+
 # registration command to be called later
 function register {
                 baseT="`basename ${template%%.*}`"
@@ -159,7 +162,7 @@ if [ $ITER ] ; then
     while [[ $count -lt ${ITER} ]] ; do
 
 
-        cmd="${FETALBIN}/crlN4biasfieldcorrection $INPUT $OUT $CCMASK"
+        cmd="python3 $n4 -i $INPUT -o $OUT -m $CCMASK"
         if [[ $CRKITCON = 1 ]] ; then
             singularity exec docker://arfentul/crkit:latest /bin/bash -c "$cmd"
         else $cmd

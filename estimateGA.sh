@@ -11,22 +11,31 @@ input=`readlink -f $1`
 # A text file with the atlas volumes in column 2
 choose="${FETALREF}/STA_GEPZ/masks/choose.txt"
 base=`basename $input`
-# Binary threshold the recon to get a rough volume
+
+# Binary threshold the recon to get a rough volume if no mask is supplied
 if [[ $2 == "-m" ]] ; then
     mask=$1
-    vol=`${FETALBIN}/crlComputeVolume $mask 1`
 else
     # No mask specified
-    mask="TEMPestimateMASK_${base}"
-    crlBinaryThreshold $input $mask 150 20000 1 0
-    vol=`${FETALBIN}/crlComputeVolume $mask 1`
-    rm $mask
+    tmpmask="TEMPestimateMASK_${base}"
+    mrthreshold -q -abs 2 $input $tmpmask -force # threshold everything above intensity=2 into a binary mask
+    mask=$tmpmask
 fi
+
+# Calculate volume of mask using voxel count multiplied by image spacing 
+maskvoxelcount=`mrstats -q -mask $mask $mask -output count`
+maskimagespace=`mrinfo $mask -spacing | sed -e 's, ,*,g'`
+invol=`echo "$maskvoxelcount * $maskimagespace / 1000" | bc`
+
+
 # compare input mask volume to each STA mask volume and pick the smallest (absolute) difference
 while read line ; do
+
+    # Get atlas GAs and volumes from text file
     atlasGA=`echo $line | cut -d' ' -f1`
     avol=`echo $line | cut -d ' ' -f2`
-    diff=`echo "($avol-$vol)/1" | bc`
+
+    diff=`echo "($avol-$invol)/1" | bc` # Difference btw atlas volume and input image volume
     abs=${diff#-}
     # list all comparison results
     # echo AtlasGA $atlasGA Diff $abs
@@ -40,4 +49,8 @@ while read line ; do
             pickvol="$abs"
     fi
 done < $choose
+
+rm $tmpmask
+
+
 echo $input $pick

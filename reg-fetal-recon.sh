@@ -215,8 +215,7 @@ if [[ ! -n $GA  && ! -f $TARGET ]] ; then
         maskimagespace=`mrinfo $CCMASK -spacing | sed -e 's, ,*,g'`
         invol=`echo "$maskvoxelcount * $maskimagespace / 1000" | bc`
 
-        #invol=`$FETALBIN/crlComputeVolume $CCMASK 1`
-        diff=`echo "($avol-$invol)/1" | bc`
+        diff=`echo "($avol-$invol)/1" | bc` # Difference btw atlas volume and input image volume
         abs=${diff#-}
         # list all comparison results
         # echo AtlasGA $atlasGA Diff $abs

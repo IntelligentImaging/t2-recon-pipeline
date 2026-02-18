@@ -205,9 +205,17 @@ if [[ ! -n $GA  && ! -f $TARGET ]] ; then
     echo "Estimating input GA"
     choose="${FETALREF}/STA_GEPZ/masks/choose.txt"
     while read line ; do
+
+        # Get atlas GAs and volumes from text file
         atlasGA=`echo $line | cut -d' ' -f1`
         avol=`echo $line | cut -d ' ' -f2`
-        invol=`$FETALBIN/crlComputeVolume $CCMASK 1`
+
+        # Calculate volume of mask using voxel count multiplied by image spacing 
+        maskvoxelcount=`mrstats -q -mask $CCMASK $CCMASK -output count`
+        maskimagespace=`mrinfo $CCMASK -spacing | sed -e 's, ,*,g'`
+        invol=`echo "$maskvoxelcount * $maskimagespace / 1000" | bc`
+
+        #invol=`$FETALBIN/crlComputeVolume $CCMASK 1`
         diff=`echo "($avol-$invol)/1" | bc`
         abs=${diff#-}
         # list all comparison results

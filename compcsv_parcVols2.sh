@@ -1,20 +1,56 @@
 #!/bin/bash
 
-if [ -z "$2" ] ; then
-	echo ""
-	echo "	Incorrect arguments supplied!"
-	echo "	usage: sh $0 PARCELLATION OUTPUT_CSV"
-	echo "	Outputs selected volumes (from the atlas key in the script)"
-	echo "	for the input into a spreadsheet. If it's a new .csv, column"
-	echo "	headers will be added. If not, it will just append ID & volumes."
-	echo ""
+show_help () {
+cat << EOF
+
+    USAGE: sh ${0##*/} [-h] -- PARCELLATION OUTPUT.csv
+
+        Outputs selected volumes (from the atlas key in the script)
+		for the input into a spreadsheet. If it's a new .csv, column
+		headers will be added. If not, it will just append ID & volumes.
+
+EOF
+}
+
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+
+
+while :; do
+    case $1 in
+        -h|-\?|--help)
+            show_help # help message
+            exit
+            ;;
+        -k|--crkit)
+        	let CRKITCON=1 # working on adding this, I don't think crkit has crlComputeVolume, unfortunately...
+            ;;
+        --) # end of optionals
+            shift
+            break
+            ;;
+        -)?*
+            printf 'warning: unknown option (ignored: %s\m' "$1" >&2
+            ;;
+        *) # default case, no optionals
+            break
+    esac
+    shift
+done
+
+
+if [ $# -ne 2 ]  ; then
+	show_help
 	exit
-	fi
+fi
 
 # text file with each label (format: "NUMBER NAME") in a new line
-atlaskey="documents/4compute-STAkey-vENA-2_4.txt"
+SHDIR=`dirname $0`
+atlaskey="${SHDIR}/4compute-STAkey.txt"
 # comput volume binary
-compute="crlComputeVolume"
 parc=${1}
 output=${2}
 
@@ -73,7 +109,8 @@ echo ${parc} >> ${output}
 # a while loop for putting the label values for one case into a row
 while ( [ ${xcount} -lt ${count} ] ) ; do
 	# get the volume for this label
-	vol=`${compute} ${parc} ${labels[$xcount]}`
+	vol=`crlComputeVolume ${parc} ${labels[$xcount]}`
+
 	# take the line as it exists now
 	line=`sed "${sedNUM}q;d" ${output}`
 	# replace with itself PLUS the next label volume

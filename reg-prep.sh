@@ -82,7 +82,8 @@ function depend () {
 }
 
 # N4 binary
-n4="${FETALBIN}/crlN4biasfieldcorrection"
+SHDIR=`dirname $0`
+n4="${SHDIR}/n4biascorrect.py"
 
 # Set naming conventions
 RECON=`readlink -f $1`
@@ -112,23 +113,24 @@ maxcorr="${REGDIR}/xb${BASE}"
 finalcorr="${REGDIR}/nxb${BASE}"
 finalcorrBASE=`basename $finalcorr`
 echo "N4 bias correction"
-tempmask="${REGDIR}/TEMPmask_${BASE}"
-echo "Creating mask"
+#tempmask="${REGDIR}/TEMPmask_${BASE}"
+#echo "Creating mask"
 # Threshold the entire image to get mask
-cmd="crlBinaryThreshold ${inN4} ${tempmask} 0.5 40000 1 0"
-# cmd="fslmaths.fsl ${inN4} -thr 0.5 -uthr 40000 -bin ${tempmask}"
+#cmd="crlBinaryThreshold ${inN4} ${tempmask} 0.5 40000 1 0"
 
-if [[ $CRKITCON=1 ]] ; then
-	singularity exec docker://arfentul/crkit:latest /bin/bash -c "$cmd"
-else $cmd
-fi
+#if [[ $CRKITCON=1 ]] ; then
+#	singularity exec docker://arfentul/crkit:latest /bin/bash -c "$cmd"
+#else $cmd
+#fi
 
-echo $cmd > $LOG
+#echo $cmd > $LOG
+
+echo "N4 bias correction"
 while [[ $i -lt $ITS ]] ; do
     biastemp="${REGDIR}/biastemp${i}_${BASE}"
-    echo "Bias correction step ${i} ..."
+    echo "Step ${i} ..."
     # N4 binary
-    cmd="$n4 $inN4 $biastemp $tempmask"
+    cmd="python3 $n4 -i $inN4 -o $biastemp"
 
 	if [[ $CRKITCON=1 ]] ; then
      	   singularity exec docker://arfentul/crkit:latest /bin/bash -c "$cmd"
@@ -143,7 +145,7 @@ while [[ $i -lt $ITS ]] ; do
 done
 # Cleanup N4 temp files
 cp -v $inN4 $biascorr
-rm -v $tempmask
+#rm -v $tempmask
 if [[ ! $TEMP == "YES" ]] ; then
     rm -v ${REGDIR}/*(biastemp*_${BASE})
 fi

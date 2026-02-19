@@ -203,8 +203,7 @@ basebrain="${INPUT%%.*}"
 if [[ ! -n $GA  && ! -f $TARGET ]] ; then
     # Compare mask volume to each STA mask volume and pick the closest
     echo "Estimating input GA"
-    choose="${FETALREF}/STA_GEPZ/masks/choose.txt"
-    while read line ; do
+    while IFS= read -r line ; do
 
         # Get atlas GAs and volumes from text file
         atlasGA=`echo $line | cut -d' ' -f1`
@@ -228,7 +227,7 @@ if [[ ! -n $GA  && ! -f $TARGET ]] ; then
             pick="$atlasGA"
             pickvol="$abs"
         fi
-    done < $choose
+    done < "${SHDIR}/GAvols.txt"
     echo "Estimated GA is: $pick"
     GA=$pick
 fi
@@ -268,7 +267,7 @@ fi
 
 if [[ $TARGET == "ATLAS" || $TARGET == "CASES" || $TARGET == "EARLY" ]] ; then 
 	# inspect list of possible registration templates
-	while read line ; do 
+	while IFS= read -r line ; do 
 		# name of template
 		template=`readlink -f $(echo ${FETALREF}/${line} | awk -F' ' '{ print $1 }')`
 		# GA of template

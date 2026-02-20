@@ -244,13 +244,13 @@ fi
 # Else, we use a list with registration templates
 if   [[ $TARGET == "CASES" ]] ; then
 	echo "*** Registering $INPUT to same-age cases ***"
-    tlist="${FETALREF}/regtemplates/cases.csv"
+    tlist="${SHDIR}/regtemplates/cases.csv"
 elif [[ $TARGET == "ATLAS" ]] ; then
 	echo "*** Registering $INPUT to same-age STA images ***"
-    tlist="${FETALREF}/regtemplates/STA.csv"
+    tlist="${SHDIR}/regtemplates/STA.csv"
 elif [[ $TARGET == "EARLY" ]] ; then
     echo "*** Registering $INPUT to EARLY-ga cases ***"
-    tlist="${FETALREF}/regtemplates/early.csv"
+    tlist="${SHDIR}/regtemplates/early.csv"
     GA="21"
 elif [[ -f $TARGET ]] ; then
     # ONLY USED IF INDIVIDUAL TARGET FILE IS USED (THIS IS WHY WHY READLINK THE VAR)

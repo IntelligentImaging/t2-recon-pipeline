@@ -74,7 +74,7 @@ if [ $# -eq 0 ] ; then
 RAW="$1"
 PROC="$2"
 ID=`basename "$RAW"`
-DCMDIR=`find ${RAW} -type d -name DICOM | head -n1`
+DCMDIR=`find ${RAW} -type d -name DICOM -o -name scans | sort | head -n1`
 IMAGEDIR=`dirname $DCMDIR`
 NIIDIR="${IMAGEDIR}/nii"
 NET="/fileserver/fetal/software/2Ddensenet"

@@ -117,18 +117,18 @@ n4="${SHDIR}/n4biascorrect.py"
 
 # registration command to be called later
 function register {
-                baseT="`basename ${template%%.*}`"
-                output=${basebrain}_FLIRTto_${baseT}
-                echo "input is $BASE"
-                echo "template image is $template"
-        		echo "template GA is $tga"
-                echo "output files are ${output##*/}"
-                echo "reg metric is $METRIC"
-                echo "Running FLIRT!"
-                cmd="flirt -dof 6 -cost $METRIC -in $INPUT -ref "${template}" -omat ${output}.mat -out ${output}"
-		echo $cmd >> $SCRIPT
-		$cmd
-                }
+            baseT="`basename ${template%%.*}`"
+            output=${basebrain}_FLIRTto_${baseT}
+            echo "input is $BASE"
+            echo "template image is $template"
+        	echo "template GA is $tga"
+            echo "output files are ${output##*/}"
+            echo "reg metric is $METRIC"
+            echo "Running FLIRT!"
+            cmd="flirt -dof 6 -cost $METRIC -in $INPUT -ref $template -omat ${output}.mat -out $output"
+            echo $cmd >> $SCRIPT
+            $cmd
+            }
 
 # If optional mask is supplied, mask input image and set masked image as image which gets registered
 CCMASK="${DIR}/mask_r3Drecon_registration.nii.gz"

@@ -125,7 +125,7 @@ function register {
                 echo "output files are ${output##*/}"
                 echo "reg metric is $METRIC"
                 echo "Running FLIRT!"
-                cmd="flirt -dof 6 -cost $METRIC -in $INPUT -ref ${template} -omat ${output}.mat -out ${output}"
+                cmd="flirt -dof 6 -cost $METRIC -in $INPUT -ref "${template}" -omat ${output}.mat -out ${output}"
 		echo $cmd >> $SCRIPT
 		$cmd
                 }

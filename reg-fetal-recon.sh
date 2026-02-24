@@ -125,9 +125,7 @@ function register {
             echo "output files are ${output##*/}"
             echo "reg metric is $METRIC"
             echo "Running FLIRT!"
-            cmd="flirt -dof 6 -cost $METRIC -in $INPUT -ref $template -omat ${output}.mat -out $output"
-            echo $cmd >> $SCRIPT
-            $cmd
+            flirt -dof 6 -cost $METRIC -in $INPUT -ref $template -omat ${output}.mat -out $output
             }
 
 # If optional mask is supplied, mask input image and set masked image as image which gets registered
@@ -258,7 +256,8 @@ elif [[ -f $TARGET ]] ; then
 	template=${TARGET}
 	tga="NA"
 	basebrain="${INPUT%%.*}"
-	register
+    # register
+	flirt -dof 6 -cost $METRIC -in $INPUT -ref $template -omat ${output}.mat -out $output
 	warning="n"
 else
     echo "Supplied argument for reference invalid"
@@ -269,14 +268,15 @@ if [[ $TARGET == "ATLAS" || $TARGET == "CASES" || $TARGET == "EARLY" ]] ; then
 	# inspect list of possible registration templates
 	while IFS= read -r line ; do 
 		# name of template
-        template=`echo ${FETALREF}/${line} | cut -d' ' -f1`
+        template="`echo ${FETALREF}/${line} | cut -d' ' -f1`"
 		#template=`readlink -f $(echo ${FETALREF}/${line} | awk -F' ' "{ print $1 }")`
 		# GA of template
 		tga=`echo $line | awk -F' ' '{ print $2 }'`
 		# check if template GA is match for our input GA, if so run command
 		# if -w is set it will check for +/-1 GA templates
 		if [[ $GA -eq $tga ]] || [[ -n $WIDE && ( ${GA}-${tga} -eq 1 || ${GA}-${tga} -eq -1 ) ]] ; then
-			register &
+			# register &
+            flirt -dof 6 -cost $METRIC -in $INPUT -ref $template -omat ${output}.mat -out $output &
 			warning="n"
 			echo
 		fi

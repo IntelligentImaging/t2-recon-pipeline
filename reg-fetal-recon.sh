@@ -115,6 +115,9 @@ if [[ ! -n $CRKITCON ]] ; then let CRKITCON=0  ; fi
 SHDIR=`dirname $0`
 n4="${SHDIR}/n4biascorrect.py"
 
+# THIS FUNCTION IS NOW SKIPPED due to troubles with scoping between terminal environments
+# it was not really necessary anyway
+# Script could use clean up including removing the function
 # registration command to be called later
 function register {
             baseT="`basename ${template%%.*}`"

@@ -115,6 +115,9 @@ if [[ ! -n $CRKITCON ]] ; then let CRKITCON=0  ; fi
 SHDIR=`dirname $0`
 n4="${SHDIR}/n4biascorrect.py"
 
+# THIS FUNCTION IS NOW SKIPPED due to troubles with scoping between terminal environments
+# it was not really necessary anyway
+# Script could use clean up including removing the function
 # registration command to be called later
 function register {
             baseT="`basename ${template%%.*}`"
@@ -256,7 +259,9 @@ elif [[ -f $TARGET ]] ; then
 	template=${TARGET}
 	tga="NA"
 	basebrain="${INPUT%%.*}"
-    # register
+        baseT="`basename ${template%%.*}`"
+        output=${basebrain}_FLIRTto_${baseT}
+    	# register
 	flirt -dof 6 -cost $METRIC -in $INPUT -ref $template -omat ${output}.mat -out $output
 	warning="n"
 else
@@ -275,8 +280,10 @@ if [[ $TARGET == "ATLAS" || $TARGET == "CASES" || $TARGET == "EARLY" ]] ; then
 		# check if template GA is match for our input GA, if so run command
 		# if -w is set it will check for +/-1 GA templates
 		if [[ $GA -eq $tga ]] || [[ -n $WIDE && ( ${GA}-${tga} -eq 1 || ${GA}-${tga} -eq -1 ) ]] ; then
-			# register &
-            flirt -dof 6 -cost $METRIC -in $INPUT -ref $template -omat ${output}.mat -out $output &
+		baseT="`basename ${template%%.*}`"
+		output=${basebrain}_FLIRTto_${baseT}
+	 	# register &
+           	flirt -dof 6 -cost $METRIC -in $INPUT -ref $template -omat ${output}.mat -out $output &
 			warning="n"
 			echo
 		fi

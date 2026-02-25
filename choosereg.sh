@@ -114,12 +114,6 @@ iddir=`dirname $recondir`
 id=`basename $iddir`
 cp $best -v ${dir}/atlas_t2final_${id}.nii.gz
 
-run="${dir}/run-reg.sh"
-if [[ -f $run ]] ; then
-    str=${base}
-    if grep -q $str $run ; then
-        echo "Updating run-reg.sh"
-        val=`grep $str ${run} | tail -n1` 
-        echo $val > ${run}
-    fi
-fi
+echo "Save and name recon output files (placed one level up)"
+SHDIR=`dirname $0`
+bash ${SHDIR}/t2FilesForDWI.sh ${regdir}

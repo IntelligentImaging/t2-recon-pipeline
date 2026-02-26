@@ -11,7 +11,7 @@ input=`readlink -f $1`
 # A text file with the atlas volumes in column 2
 base=`basename $input`
 
-SHDIR=`dirname $0`
+SHDIR=`dirname $0` 
 
 # Binary threshold the recon to get a rough volume if no mask is supplied
 if [[ $2 == "-m" ]] ; then

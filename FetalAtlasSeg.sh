@@ -17,7 +17,7 @@
 shopt -s extglob
 
 # Binary/program directories
-# Set env variables FETALSOFT, FETALBIN, FETALREF in .bashrc
+# Set env variables FETALSOFT, FETALREF in .bashrc
 # The path to these directories on e2 may be: /lab-share/Rad-Warfield-e2/Groups/fetalmri/ [software] [software/bin] [templates], respectively
 
 # Default STA atlas list # # # # # # # # # 

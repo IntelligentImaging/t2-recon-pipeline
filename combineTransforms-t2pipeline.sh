@@ -33,8 +33,8 @@ output="${MOV1%%.*}_FLIRTto_STA.nii.gz"
 # fi
 
 # programs and scripts
-c3d="${FETALBIN}/c3d_affine_tool"
-affineSH="${FETALBIN}/changeTFMnameInFileToAffine.py"
+c3d="${FETALSOFT}/bin/c3d_affine_tool"
+affineSH="${FETALSOFT}/bin/changeTFMnameInFileToAffine.py"
 compose="crlComposeAffineTransforms"
 LOG="run-combineTFM.sh"
 

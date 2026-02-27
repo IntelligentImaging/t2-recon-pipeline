@@ -143,7 +143,7 @@ echo "N4 bias correction done"
 # Intensity correction (N4 changes intensity range)
 REF="${FETALREF}/ref/STA30.nii.gz"
 echo "Match image intensities to reference image"
-cmd="${FETALBIN}/crlMatchMaxImageIntensity $REF $biascorr $maxcorr"
+cmd="${FETALSOFT}/bin/crlMatchMaxImageIntensity $REF $biascorr $maxcorr"
 
 if [[ $CRKITCON=1 ]] ; then
         singularity exec docker://arfentul/crkit:latest /bin/bash -c "$cmd"
@@ -151,7 +151,7 @@ else $cmd
 fi
 
 echo $cmd >> $LOG
-cmd="${FETALBIN}/crlNoNegativeValues $maxcorr $finalcorr"
+cmd="${FETALSOFT}/bin/crlNoNegativeValues $maxcorr $finalcorr"
 
 if [[ $CRKITCON=1 ]] ; then
         singularity exec docker://arfentul/crkit:latest /bin/bash -c "$cmd"

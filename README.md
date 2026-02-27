@@ -4,7 +4,6 @@ The T2 recon pipeline is a set of instructions and scripts for going from raw T2
 Needed for some scripts:
 - Have the fetal processing pipeline directories set as environment variables:<br>
 `export FETALSOFT=/lab-share/Rad-Gholipour-e2/Public/fetalmri/software`<br>
-`export FETALBIN=${FETALSOFT}/bin`<br>
 `export FETALREF=/lab-share/Rad-Gholipour-e2/Public/fetalmri/templates`<br>
 - Apptainer/Singularity https://apptainer.org/ or Docker: https://docs.docker.com/engine/install/
 

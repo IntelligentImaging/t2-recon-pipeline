@@ -135,7 +135,6 @@ function register {
 CCMASK="${DIR}/mask_r3Drecon_registration.nii.gz"
 if [ $MASK ] ; then
     echo "Finalize mask (crlMaskConnectedComponents)"
-    #$FETALBIN/crlMaskConnectedComponents ${MASK} ${CCMASK} 1 500
     maskfilter -largest ${MASK} connect ${CCMASK} -force
     echo Masking image
     MASKED="${DIR}/m${BASE}"
@@ -190,9 +189,6 @@ if [ $ITER ] ; then
     mrhistmatch scale ${NEG} ~/fetalmri/templates/ref/STA30.nii.gz ${MAX} -force 
     mv -v ${MAX} ${CORR}   
 
-    #$FETALBIN/crlMatchMaxImageIntensity ${FETALREF}/STA_GEPZ/STA35.nii.gz $CORR $MAX 
-    #$FETALBIN/crlNoNegativeValues ${MAX} ${NEG}
-    #mv -v ${NEG} ${CORR}
     INPUT=${CORR}
     rm -v ${DIR}/tmp_noNegMask.nii.gz 
 fi

@@ -192,8 +192,8 @@ cp ${tlist} -v ${tools}/ # copy the input template list
 
 source ${FETALSOFT}/crkit/bin/crkit-env.sh
 SEG="${FETALSOFT}/crkit/bin/crlProbabilisticGMMSTAPLE" # STAPLE binary
-PVC="${FETALBIN}/crlCorrectFetalPartialVoluming" # Partial Volume Correction binary
-VOL="${FETALBIN}/crlComputeVolume" # Used for checking PVC output
+PVC="${FETALSOFT}/bin/crlCorrectFetalPartialVoluming" # Partial Volume Correction binary
+VOL="${FETALSOFT}/bin/crlComputeVolume" # Used for checking PVC output
 MATH="${FETALSOFT}/crkit/bin/crlImageAlgebra" # Used for parcellating cortical plate
 baseTLIST=`basename $tlist`
 TLIST="${tools}/${baseTLIST}"
@@ -531,7 +531,7 @@ while read line; do
             cd -
             deactivate
             echo "Resample model prediction"
-            ${FETALBIN}/crlCopyImageInformation ${Fsub}/predict.nii.gz ${Fsub}/cii.nii.gz ${Fsub}/image.nii.gz 1
+            ${FETALSOFT}/bin/crlCopyImageInformation ${Fsub}/predict.nii.gz ${Fsub}/cii.nii.gz ${Fsub}/image.nii.gz 1
             echo "FetalCPSeg complete"
             cp ${Fsub}/cii.nii.gz -v ${Fout}
         else echo "FCPS output found. Skipping..."

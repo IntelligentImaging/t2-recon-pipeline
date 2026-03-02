@@ -58,10 +58,13 @@ depchk dcm2niix
 mkdir -pv ${DCMDIR}
 for SERIES in ${RAW}/* ; do
 	BASESERIES=`basename $SERIES`
-	if [[ $BASESERIES =~ ^[0-9](|[0-9])$ ]] ; then
+	if [[ $BASESERIES =~ ^[0-9](|[0-9])(|[0-9])(|[0-9])(|[0-9])$ ]] ; then
+		echo rename $BASESERIES
 		DCMrename
 	fi
 done
+
+detox ${RAW}/scans
 
 rmdir ${RAW}/*
 

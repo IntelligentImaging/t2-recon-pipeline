@@ -33,21 +33,9 @@ function DCMrename () {
 	TAG=`dcmdump $EX | grep SeriesDesc`
 	EDIT1=${TAG#*[}
 	EDIT2=${EDIT1%]*}
-	DESC=`echo $EDIT2 | sed 's/ /_/g'`
+	DESC=`echo "${EDIT2}" | detox --inline | sed -e 's,=,,g'`
 	# rename the directory
 	mv -v ${EXDIR} ${DCMDIR}/${BASESERIES}_${DESC}
-	}
-
-function convert () {
-	BASE=`basename $DCM`
-	OUT="${NIIDIR}/${BASE}"
-	mkdir -pv ${OUT}
-	if [[ ! -z `find ${OUT} -type f` ]] ; then
-		echo "Skipping: Files already exist in ${OUT}"
-	else
-		echo "Converting $DCM"
-		dcm2niix -z y -f %d_%s -o "${OUT}/" $DCM
-		fi
 	}
 
 depchk rename
@@ -69,33 +57,4 @@ detox ${RAW}/scans
 rmdir ${RAW}/*
 
 bash ${SHDIR}/prep-fetal.sh ${RAW} ${PROC}
-
-
-# Convert to NIFTI with dcm2niix
-#mkdir -pv ${NIIDIR}
-#if [[ ! -z `find ${DCMDIR} -mindepth 3 -type f -name \*dcm` ]] ; then
-#	for DCM in ${DCMDIR}/* ; do
-#		if [[ -d ${DCM} ]] ; then
-#			convert		
-#			fi
-#		done
-#else
-#	echo Conversion step error: DICOM files were not found
-#	fi
-
-# Copy T2 stacks to reconstruction folder
-#RECON="${PROC}/${ID}/svrtk"
-#mkdir -pv ${RECON} ${RECON}/../notgood
-#find ${RECON}/../ -type d -exec chmod -c --preserve-root 777 {} \;
-#for IM in ${NIIDIR}/*T2*/*.nii.gz ; do
-#        base=`basename $IM`
-#        end="${base##*_}"
-#        new="fetus_${end}"
-#        cp ${IM} -v ${RECON}/${new}
-#        done
-
-
-# Set up niftymic folder
-#mkdir -pv ${RECON}/../niftymic/{t2,mask}
-#cp ${RECON}/fetus*z -vup ${RECON}/../niftymic/t2/
 

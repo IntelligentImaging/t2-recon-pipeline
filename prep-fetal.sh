@@ -130,7 +130,7 @@ echo "COPY TO RECON FOLDER # # #"
 RECON="${PROC}/${ID}/svrtk"
 mkdir -pv ${RECON}/../notgood
 for TERM in SSh T2_HASTE CERVIX SSFSE DL_HASTE iTSE_haste_dnf T2_FETAL ; do # Search terms
-    ARRAY=`find ${NIIDIR}/ -type f -name \*$TERM\*.nii\* -a ! -iname \*LOC -a ! -iname \*DTI\* -a ! -iname \*CINCI\* -a ! -iname \*T1W\*` # -and ! -iname \*DLonur\* -and ! -iname \*_DL` # Make an array of found images
+    ARRAY=`find ${NIIDIR}/ -type f -name \*$TERM\*.nii\* -a ! -iname \*LOC -a ! -iname \*DTI\* -a ! -iname \*CINCI\* -a ! -iname \*T1W\* -a ! -iname \*3Plane_Loc\*` # -and ! -iname \*DLonur\* -and ! -iname \*_DL` # Make an array of found images
     if [[ -n $ARRAY ]] ; then # exlcude empty arrays
         for IM in $ARRAY ; do
             base=`basename "$IM"`

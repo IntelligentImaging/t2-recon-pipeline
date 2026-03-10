@@ -74,7 +74,7 @@ echo "input directory: ${svrtk}"
 date
 
 # # # SVR RECONSTRUCTION # # #
-if [[ ${STEPsvr}=1 ]] ; then
+if [[ ${STEPsvr} = 1 ]] ; then
 
     echo "# # # SVR RECONSTRUCTION # # #"
     fetuses=`find $1 -maxdepth 1 -type f -name fetus\*.nii.gz`
@@ -93,7 +93,7 @@ if [[ ${STEPsvr}=1 ]] ; then
 fi
 
 # # # SVR MASKING and REGISTRATION # # #
-if [[ ${STEPmask}=1 ]] ; then
+if [[ ${STEPmask} = 1 ]] ; then
 
     echo "# # # SVR MASKING and REGISTRATION # # #"
     svrrecon="${svrtk}/SVRTK_${subj}.nii.gz"
@@ -109,7 +109,7 @@ if [[ ${STEPmask}=1 ]] ; then
 fi
 
 # # # ATLAS REGISTRATION # # #
-if [[ ${STEPreg}=1 ]] ; then
+if [[ ${STEPreg} = 1 ]] ; then
 
     echo "# # # ATLAS REGISTRATION # # #"
     subjrecon="${svrtk}/registration/nxbSVRTK_${subj}.nii.gz"

@@ -69,7 +69,7 @@ echo "input directory: ${nmic}"
 date
 
 # # # SVR RECONSTRUCTION # # #
-if [[ ${STEPsvr}=1 ]] ; then
+if [[ ${STEPsvr} = 1 ]] ; then
 
     echo "# # # SVR RECONSTRUCTION # # #"
     fetuses=`find ${1}/t2 -maxdepth 1 -type f -name fetus\*.nii.gz`
@@ -86,12 +86,12 @@ if [[ ${STEPsvr}=1 ]] ; then
     echo "++ SVR recon step done ++"
 fi
 
-# # # MASK RECONSTRUCTION # # #
-if [[ ${STEPmask}=1 ]] ; then
+# # # COPY OUTPUTS # # #
+if [[ ${STEPmask} = 1 ]] ; then
 
-    echo "# # # SVR RECONSTRUCTION # # #"
-    #subj_srr=${nmic}/srr/recon_subject_space/srr_subject.nii.gz
-    #subj_mask=${nmic}/srr/recon_subject_space/srr_subject_mask.nii.gz
+    echo "# # # FIND OUTPUTS and CROP WITH MASK # # #"
+    subj_srr=${nmic}/srr/recon_subject_space/srr_subject.nii.gz
+    subj_mask=${nmic}/srr/recon_subject_space/srr_subject_mask.nii.gz
     atlas_srr=${nmic}/srr/recon_template_space/srr_template.nii.gz
     atlas_mask=${nmic}/srr/recon_template_space/srr_template_mask.nii.gz
 
@@ -110,7 +110,14 @@ if [[ ${STEPmask}=1 ]] ; then
     fi
 
     echo Masking image with $atlas_mask
-    mrmath $atlas_srr $cropmask product ${output}/${subj}-msrr_template.nii.gz -force
+    mrmath $atlas_srr $cropmask product ${output}/${subj}-msrr_template.nii.gz -quiet -force
+
+    cp ${output}/${subj}-msrr_template.nii.gz ${output}/atlas_t2final_${subj}.nii.gz
+    cp ${atlas_srr}  -vup ${output}/atlas_t2_${subj}.nii.gz
+    cp ${atlas_mask} -vup ${output}/atlas_mask_${subj}.nii.gz
+    cp ${subj_srr}   -vup ${output}/t2_t2_${subj}.nii.gz
+    cp ${subj_mask}  -vup ${output}/t2_mask_${subj}.nii.gz
+    cp ${nmic}/srr/recon_template_space/srr_template_transform_sitk.txt -vup ${output}/t2-atlas_${subj}.tfm
 
     echo "++ SVR cropping step done ++"
 fi

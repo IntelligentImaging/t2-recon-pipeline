@@ -112,11 +112,11 @@ if [[ ${STEPmask} = 1 ]] ; then
     echo Masking image with $atlas_mask
     mrmath $atlas_srr $cropmask product ${output}/${subj}-msrr_template.nii.gz -quiet -force
 
-    cp ${output}/${subj}-msrr_template.nii.gz ${output}/atlas_t2final_${subj}.nii.gz
-    cp ${atlas_srr}  -vup ${output}/atlas_t2_${subj}.nii.gz
-    cp ${atlas_mask} -vup ${output}/atlas_mask_${subj}.nii.gz
-    cp ${subj_srr}   -vup ${output}/t2_t2_${subj}.nii.gz
-    cp ${subj_mask}  -vup ${output}/t2_mask_${subj}.nii.gz
+    cp ${output}/${subj}-msrr_template.nii.gz ${output}/atlas_t2finalnm_${subj}.nii.gz
+    cp ${atlas_srr}  -vup ${output}/atlas_t2nm_${subj}.nii.gz
+    cp ${atlas_mask} -vup ${output}/atlas_masknm_${subj}.nii.gz
+    cp ${subj_srr}   -vup ${output}/t2_t2nm_${subj}.nii.gz
+    cp ${subj_mask}  -vup ${output}/t2_masknm_${subj}.nii.gz
     cp ${nmic}/srr/recon_template_space/srr_template_transform_sitk.txt -vup ${output}/t2-atlas_${subj}.tfm
 
     echo "++ SVR cropping step done ++"

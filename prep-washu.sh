@@ -2,20 +2,19 @@
 
 if [[ $# -lt 2 || $# -gt 2 ]]; then	
 	echo "Incorrect argument supplied!"
-	echo "usage: sh $0 [RAW CASE DIR] [GENERAL PROC DIR]"
+	echo "usage: sh $0 [SCAN DICOM DIR] [GENERAL PROC DIR]"
 	echo "This script assumes that [RAW CASE DIR] is either arranged:"
 	echo " CASE/[NUMERICAL INDIV DICOM DIRS] or CASE/scans/[NAMED INDIV DICOM DIRS]"
 	exit
 	fi
 
 SHDIR=`dirname $0`
-RAW="$1"
 PROC="$2"
 # RUNCHECK="$3"
 ID=`basename $RAW`
-DCMDIR="${RAW}/scans"
-NIIDIR="${RAW}/nii"
-# NET="/fileserver/fetal/software/2Ddensenet"
+DCMDIR="$1"
+SUBJDIR=`dirname $DCMDIR`
+NIIDIR="${SUBJDIR}/nii"
 
 function depchk () {
 	if command -v $1 >/dev/null 2>&1 ; then
@@ -27,34 +26,35 @@ function depchk () {
 	fi
 	}
 
-function DCMrename () {
-	EX=`find ${SERIES} -type f -iname \*.dcm | head -n1`
-	EXDIR=`dirname $EX`
-	TAG=`dcmdump $EX | grep SeriesDesc`
-	EDIT1=${TAG#*[}
-	EDIT2=${EDIT1%]*}
-	DESC=`echo "${EDIT2}" | detox --inline | sed -e 's,=,,g'`
-	# rename the directory
-	mv -v ${EXDIR} ${DCMDIR}/${BASESERIES}_${DESC}
-	}
-
 depchk rename
 depchk dcm2niix
 
 # Rename DICOM directories and move them to a subfolder
 # rename -v secondary DICOM ${RAW}/*/secondary
-mkdir -pv ${DCMDIR}
-for SERIES in ${RAW}/* ; do
-	BASESERIES=`basename $SERIES`
-	if [[ $BASESERIES =~ ^[0-9](|[0-9])(|[0-9])(|[0-9])(|[0-9])$ ]] ; then
-		echo rename $BASESERIES
-		DCMrename
+for SERIES in ${DCMDIR}/* ; do
+	if [[ -d $SERIES ]]  ; then
+		echo rename $SERIES
+
+		EX=`find ${SERIES} -type f -iname \*.dcm -o -iname \*.DCM | head -n1`
+		EXDIR=`dirname $EX`
+
+		TAGdesc=`dcmdump $EX | grep SeriesDesc`
+		dEDIT1=${TAGdesc#*[}
+		dEDIT2=${dEDIT1%]*}
+		DESC=`echo "${dEDIT2}" | detox --inline | sed -e 's,=,,g' -e 's/,//g'`
+		
+		TAGnum=`dcmdump $EX | grep SeriesNumber`
+		nEDIT1=${TAGnum#*[}
+		nEDIT2=${nEDIT1%]*}
+		NUM=`echo "${nEDIT2}"`
+
+
+		# rename the directory
+		mv -v ${EXDIR} ${DCMDIR}/${NUM}_${DESC}
 	fi
 done
 
-detox ${RAW}/scans
+detox ${DCMDIR}/*
 
-rmdir ${RAW}/*
-
-bash ${SHDIR}/prep-fetal.sh ${RAW} ${PROC}
+bash ${SHDIR}/prep-fetal.sh ${SUBJDIR} ${PROC}
 

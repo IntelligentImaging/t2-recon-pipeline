@@ -105,12 +105,14 @@ fi
 # export -f get_tag sortd
 
 #Return StudyInstanceUID for all studies with given PatientID, StudyDate, and Modality
-findscu -od $output_dir -X +sr -aet RESEARCHPACS -aec PACSDCM -S -k "QueryRetrieveLevel=STUDY" -k "PatientID=$PatientID" -k "StudyDate=$StudyDate" -k "Modality=$Modality" -k StudyInstanceUID  pacsstor.tch.harvard.edu 104
+#findscu -od $output_dir -X +sr -aet RESEARCHPACS -aec PACSDCM -S -k "QueryRetrieveLevel=STUDY" -k "PatientID=$PatientID" -k "StudyDate=$StudyDate" -k "Modality=$Modality" -k StudyInstanceUID  pacsstor.tch.harvard.edu 104
+findscu -od $output_dir -X +sr -aet PACSDCM -aec RESEARCHPACS -S -k "QueryRetrieveLevel=STUDY" -k "PatientID=$PatientID" -k "StudyDate=$StudyDate" -k "Modality=$Modality" -k StudyInstanceUID synapseresearch.tch.harvard.edu 104
 
 #Retrieve all matching studies for given DICOM query files
 for d in $output_dir/rsp*.dcm; do 
 	echo
-	getscu -od $output_dir -aet RESEARCHPACS -aec PACSDCM -S pacsstor.tch.harvard.edu 104 $d
+	#getscu -od $output_dir -aet RESEARCHPACS -aec PACSDCM -S pacsstor.tch.harvard.edu 104 $d
+	getscu -od $output_dir -aet PACSDCM -aec RESEARCHPACS -S synapseresearch.tch.harvard.edu 104 $d
 done 
 
 echo Sort DICOMs
@@ -131,7 +133,7 @@ done
 wait
 
 echo Remove rsp and report files
-rm -fv ${output_dir}/rsp*dcm ${output_dir}/SR* ${output_dir}/PS* ${output_dir}/RAW.*
+rm -f ${output_dir}/rsp*dcm ${output_dir}/SR* ${output_dir}/PS* ${output_dir}/RAW.*
  
 echo Detox DICOM folder
 find $output_dir -type d -name DICOM -exec detox {} \;

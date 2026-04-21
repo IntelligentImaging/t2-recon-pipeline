@@ -62,7 +62,7 @@ shdir=`dirname $0`
 
 nmic=`readlink -f $1`
 dir=`dirname $nmic`
-subj=`basename $dir`
+fullid=`basename $dir`
 
 echo
 echo "input directory: ${nmic}"
@@ -94,6 +94,8 @@ if [[ ${STEPmask} = 1 ]] ; then
     subj_mask=${nmic}/srr/recon_subject_space/srr_subject_mask.nii.gz
     atlas_srr=${nmic}/srr/recon_template_space/srr_template.nii.gz
     atlas_mask=${nmic}/srr/recon_template_space/srr_template_mask.nii.gz
+    tfm=${nmic}/srr/recon_template_space/srr_template_transform_sitk.txt
+
 
     if [[ ! -f $atlas_srr || ! -f $atlas_mask ]] ; then die "could not find niftymic output reconstructions" ; fi 
 
@@ -101,23 +103,40 @@ if [[ ${STEPmask} = 1 ]] ; then
     mkdir -pv ${output}
 
     #mrmath $subj_srr $subj_mask product ${output}/${subj}-msrr_subject.nii.gz
-    EDIT="${output}/${subj}-srr_template_maskEDIT.nii.gz"
+    EDIT="${output}/${fullid}-srr_template_maskEDIT.nii.gz"
 
     if [[ -f ${EDIT} ]] ; then
 	    cropmask=${EDIT}
-    else echo "Using automatic mask. If you want to use an edited mask, put it in niftymic/output as: ${subj}-srr_template_maskEDIT.nii.gz"
+    else echo "Using automatic mask. If you want to use an edited mask, put it in niftymic/output as: ${fullid}-srr_template_maskEDIT.nii.gz"
 	    cropmask=$atlas_mask
     fi
 
     echo Masking image with $atlas_mask
-    mrmath $atlas_srr $cropmask product ${output}/${subj}-msrr_template.nii.gz -quiet -force
+    mrmath $atlas_srr $cropmask product ${output}/${fullid}-msrr_template.nii.gz -quiet -force
 
-    cp ${output}/${subj}-msrr_template.nii.gz ${output}/atlas_t2finalnm_${subj}.nii.gz
-    cp ${atlas_srr}  -vup ${output}/atlas_t2nm_${subj}.nii.gz
-    cp ${atlas_mask} -vup ${output}/atlas_masknm_${subj}.nii.gz
-    cp ${subj_srr}   -vup ${output}/t2_t2nm_${subj}.nii.gz
-    cp ${subj_mask}  -vup ${output}/t2_masknm_${subj}.nii.gz
-    cp ${nmic}/srr/recon_template_space/srr_template_transform_sitk.txt -vup ${output}/t2-atlasnm_${subj}.tfm
+    # for BIDS naming
+   subj=`echo $fullid | sed -e 's,s[0-9],,'`
+   if [[ $fullid == *_s? ]] ; then
+	    scan=`echo $fullid | sed -e 's,.*\(s[0-9]\),\1,'`
+    else echo couldnt divine scan id from name, defaulting to s1
+	    scan="s1"
+   fi
+
+    mkdir -pv ${output}/BIDS/${subj}/${scan}/{anat,xfm}
+    cp ${atlas_srr}  -vup ${output}/BIDS/${subj}/${scan}/anat/${subj}_${scan}_rec-niftymic_t2w.nii.gz
+    cp ${atlas_mask} -vup ${output}/BIDS/${subj}/${scan}/anat/${subj}_${scan}_rec-niftymic_desc-mask_t2w.nii.gz
+    cp ${subj_srr}   -vup ${output}/BIDS/${subj}/${scan}/xfm/${subj}_${scan}_rec-niftymic_t2w-t2space.nii.gz
+    cp ${subj_mask}  -vup ${output}/BIDS/${subj}/${scan}/xfm/${subj}_${scan}_rec-niftymic_desc-mask_t2w-t2space.nii.gz
+    cp ${tfm}        -vup ${output}/BIDS/${subj}/${scan}/xfm/${subj}_${scan}_rec-niftymic_t2w-t2space.tfm
+
+    # for SK pipeline naming
+    cp ${output}/${fullid}-msrr_template.nii.gz ${output}/atlas_t2finalnm_${fullid}.nii.gz
+    cp ${atlas_srr}  -vup ${output}/atlas_t2nm_${fullid}.nii.gz
+    cp ${atlas_srr}  -vup ${output}/atlas_t2nm_${fullid}.nii.gz
+    cp ${atlas_mask} -vup ${output}/atlas_masknm_${fullid}.nii.gz
+    cp ${subj_srr}   -vup ${output}/t2_t2nm_${fullid}.nii.gz
+    cp ${subj_mask}  -vup ${output}/t2_masknm_${fullid}.nii.gz
+    cp ${tfm}        -vup ${output}/t2-atlasnm_${fullid}.tfm
 
     echo "++ SVR cropping step done ++"
 fi

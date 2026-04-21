@@ -101,7 +101,7 @@ if [[ $checkwc -lt 2 ]] ; then
     exit
 fi
 
-mv -v ${base}.* ${tmpdir}/
+mv -v ${dir}/${base}.* ${tmpdir}/
 flirt=${best%%IRTto*}
 rm -v ${flirt}*
 mv -v ${tmpdir}/${base}.* ${dir}/

@@ -9,6 +9,7 @@ cat << EOF
 	Uses Simon's CRL-dicom-tools docker to convert images
 	Container utilizes dcmdjpeg for decompression, pydicom for naming, dcm2niix for conversion
 	Apptainer sif built from git lab CRL docker
+	Note: Both input and output directories may need to be subdirectories of the PWD due to container scripts
 EOF
 }
 

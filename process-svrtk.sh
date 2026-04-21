@@ -10,6 +10,7 @@ cat << EOF
 	-s	SVRTK reconstruction using the images in the input directory
 	-m 	T2 recon mask segmentation for the SVRTK recon
 	-r	Normalize intensity and register masked recon to atlas
+	-o	Output BIDS naming folder
 	--all   Do all
  
     You should inspect the input stacks first and remove those you don't need. ~6-9 stacks is plenty.
@@ -24,6 +25,7 @@ die() {
 let STEPsvr=0
 let STEPmask=0
 let STEPreg=0
+let STEPbids=0
 
 while :; do
     case $1 in
@@ -40,8 +42,11 @@ while :; do
         -r)
             let STEPreg=1
             ;;
+	-o)
+	    let STEPbids=1
+	    ;;
         -a|--all)
-            let STEPsvr=1 ; let STEPmask=1 ; let STEPreg=1
+            let STEPsvr=1 ; let STEPmask=1 ; let STEPreg=1 ; let STEPbids=1
             ;;
         --) # end of optionals
             shift
@@ -61,13 +66,13 @@ if [ $# -ne 1 ]; then
     exit
 fi 
 
-if (( ${STEPsvr} + ${STEPmask} + ${STEPreg} == 0 )) ; then die 'Need to specify at least one step to run' ; fi
+if (( ${STEPsvr} + ${STEPmask} + ${STEPreg} + ${STEPbids} == 0 )) ; then die 'Need to specify at least one step to run' ; fi
 
 shdir=`dirname $0`
 
 svrtk=`readlink -f $1`
 dir=`dirname $svrtk`
-subj=`basename $dir`
+fullid=`basename $dir`
 
 echo
 echo "input directory: ${svrtk}"
@@ -96,7 +101,7 @@ fi
 if [[ ${STEPmask} = 1 ]] ; then
 
     echo "# # # SVR MASKING and REGISTRATION # # #"
-    svrrecon="${svrtk}/SVRTK_${subj}.nii.gz"
+    svrrecon="${svrtk}/SVRTK_${fullid}.nii.gz"
 
     if [[ ! -f $svrrecon ]] ; then die "SVRTK reconstruction not found" ; fi
     
@@ -112,7 +117,7 @@ fi
 if [[ ${STEPreg} = 1 ]] ; then
 
     echo "# # # ATLAS REGISTRATION # # #"
-    subjrecon="${svrtk}/registration/nxbSVRTK_${subj}.nii.gz"
+    subjrecon="${svrtk}/registration/nxbSVRTK_${fullid}.nii.gz"
     subjmask="${svrtk}/registration/mask.nii.gz"
 
     if [[ ! -f $subjrecon || ! -f $subjmask ]] ; then die "Recon or Mask from step 2 (masking) not found" ; fi
@@ -126,4 +131,35 @@ if [[ ${STEPreg} = 1 ]] ; then
 
     echo "++ atlas registration done ++"
     echo "Now run sh ${shdir}/choosereg.sh on ${svrtk}/registration/bmnxbSVRTK[id]_FLIRTto_STA[ga].nii.gz if you are happy with the result"
+fi
+
+# # # OUTPUT FILES # # #
+if [[ ${STEPbids} = 1 ]] ; then
+
+	# Assumes the first "FLIRTto" registration is correct
+	FLIRTto=`find ${svrtk}/registration -maxdepth 1 -name \*_FLIRTto_\* | head -n1`
+	if [[ -f ${FLIRTto} ]] ; then
+
+		bash ${shdir}/choosereg.sh ${FLIRTto}
+
+		# for BIDS naming
+		subj=`echo ${fullid} | sed -e 's,s[0-9],,'`
+		if [[ ${fullid} == *_s? ]] ; then
+		    scan=`echo $fullid | sed -e 's,.*\(s[0-9]\),\1,'`
+		else echo couldnt divine scan id from name, defaulting to s1
+		    scan="s1"
+		fi
+		BIDS=${svrtk}/BIDS/${subj}/${scan}
+		mkdir -pv ${BIDS}/{anat,xfm}
+
+		cp ${svrtk}/atlas_t2final_${fullid}.nii.gz -vup ${BIDS}/anat/${subj}_${scan}_rec-SVRTK_t2w.nii.gz
+		cp ${svrtk}/atlas_mask_${fullid}.nii.gz    -vup ${BIDS}/anat/${subj}_${scan}_rec-SVRTK_desc-mask_t2w.nii.gz
+		cp ${svrtk}/t2_t2_${fullid}.nii.gz         -vup ${BIDS}/xfm/${subj}_${scan}_rec-SVRTK_t2w-t2space.nii.gz
+		cp ${svrtk}/t2_mask_${fullid}.nii.gz       -vup ${BIDS}/xfm/${subj}_${scan}_rec-SVRTK_desc-mask_t2w-t2space.nii.gz
+		cp ${svrtk}/t2-atlas_${fullid}.tfm         -vup ${BIDS}/xfm/${subj}_${scan}_rec-SVRTK_t2w-t2space.tfm
+	else
+		echo "Didnt find the registered recon named *_FLIRTto_*"
+	fi
+
+	echo "Outputs saved to ${svrtk} and ${svrtk}/BIDS/"
 fi

@@ -68,7 +68,8 @@ singularity exec docker://arfentul/fetalbet-model:first /bin/bash -c "python /ap
 for mask in ${inpath}/*_predicted_mask.nii.gz ; do
 	if [[ -f $mask ]] ; then
 		if [[ $DILATE > 0 ]] ; then
-			crlBinaryMorphology ${mask} dilate 1 ${DILATE} ${mask}
+			crlBinaryMorphology ${mask} dilate 1 ${DILATE} ${mask} # grow mask by DILATE factor
+            crlMaskConnectedComponents ${mask} ${mask} 1 1000 # mask out components smaller than 1000 voxels
 		fi
 
 		base=`basename $mask`

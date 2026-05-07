@@ -3,11 +3,12 @@
 
 show_help () {
 cat << EOF
-    USAGE: sh ${0##*/} [-s] [-m] [-r] [-a||--all] -- [case svrtk directory]
+    USAGE: sh ${0##*/} [-a] [-s] [-m] [-r] [-a||--all] -- [case svrtk directory]
     Incorrect input supplied
 
 	Must select at least one step to run. Each step requires the output from the previous:
-	-s	SVRTK reconstruction using the images in the input directory
+	-a  Mask an arbitrarily chosen input mask to serve as the reconstruction ROI
+    -s	SVRTK reconstruction using the images in the input directory
 	-m 	T2 recon mask segmentation for the SVRTK recon
 	-r	Normalize intensity and register masked recon to atlas
 	-o	Output BIDS naming folder
@@ -22,6 +23,7 @@ die() {
     exit 1
 }
 
+let STEProi=0
 let STEPsvr=0
 let STEPmask=0
 let STEPreg=0
@@ -32,6 +34,9 @@ while :; do
         -h|-\?|--help)
             show_help # help message
             exit
+            ;;
+        -a)
+            let STEProi=1
             ;;
         -s)
             let STEPsvr=1
@@ -46,7 +51,7 @@ while :; do
 	    let STEPbids=1
 	    ;;
         -a|--all)
-            let STEPsvr=1 ; let STEPmask=1 ; let STEPreg=1 ; let STEPbids=1
+            let STEProi=1 ; let STEPsvr=1 ; let STEPmask=1 ; let STEPreg=1 ; let STEPbids=1
             ;;
         --) # end of optionals
             shift
@@ -66,7 +71,7 @@ if [ $# -ne 1 ]; then
     exit
 fi 
 
-if (( ${STEPsvr} + ${STEPmask} + ${STEPreg} + ${STEPbids} == 0 )) ; then die 'Need to specify at least one step to run' ; fi
+if (( ${STEProi} + ${STEPsvr} + ${STEPmask} + ${STEPreg} + ${STEPbids} == 0 )) ; then die 'Need to specify at least one step to run' ; fi
 
 shdir=`dirname $0`
 
@@ -77,6 +82,19 @@ fullid=`basename $dir`
 echo
 echo "input directory: ${svrtk}"
 date
+
+# # # INPUT STACK MASKING # # #
+if [[ ${STEProi} = 1 ]] ; then
+
+    echo "# # # STACK MASKING STEP # # #"
+    stacks=`find ${svrtk} -maxdepth 1 -name fetus\*z`
+    if [[ -n $stacks ]] ; then
+        bash ${shdir}/fetal-bet.sh -d -s ${svrtk}
+    else
+        die "no stacks found in $svrtk"
+    fi
+
+fi
 
 # # # SVR RECONSTRUCTION # # #
 if [[ ${STEPsvr} = 1 ]] ; then
@@ -124,7 +142,7 @@ if [[ ${STEPreg} = 1 ]] ; then
 
     # -n 2 runs two more iterations of N4 bias correction
     # -m takes the mask from step 2
-    bash ${shdir}/reg-fetal-recon.sh -n 2 -m ${subjmask} ${subjrecon}
+    bash ${shdir}/reg-fetal-recon.sh -k -n 2 -m ${subjmask} ${subjrecon}
     # This script once again matches intensities to template range.
     # You could add "-w" to Widen the registration template selection to plus and minus one week GA
     # You could add "-t [CASES|EARLY]" to change the registration target to individual subjects or early-GA subjects

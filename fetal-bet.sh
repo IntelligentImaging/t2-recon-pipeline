@@ -3,7 +3,7 @@
 
 show_help () {
 cat << EOF
-    USAGE: sh ${0##*/} [-s] -- [input directory]
+    USAGE: sh ${0##*/} [-s] [-d] -- [input directory]
     Incorrect input supplied
 
 	Runs FETAL-BET for the input directory
@@ -68,13 +68,15 @@ singularity exec docker://arfentul/fetalbet-model:first /bin/bash -c "python /ap
 for mask in ${inpath}/*_predicted_mask.nii.gz ; do
 	if [[ -f $mask ]] ; then
 		if [[ $DILATE > 0 ]] ; then
-			crlBinaryMorphology ${mask} dilate 1 ${DILATE} ${mask} # grow mask by DILATE factor
-            crlMaskConnectedComponents ${mask} ${mask} 1 1000 # mask out components smaller than 1000 voxels
+			# crlBinaryMorphology ${mask} dilate 1 ${DILATE} ${mask} # grow mask by DILATE factor
+            maskfilter ${mask} dilate -npass 2 ${mask}
+            maskfilter -largest ${mask} connect ${mask} -force # mask out all but the largest body of voxels
 		fi
 
 		base=`basename $mask`
 		want=`echo $base | sed -e 's,\(.*\)_predicted_mask,mask_\1,g'`
 
-		mv -v ${mask} ${inpath}/${want}
+		mrconvert ${mask} ${mask} -datatype int16 -force # SVRTK doesn't take int32, which fetal-bet seems to produce sometimes...
+        mv -v ${mask} ${inpath}/${want}
 	fi
 done

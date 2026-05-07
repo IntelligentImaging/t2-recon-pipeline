@@ -155,14 +155,14 @@ fi
 if [[ ${STEPbids} = 1 ]] ; then
 
 	# Assumes the first "FLIRTto" registration is correct
-	FLIRTto=`find ${svrtk}/registration -maxdepth 1 -name \*_FLIRTto_\* | head -n1`
+	FLIRTto=`find ${svrtk}/registration -maxdepth 1 -name \*_FLIRTto_\*z | head -n1`
 	if [[ -f ${FLIRTto} ]] ; then
 
 		bash ${shdir}/choosereg.sh ${FLIRTto}
 
 		# for BIDS naming
 		subj=`echo ${fullid} | sed -e 's,s[0-9],,'`
-		if [[ ${fullid} == *_s? ]] ; then
+		if [[ ${fullid} == *s? ]] ; then
 		    scan=`echo $fullid | sed -e 's,.*\(s[0-9]\),\1,'`
 		else echo couldnt divine scan id from name, defaulting to s1
 		    scan="s1"

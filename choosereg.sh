@@ -97,7 +97,7 @@ base=`basename $best .nii.gz`
 check=`find ${dir} -maxdepth 1 -name ${base}.\*`
 checkwc=`echo $check | wc -w`
 if [[ $checkwc -lt 2 ]] ; then
-    echo "Didn't find at least two files to preserve, exiting (should find final reg and a transform"
+	echo "Didn't find at least two files to preserve, exiting (should find final reg and a transform)"
     exit
 fi
 

@@ -103,7 +103,7 @@ if [[ ${STEPsvr} = 1 ]] ; then
     fetuses=`find $1 -maxdepth 1 -type f -name fetus\*.nii.gz`
     svrmask=`find $1 -maxdepth 1 -type f -name mask_\*.nii.gz`
 
-    if [[ ! -n $fetuses || ! -f $svrmask ]] ; then die "t2 stacks (fetus*nii.gz) or mask (mask_*.nii.gz) not found, can't run SVRTK" ; fi
+    if [[ ! -n $fetuses || ! -n $svrmask ]] ; then die "t2 stacks (fetus*nii.gz) or mask (mask_*.nii.gz) not found, can't run SVRTK" ; fi
 
     bash ${shdir}/svrtk-gen.sh ${svrtk} # creates the run script
 

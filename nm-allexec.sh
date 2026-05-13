@@ -83,17 +83,15 @@ for run_nm in $runs ; do
 		echo $run_nm already ran
 
     elif [[ $SING = 1 ]] ; then
-        cd $mpath
         echo "Running singularity $mpath"
         if [[ $sfb > 0 ]] ; then
             echo "segment fetal brains pipeline"
-            apptainer exec --no-home docker://arfentul/niftymic.sing:latest /bin/sh run-sfb.sh
+            apptainer exec --no-home --bind ${mpath}:/mnt --pwd /mnt docker://arfentul/niftymic.sing:latest /bin/sh run-sfb.sh
             date
         else echo brain masks found
         fi
         echo "reconstruction pipeline"
-        apptainer exec --no-home docker://arfentul/niftymic.sing:first /bin/sh run-nm.sh
-        cd -
+        apptainer exec --no-home --bind ${mpath}:/mnt --pwd /mnt docker://arfentul/niftymic.sing:first /bin/sh run-nm.sh
     else
         # Path to mount inside container
         conpath="/home/data"

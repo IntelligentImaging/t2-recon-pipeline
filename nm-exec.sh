@@ -86,7 +86,7 @@ if [[ $sfb > 0 ]] ; then
     echo "Executing NiftyMIC segment fetal brains (run-sfb) script within container"
     date
     if [[ $SING -eq 1 ]] ; then
-        apptainer exec --no-home docker://arfentul/niftymic.sing:latest /bin/sh ${mpath}/run-sfb.sh
+        apptainer exec --no-home --bind ${mpath}:/mnt --pwd /mnt docker://arfentul/niftymic.sing:latest /bin/sh ${mpath}/run-sfb.sh
     else docker exec -t -i -w /home/data $dockname sh -c "sh run-sfb.sh"
     fi
 fi
@@ -101,7 +101,7 @@ date
 echo "Executing NiftyMIC recon (run-nm) script within container"
 
 if [[ $SING -eq 1 ]] ; then
-    apptainer exec --no-home docker://arfentul/niftymic.sing:latest /bin/sh ${mpath}/run-nm.sh
+    apptainer exec --no-home --bind ${mpath}:/mnt --pwd /mnt docker://arfentul/niftymic.sing:latest /bin/sh ${mpath}/run-nm.sh
 else docker exec -t -i -w /home/data $dockname sh -c "sh run-nm.sh"
     echo "Killing docker image"
     docker kill $dockname

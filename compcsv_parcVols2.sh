@@ -3,11 +3,12 @@
 show_help () {
 cat << EOF
 
-    USAGE: sh ${0##*/} [-h] -- PARCELLATION OUTPUT.csv
+    USAGE: sh ${0##*/} [-h] [-b]  -- PARCELLATION OUTPUT.csv
 
-        Outputs selected volumes (from the atlas key in the script)
-		for the input into a spreadsheet. If it's a new .csv, column
-		headers will be added. If not, it will just append ID & volumes.
+        Outputs selected volumes (from the atlas key in the script) for the input into a spreadsheet.
+        If it's a new .csv, column headers will be added. If not, it will just append ID & volumes.
+
+        -b  Assume BIDS naming; separated subj and scan ID's into columns
 
 EOF
 }
@@ -27,6 +28,9 @@ while :; do
             ;;
         -k|--crkit)
         	let CRKITCON=1 # working on adding this, I don't think crkit has crlComputeVolume, unfortunately...
+            ;;
+        -b|--bids)
+            let bidsnaming=1
             ;;
         --) # end of optionals
             shift
@@ -83,7 +87,11 @@ while read keyline ; do
 if [[ ! -f $output ]] ; then
 	let sedNUM=1
 	let xcount=0
-	echo "SubjectID" >> ${output}
+    if [[ $bidsnaming = 1 ]] ; then
+        echo "Subj,Scan" >> ${output}
+    else
+        echo "Subj" >> ${output}
+    fi
 	# this is a while loop to print out our column of label names into the header row
         while read keyline ; do
 		# just print out our key to terminal
@@ -103,9 +111,18 @@ else
 	sedNUM="$(($currentLine+1))"
 	fi
 
+base=`basename $parc .nii.gz`
+if [[ $bidsnaming = 1 ]] ; then
+    subj=`echo $base | sed -e 's,sub-,,g' -e 's,_s[1-9]_rec.*,,g'`
+    scan=`echo $base | sed -e 's,.*_s\([1-9]\)_rec.*,s\1,g'`
+    fullid="${subj},${scan}"
+else
+    fullid=${base}
+fi
+
 let xcount=0
 # put SUBJID into first column
-echo ${parc} >> ${output}
+echo ${fullid} >> ${output}
 # a while loop for putting the label values for one case into a row
 while ( [ ${xcount} -lt ${count} ] ) ; do
 	# get the volume for this label

@@ -2,11 +2,12 @@
 
 show_help () {
 cat << EOF
-    USAGE: sh ${0##*/} [-m MODALITY] [-a] -- [MRN] [DOS] [Output Dir]
+    USAGE: sh ${0##*/} [-m MODALITY] [-a] [-n] [-s||--pacs] -- [MRN] [DOS] [Output Dir]
     Incorrect input supplied
     -m      Modality (default=MR)
     -a      Anonymize patient ID that goes into folder path (MRN replaced with "anon")
     -n      No separate study folder. All DICOMs will go into a single folder named "DICOM", not separated by StudyID. This is OK if you are manually separating scan sessions into different directories.
+    -s      Set query server to pacsstor.tch.harvard.edu instead of synapseresearch.tch.harvard.edu (default)
     -p      Number of parallel processes for sorting DICOM files (default=24). Greatly speeds up sort step.
 EOF
 }
@@ -15,6 +16,7 @@ die() {
     printf '%s\n' "$1" >&2
     exit 1
 }
+
 while :; do
     case $1 in
         -h|-\?|--help)
@@ -28,6 +30,9 @@ while :; do
             else
                 die 'error: Modality not specified (default=MR)'
             fi
+            ;;
+        -s|--pacs)
+            let PACS=1
             ;;
         -a|--anon)
             let anon=1
@@ -105,36 +110,58 @@ fi
 # export -f get_tag sortd
 
 #Return StudyInstanceUID for all studies with given PatientID, StudyDate, and Modality
-#findscu -od $output_dir -X +sr -aet RESEARCHPACS -aec PACSDCM -S -k "QueryRetrieveLevel=STUDY" -k "PatientID=$PatientID" -k "StudyDate=$StudyDate" -k "Modality=$Modality" -k StudyInstanceUID  pacsstor.tch.harvard.edu 104
-findscu -od $output_dir -X +sr -aet PACSDCM -aec RESEARCHPACS -S -k "QueryRetrieveLevel=STUDY" -k "PatientID=$PatientID" -k "StudyDate=$StudyDate" -k "Modality=$Modality" -k StudyInstanceUID synapseresearch.tch.harvard.edu 104
+if [[ $PACS = 1 ]] ; then
+    echo findscu server = pacsstor.tch.harvard.edu
+    findscu -od $output_dir -X +sr -aet RESEARCHPACS -aec PACSDCM -S -k "QueryRetrieveLevel=STUDY" -k "PatientID=$PatientID" -k "StudyDate=$StudyDate" -k "Modality=$Modality" -k StudyInstanceUID pacsstor.tch.harvard.edu 104
+else
+    echo findscu server = synapseresearch.tch.harvard.edu
+    findscu -od $output_dir -X +sr -aet PACSDCM -aec RESEARCHPACS -S -k "QueryRetrieveLevel=STUDY" -k "PatientID=$PatientID" -k "StudyDate=$StudyDate" -k "Modality=$Modality" -k StudyInstanceUID synapseresearch.tch.harvard.edu 104
+fi
 
-#Retrieve all matching studies for given DICOM query files
-for d in $output_dir/rsp*.dcm; do 
-	echo
-	#getscu -od $output_dir -aet RESEARCHPACS -aec PACSDCM -S pacsstor.tch.harvard.edu 104 $d
-	getscu -od $output_dir -aet PACSDCM -aec RESEARCHPACS -S synapseresearch.tch.harvard.edu 104 $d
-done 
+if [[ $(find "$output_dir" -maxdepth 1 -name "rsp*.dcm" | wc -l) -gt 0 ]] ; then
 
-echo Sort DICOMs
-let npr=0
-for mr in ${output_dir}/MR* ; do
-    fout=`file $mr | grep DICOM`
-    if [[ -n $fout ]] ; then # check if it's a DICOM
-        # Do the sorting as background processes (multi-threaded) up to the number specified in the threads variable
-        # echo dcm=$mr npr=$npr threads=$threads # uncomment to get verbose about multi-threading
-        sortd $mr &
-        ((npr++))
-        if [[ ! $npr -lt $threads ]] ; then
-            wait
-            let npr=0
+    #Retrieve all matching studies for given DICOM query files
+    for d in $output_dir/rsp*.dcm; do 
+    	echo Query $d
+        if [[ $PACS = 1 ]] ; then
+            echo getscu server = pacsstor.tch.harvard.edu
+            getscu -od $output_dir -aet RESEARCHPACS -aec PACSDCM -S pacsstor.tch.harvard.edu 104 $d
+        else
+            echo getscu server = synapseresearch.tch.harvard.edu
+            getscu -od $output_dir -aet PACSDCM -aec RESEARCHPACS -S synapseresearch.tch.harvard.edu 104 $d
         fi
-    fi
-done
-wait
+    done 
 
-echo Remove rsp and report files
-rm -f ${output_dir}/rsp*dcm ${output_dir}/SR* ${output_dir}/PS* ${output_dir}/RAW.*
- 
-echo Detox DICOM folder
-find $output_dir -type d -name DICOM -exec detox {} \;
-#detox ${output_dir}/*/DICOM ${output_dir}/*/*/DICOM
+    echo Sort DICOMs
+    let npr=0
+    for mr in ${output_dir}/MR* ; do
+        fout=`file $mr | grep DICOM`
+        if [[ -n $fout ]] ; then # check if it's a DICOM
+            # Do the sorting as background processes (multi-threaded) up to the number specified in the threads variable
+            # echo dcm=$mr npr=$npr threads=$threads # uncomment to get verbose about multi-threading
+            sortd $mr &
+            ((npr++))
+            if [[ ! $npr -lt $threads ]] ; then
+                wait
+                let npr=0
+            fi
+        fi
+    done
+    wait
+
+    echo Remove rsp and report files
+    rm -f ${output_dir}/rsp*dcm ${output_dir}/SR* ${output_dir}/PS* ${output_dir}/RAW.*
+     
+    echo Detox DICOM folder
+    find $output_dir -type d -name DICOM -exec detox {} \;
+
+    echo Adjust write permissions
+    find $output_dir -type d -exec chmod --preserve-root 775 {} \;
+    find $output_dir -type f -exec chmod --preserve-root 664 {} \;
+    #detox ${output_dir}/*/DICOM ${output_dir}/*/*/DICOM
+
+else
+
+    echo "findscu did not return any .rsp files; no data to pull for $PatientID $StudyDate"
+
+fi

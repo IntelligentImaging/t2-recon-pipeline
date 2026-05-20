@@ -20,13 +20,13 @@ fi
 MRN=$1
 StudyDate=$2
 odir=${MRN}/${StudyDate}
-mkdir -pv ${odir}/Rpacs ${odir}/synR ${odir}/2BP
+mkdir -pv ${odir}/Rpacs ${odir}/synR # ${odir}/2BP
 
-#singularity exec ~/sifs/dicom-tools /bin/bash -c "python3 /usr/local/bin/retrieve_dicoms.py --outputDir ${odir}/synR --aec SYNAPSERESEARCH --aet PACSDCM --namednode 10.20.2.28 --modality MR --subjectID ${MRN} --studyDate ${StudyDate}"
+singularity exec ~/sifs/dicom-tools /bin/bash -c "python3 /usr/local/bin/retrieve_dicoms.py --outputDir ${odir}/synR --aec SYNAPSERESEARCH --aet PACSDCM --namednode 10.20.2.28 --modality MR --subjectID ${MRN} --studyDate ${StudyDate}"
 
-#singularity exec ~/sifs/dicom-tools /bin/bash -c "python3 /usr/local/bin/retrieve_dicoms.py --outputDir ${odir}/Rpacs --aec PACSDCM --aet RESEARCHPACS --namednode 10.20.2.28 --modality MR --subjectID ${MRN} --studyDate ${StudyDate}"
+singularity exec ~/sifs/dicom-tools /bin/bash -c "python3 /usr/local/bin/retrieve_dicoms.py --outputDir ${odir}/Rpacs --aec PACSDCM --aet RESEARCHPACS --namednode 10.20.2.28 --modality MR --subjectID ${MRN} --studyDate ${StudyDate}"
 
-singularity exec ~/sifs/dicom-tools /bin/bash -c "python3 /usr/local/bin/retrieve_dicoms.py --outputDir ${odir}/2BP --aec SYNAPSERESEARCH --aet 2BPMRI_2 --namednode 10.27.107.244 --modality MR --subjectID ${MRN} --studyDate ${StudyDate}"
+# singularity exec ~/sifs/dicom-tools /bin/bash -c "python3 /usr/local/bin/retrieve_dicoms.py --outputDir ${odir}/2BP --aec SYNAPSERESEARCH --aet 2BPMRI_2 --namednode 10.27.107.244 --modality MR --subjectID ${MRN} --studyDate ${StudyDate}"
 
 
 # Search the DICOM node for the study info.

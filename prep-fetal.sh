@@ -186,5 +186,5 @@ if [[ $mask = "Y" ]] ; then
 fi
 
 # Open directory and file permissions
-find ${RECON} -type d -exec chmod -c --preserve-root 777 {} \;
+find ${RECON} -type d -exec chmod -c --preserve-root 775 {} \;
 find ${RECON} -type f -exec chmod -c --preserve-root 664 {} \;

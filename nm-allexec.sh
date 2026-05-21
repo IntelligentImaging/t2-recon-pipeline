@@ -91,7 +91,7 @@ for run_nm in $runs ; do
         else echo brain masks found
         fi
         echo "reconstruction pipeline"
-        apptainer exec --no-home --bind ${mpath}:/mnt --pwd /mnt docker://arfentul/niftymic.sing:first /bin/sh run-nm.sh
+        apptainer exec --no-home --bind ${mpath}:/mnt --pwd /mnt docker://arfentul/niftymic.sing:latest /bin/sh run-nm.sh
     else
         # Path to mount inside container
         conpath="/home/data"

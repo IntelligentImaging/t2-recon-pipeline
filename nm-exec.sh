@@ -51,6 +51,8 @@ if [[ ! -f ${mpath}/run-sfb.sh || ! -f ${mpath}/run-nm.sh ]] ; then
     exit 1
 fi
 
+echo Input directory: ${mpath}
+
 # Here we compare the stacks in t2/ to the masks in mask/ and check if they are present
 # If any are missing, we will execute the segment fetal brains code
 tdir="${mpath}/t2"

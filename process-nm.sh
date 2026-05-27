@@ -116,7 +116,7 @@ if [[ ${STEPmask} = 1 ]] ; then
 
     # for BIDS naming
    subj=`echo $fullid | sed -e 's,s[0-9],,'`
-   if [[ $fullid == *_s? ]] ; then
+   if [[ $fullid == *_s? || $fullid == *s? ]] ; then
 	    scan=`echo $fullid | sed -e 's,.*\(s[0-9]\),\1,'`
     else echo couldnt divine scan id from name, defaulting to s1
 	    scan="s1"

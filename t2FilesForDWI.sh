@@ -29,7 +29,7 @@ svrtk=`dirname $inpath`
 casedir=`dirname $svrtk`
 CASEID=`basename $casedir`
 
-T2=`find $inpath -maxdepth 1 -type f -name nxbSVRTK\*z | head -n 1`
+T2=`find $inpath -maxdepth 1 -type f -name nxb\*z | head -n 1`
 MASK=`find $inpath -maxdepth 1 -name mask_\*_registration\*`
 REG=`find $inpath  -maxdepth 1 -iname register\*nii\* -o -iname atlas_t2final\*nii\* | head -n 1`
 TFM=`find $inpath -maxdepth 1 -iname \*nx\*txt -o -iname \*nx\*mat -o -iname \*nx\*tfm -o -iname tfm\*nx\*txt -o -iname \*r3D\*mat -o -iname tfm_\*.txt | head -n1`

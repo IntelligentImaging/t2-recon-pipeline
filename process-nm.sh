@@ -112,7 +112,7 @@ if [[ ${STEPmask} = 1 ]] ; then
     fi
 
     echo Masking image with $atlas_mask
-    mrmath $atlas_srr $cropmask product ${output}/${fullid}-msrr_template.nii.gz -quiet -force
+    mrmath $atlas_srr $cropmask product ${output}/atlas_nmfinal_${fullid}.nii.gz -quiet -force
 
     # for BIDS naming
    subj=`echo $fullid | sed -e 's,s[0-9],,'`
@@ -130,13 +130,11 @@ if [[ ${STEPmask} = 1 ]] ; then
     cp ${tfm}        -vup ${output}/BIDS/${subj}/${scan}/xfm/${subj}_${scan}_rec-niftymic_t2w-t2space.tfm
 
     # for SK pipeline naming
-    cp ${output}/${fullid}-msrr_template.nii.gz ${output}/atlas_t2finalnm_${fullid}.nii.gz
-    cp ${atlas_srr}  -vup ${output}/atlas_t2nm_${fullid}.nii.gz
-    cp ${atlas_srr}  -vup ${output}/atlas_t2nm_${fullid}.nii.gz
-    cp ${atlas_mask} -vup ${output}/atlas_masknm_${fullid}.nii.gz
-    cp ${subj_srr}   -vup ${output}/t2_t2nm_${fullid}.nii.gz
-    cp ${subj_mask}  -vup ${output}/t2_masknm_${fullid}.nii.gz
-    cp ${tfm}        -vup ${output}/t2-atlasnm_${fullid}.tfm
+    cp ${atlas_srr}  -vup ${output}/atlas_nm_${fullid}.nii.gz
+    cp ${atlas_mask} -vup ${output}/atlas_nmmask_${fullid}.nii.gz
+    cp ${subj_srr}   -vup ${output}/t2_nm_${fullid}.nii.gz
+    cp ${subj_mask}  -vup ${output}/t2_nmmask_${fullid}.nii.gz
+    cp ${tfm}        -vup ${output}/t2nm-atlas_${fullid}.tfm
 
     echo "++ SVR cropping step done ++"
 fi

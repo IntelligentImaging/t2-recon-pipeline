@@ -155,8 +155,8 @@ fi
 
 mrhistmatch scale ${finalcorr} ~/fetalmri/templates/ref/STA30.nii.gz ${finalcorr} -force 
 
-INPUT=${CORR}
-rm -v ${DIR}/tmp_noNegMask.nii.gz 
+INPUT=${finalcorr}
+rm -v ${REGDIR}/tmp_noNegMask.nii.gz 
 
 # Open permissions for group to write
 find ${REGDIR} -type d -exec chmod -c --preserve-root 775 {} \;

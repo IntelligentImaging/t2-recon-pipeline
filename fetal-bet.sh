@@ -60,7 +60,7 @@ if [[ $SINGLEMODE = 1 ]] ; then
 	chosen=`ls ${inpath}/fetus*z | sed -n "${half}p"`
 	cp $chosen -v ${segin}
 else
-	cp ${inpath}/fetus* -s v ${segin}/
+	cp ${inpath}/fetus* -v ${segin}/
 fi
 
 singularity exec docker://arfentul/fetalbet-model:first /bin/bash -c "python /app/src/codes/inference.py --data_path ${segin}/ --save_path ${inpath} --saved_model_path /app/src/model/AttUNet.pth"

@@ -12,8 +12,7 @@ cat << EOF
     Sets up recon registration to atlas space including directory tree and N4 bias correction
 
         [-n] number of N4 b0-inhomogeneity correction recursive loops (DEFAULT=3)
-        [-t] if set, temporary recurions will be preserved (biastemp0, biastemp1, etc)
-	[-m] DISABLED-- performs Davood Karimi brain extraction (mask segmentation)
+	    [-m] DISABLED-- performs Davood Karimi brain extraction (mask segmentation)
         [-s] use singularity to run container (REQUIRED FOR E2)
 	    [-k] use crkit container for CRL tools
 EOF
@@ -43,9 +42,6 @@ while :; do
             ;;
         -s|--singularity)
             SING="YES"
-            ;;
-        -t|--temp)
-            TEMP="YES"
             ;;
 #        -m|--mask)
 #            MASK="YES"
@@ -134,31 +130,33 @@ done
 
 # Cleanup N4 temp files
 cp -v $inN4 $biascorr
+
 #rm -v $tempmask
-if [[ ! $TEMP == "YES" ]] ; then
-    rm -v ${REGDIR}/*(biastemp*_${BASE})
-fi
+rm -v ${REGDIR}/*(biastemp*_${BASE})
 echo "N4 bias correction done"
+
+
 
 # Intensity correction (N4 changes intensity range)
 REF="${FETALREF}/ref/STA30.nii.gz"
-echo "Match image intensities to reference image"
-cmd="${FETALSOFT}/bin/crlMatchMaxImageIntensity $REF $biascorr $maxcorr"
 
-if [[ $CRKITCON=1 ]] ; then
-        singularity exec docker://arfentul/crkit:latest /bin/bash -c "$cmd"
+
+cmd="crlBinaryThreshold $biascorr ${REGDIR}/tmp_noNegMask.nii.gz -10000 0 0 1"
+if [[ $CRKITCON = 1 ]] ; then
+    singularity exec docker://arfentul/crkit:latest /bin/bash -c "$cmd"
 else $cmd
 fi
 
-echo $cmd >> $LOG
-cmd="${FETALSOFT}/bin/crlNoNegativeValues $maxcorr $finalcorr"
-
-if [[ $CRKITCON=1 ]] ; then
-        singularity exec docker://arfentul/crkit:latest /bin/bash -c "$cmd"
+cmd="crlMaskImage $biascorr ${REGDIR}/tmp_noNegMask.nii.gz ${finalcorr}"
+if [[ $CRKITCON = 1 ]] ; then
+    singularity exec docker://arfentul/crkit:latest /bin/bash -c "$cmd"
 else $cmd
 fi
 
-echo $cmd >> $LOG
+mrhistmatch scale ${finalcorr} ~/fetalmri/templates/ref/STA30.nii.gz ${finalcorr} -force 
+
+INPUT=${CORR}
+rm -v ${DIR}/tmp_noNegMask.nii.gz 
 
 # Open permissions for group to write
 find ${REGDIR} -type d -exec chmod -c --preserve-root 775 {} \;

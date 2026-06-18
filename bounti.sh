@@ -8,6 +8,35 @@ cat << EOF
 EOF
 }
 
+
+die() {
+    printf '%s\n' "$1" >&2
+    exit 1
+}
+while :; do
+    case $1 in
+        -h|-\?|--help)
+            show_help # help message
+            exit
+            ;;
+        -r|--resample) 
+            let resam=1 # resample to .5 mm
+            ;;
+        --) # end of optionals
+            shift
+            break
+            ;;
+        -)?*
+            printf 'warning: unknown option (ignored: %s\m' "$1" >&2
+            ;;
+        *) # default case, no optionals
+            break
+    esac
+    shift
+done
+
+
+
 if [ $# -ne 1 ]; then
     show_help
     exit
@@ -27,8 +56,12 @@ pt5name=`echo $base | sed -e 's,_t2w.nii.gz,_pt5_t2w.nii.gz,g'`
 outname=`echo $base | sed -e 's,rec-\(.*\)_,rec-\1_desc-bounti_,g'`
 
 
-mrgrid $image regrid -voxel 0.5,0.5,0.5 ${anat}/${pt5name}
+if [[ $resam = 1 ]] ; then
+    echo Resampling input image to 0.5 mm isotropic
+    mrgrid $image regrid -voxel 0.5,0.5,0.5 ${anat}/${pt5name}
+    image=${anat}/${pt5name}
+fi
 
-apptainer exec --nv docker://fetalsvrtk/svrtk:perinatal_brain_mri_analysis_amd sh -c " bash /home/perinatal-brain-mri-analysis/scripts/run-multi-bounti-fetal-brain-segmentation-2026-general.sh 0 ${anat}/${pt5name} ${tmpdir} ${anat}/${outname}  ; "
+apptainer exec --nv docker://fetalsvrtk/svrtk:perinatal_brain_mri_analysis_amd sh -c " bash /home/perinatal-brain-mri-analysis/scripts/run-multi-bounti-fetal-brain-segmentation-2026-general.sh 0 ${image} ${tmpdir} ${anat}/${outname}  ; "
 
 rm -rf ${tmpdir}

@@ -8,12 +8,11 @@ cat << EOF
     [PROC DIR] should be a folder with many cases (eg. /fileserver/fetal/reconstruction/)
 
     -h      Display this help and exit
-    -d      Set up diffusion processing directory in the specified location. Do not put subject ID here.
     -c	    Use specified converter ( -c dcm2niix )
     -e      Take series number from END of folder names, instead of start (default=start)
     -a      Also create an Anonymized DICOM folder. VALIDATE ANONYMIZATION. 
-    [DEPRECIATED] --dense  Setup 2D Densenet dir
-    [DEPRECIATED] --mask   Start 2D Densenet brain extraction
+    -o      Specify which GENERAL PROC DIR method folder should be created for fetus_* stacks
+            (usually svrtk, niftymic, nesvor, etc) DEFAULT="stacks"
 EOF
 }
 
@@ -29,15 +28,10 @@ while :; do
             show_help
             exit
             ;;
-        -d)
-            dwi="Y"
-            dwipath="$2"
-            shift
-            ;;
         -c|--converter)
             if [[ $2 == dcm2niix ]] ; then
-		    CONV="$2"
-	    fi
+		      CONV="$2"
+	        fi
             shift
             ;;
         -e)
@@ -46,12 +40,13 @@ while :; do
         -a|--anonymize)
             let anon=1
             ;;
-        # --dense)
-        #     dense="Y"
-            # ;;
-        # -m|--mask)
-        #     mask="Y"
-            # ;;
+        -o)
+            if [[ -n $2 ]] ; then
+                METHODNAME=$2 # specify name of processing folder in PROC DIR
+                shift
+            else die 'didnt supply recon folder method name (like svrtk, niftymic, nesvor, etc)'
+            fi
+            ;;
         --)
             shift
             break
@@ -127,7 +122,11 @@ fi
 
 # Copy T2 stacks to reconstruction folder
 echo "COPY TO RECON FOLDER # # #"
-RECON="${PROC}/${ID}/svrtk"
+if [[ ! -n $METHODNAME ]] ; then
+    METHODNAME="stacks" # default
+fi
+
+RECON="${PROC}/${ID}/${METHODNAME}"
 mkdir -pv ${RECON}/../notgood
 for TERM in SSh T2_HASTE CERVIX SSFSE DL_HASTE iTSE_haste_dnf T2_FETAL ; do # Search terms
     ARRAY=`find ${NIIDIR}/ -type f -name \*$TERM\*.nii\* -a ! -iname \*LOC -a ! -iname \*DTI\* -a ! -iname \*CINCI\* -a ! -iname \*T1W\* -a ! -iname \*3Plane_Loc\*` # -and ! -iname \*DLonur\* -and ! -iname \*_DL` # Make an array of found images
@@ -158,32 +157,6 @@ for TERM in SSh T2_HASTE CERVIX SSFSE DL_HASTE iTSE_haste_dnf T2_FETAL ; do # Se
         done
     fi
 done
-
-# Set up niftymic folder
-mkdir -pv ${RECON}/../niftymic/{t2,mask}
-cp ${RECON}/fetus*z -vup ${RECON}/../niftymic/t2/
-
-# Set up diffusion processing directory
-DCMPATH=`readlink -f $DCMDIR`
-if [[ $dwi == "Y" ]] ; then
-    echo "Create directory tree for DWI processing"
-    sh ${FETALDTI}/dtiTemplate.sh ${dwipath}/${ID} ${DCMPATH}
-fi
-
-# Install 2D Densenet to recon directory
-if [[ $dense == "Y" || $mask == "Y" ]] ; then
-    echo "--dense or --mask option is set: installing 2D densenet"
-    cp ${NET} -urv ${RECON}
-    cp ${RECON}/fetus*z -uv ${RECON}/2Ddensenet/InputData/
-    echo "Recon Dir: ${RECON}"
-    echo "Densenet Code Dir: ${RECON}/2Ddensenet/InputData/"
-fi
-
-# Run 2D Densenet
-if [[ $mask = "Y" ]] ; then
-	echo "Starting python 2D densenet brain mask"
-	python ${RECON}/2Ddensenet/Code/FC-Dense-2D.py
-fi
 
 # Open directory and file permissions
 find ${RECON} -type d -exec chmod -c --preserve-root 775 {} \;

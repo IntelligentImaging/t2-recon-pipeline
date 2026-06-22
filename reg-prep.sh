@@ -138,7 +138,7 @@ echo "N4 bias correction done"
 
 
 # Intensity correction (N4 changes intensity range)
-REF="${FETALREF}/ref/STA30.nii.gz"
+REF="${SHDIR}/ref/STA30.nii.gz"
 
 
 cmd="crlBinaryThreshold $biascorr ${REGDIR}/tmp_noNegMask.nii.gz -10000 0 0 1"
@@ -153,10 +153,10 @@ if [[ $CRKITCON = 1 ]] ; then
 else $cmd
 fi
 
-mrhistmatch scale ${finalcorr} ~/fetalmri/templates/ref/STA30.nii.gz ${finalcorr} -force 
+mrhistmatch scale ${finalcorr} ${REF} ${finalcorr} -force 
 
-INPUT=${CORR}
-rm -v ${DIR}/tmp_noNegMask.nii.gz 
+INPUT=${finalcorr}
+rm -v ${REGDIR}/tmp_noNegMask.nii.gz 
 
 # Open permissions for group to write
 find ${REGDIR} -type d -exec chmod -c --preserve-root 775 {} \;

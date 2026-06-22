@@ -2,7 +2,7 @@
 
 if [[ $# -lt 2 || $# -gt 2 ]]; then	
 	echo "Incorrect argument supplied!"
-	echo "usage: sh $0 [SCAN DICOM DIR] [GENERAL PROC DIR]"
+	echo "usage: sh $0 [SUBJ RAW DIR] [GENERAL PROC DIR]"
 	echo "This script assumes that [RAW CASE DIR] is either arranged:"
 	echo " CASE/[NUMERICAL INDIV DICOM DIRS] or CASE/scans/[NAMED INDIV DICOM DIRS]"
 	exit
@@ -10,9 +10,14 @@ if [[ $# -lt 2 || $# -gt 2 ]]; then
 
 SHDIR=`dirname $0`
 PROC="$2"
-DCMDIR="$1"
-SUBJDIR=`dirname $DCMDIR`
+SUBJDIR="$1"
+DCMDIR=${SUBJDIR}/DICOM
 NIIDIR="${SUBJDIR}/nii"
+
+if [[ ! -d ${DCMDIR} ]] ; then
+	${DCMDIR} doesnt exist. Put DICOM folders in ${DCMDIR}
+	exit
+fi
 
 function depchk () {
 	if command -v $1 >/dev/null 2>&1 ; then

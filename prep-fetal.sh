@@ -161,7 +161,7 @@ for TERM in SSh T2_HASTE CERVIX SSFSE DL_HASTE iTSE_haste_dnf T2_FETAL ; do # Se
 
             new="fetus${text}_${num}.nii.gz"
             chk=`find ${PROC}/${ID} -type f -name $new`
-            if [[ -z $chk ]] ; then
+            if [[ -z $chk && ! ${IM} == *"SINGLE"* ]] ; then
                 cp ${IM} -v ${RECON}/${new} # copy to recon dir
             else echo "$new already in recon dir"
             fi

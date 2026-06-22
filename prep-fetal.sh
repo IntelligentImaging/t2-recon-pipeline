@@ -11,6 +11,7 @@ cat << EOF
     -c	    Use specified converter ( -c dcm2niix )
     -e      Take series number from END of folder names, instead of start (default=start)
     -a      Also create an Anonymized DICOM folder. VALIDATE ANONYMIZATION. 
+    -w      Name stacks by WIP naming (was needed when developing WIP T2 stacks)
     -o      Specify which GENERAL PROC DIR method folder should be created for fetus_* stacks
             (usually svrtk, niftymic, nesvor, etc) DEFAULT="stacks"
 EOF
@@ -39,6 +40,9 @@ while :; do
             ;;
         -a|--anonymize)
             let anon=1
+            ;;
+        -w|--wip)
+            let WIPnames=1
             ;;
         -o)
             if [[ -n $2 ]] ; then
@@ -133,27 +137,35 @@ for TERM in SSh T2_HASTE CERVIX SSFSE DL_HASTE iTSE_haste_dnf T2_FETAL ; do # Se
     if [[ -n $ARRAY ]] ; then # exlcude empty arrays
         for IM in $ARRAY ; do
             base=`basename "$IM"`
+
+            text=""
+            # Grabbing the number and name from the folder names
             if [[ $end = 1 ]] ; then
                 num=`echo ${base##*_} | sed -e 's,\.nii.*,,g'`
-		text=`echo ${base%_*} | sed -e 's,\(........\).*,\1,' -e 's,_,,g'`
+                if [[ $WIPnames = 1 ]] ; then text=`echo ${base%_*} | sed -e 's,\(........\).*,\1,' -e 's,_,,g'` ; fi
             else
                 num=`echo ${base%%_*}`
-		text=`echo ${base#*_} | sed -e 's,\(........\).*,\1,' -e 's,_,,g'`
+                if [[ $WIPnames = 1 ]] ; then text=`echo ${base#*_} | sed -e 's,\(........\).*,\1,' -e 's,_,,g'` ; fi
             fi
-            #text=`echo $base | sed -e 's,[0-9]*_,,' -e 's,\(........\).*,\1,' -e 's,_,,g'`
-		if [[ $text == "DLHASTE" ]] ; then
-			text="VFA"
-		elif [[ $text == "wip1062" ]] ; then
-			text="dnf"
-		elif [[ $text == "T2HASTE" ]] ; then
-			text="prod"
-		fi
-            new="fetus-${text}_${num}.nii.gz"
+
+            if [[ $WIPnames = 1 ]] ; then
+                # Checking for T2 stack versions
+        		if [[ $text == "DLHASTE" ]] ; then
+        			text="-VFA"
+        		elif [[ $text == "wip1062" ]] ; then
+        			text="-dnf"
+        		elif [[ $text == "T2HASTE" ]] ; then
+        			text="-prod"
+        		fi
+            fi
+
+            new="fetus${text}_${num}.nii.gz"
             chk=`find ${PROC}/${ID} -type f -name $new`
             if [[ -z $chk ]] ; then
-            cp ${IM} -v ${RECON}/${new} # copy to recon dir
-        else echo "$new already in recon dir"
-        fi
+                cp ${IM} -v ${RECON}/${new} # copy to recon dir
+            else echo "$new already in recon dir"
+            fi
+            
         done
     fi
 done

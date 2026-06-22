@@ -10,8 +10,6 @@ if [[ $# -lt 2 || $# -gt 2 ]]; then
 
 SHDIR=`dirname $0`
 PROC="$2"
-# RUNCHECK="$3"
-ID=`basename $RAW`
 DCMDIR="$1"
 SUBJDIR=`dirname $DCMDIR`
 NIIDIR="${SUBJDIR}/nii"
@@ -30,7 +28,6 @@ depchk rename
 depchk dcm2niix
 
 # Rename DICOM directories and move them to a subfolder
-# rename -v secondary DICOM ${RAW}/*/secondary
 for SERIES in ${DCMDIR}/* ; do
 	if [[ -d $SERIES ]]  ; then
 		echo rename $SERIES

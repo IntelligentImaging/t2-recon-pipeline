@@ -3,13 +3,14 @@
 
 show_help () {
 cat << EOF
-    USAGE: sh ${0##*/} [-s] [-m] [-a||--all] -- [case niftymic directory]
+    USAGE: sh ${0##*/} [-s] [-m] [-a||--all] [-i||--id SUBJ SCAN] -- [case niftymic directory]
     Incorrect input supplied
 
 	Must select at least one step to run. Each step requires the output from the previous:
 	-s	NiftyMIC reconstruction using the images in the input directory
 	-m 	Mask nm recons with the mask and copy to output directory
     	--all   Do all 
+    -i  Specify SUBJ SCAN id's for BID naming
  
     You should inspect the input stacks first and remove those you don't need. ~6-9 stacks is plenty.
 EOF
@@ -37,6 +38,12 @@ while :; do
             ;;
         -a|--all)
             let STEPsvr=1 ; let STEPmask=1 
+            ;;
+        -i|--id)
+            subj=$2
+            scan=$3
+            shift
+            shift
             ;;
         --) # end of optionals
             shift
@@ -115,12 +122,15 @@ if [[ ${STEPmask} = 1 ]] ; then
     mrmath $atlas_srr $cropmask product ${output}/atlas_nmfinal_${fullid}.nii.gz -quiet -force
 
     # for BIDS naming
-   subj=`echo $fullid | sed -e 's,s[0-9],,'`
-   if [[ $fullid == *_s? || $fullid == *s? ]] ; then
-	    scan=`echo $fullid | sed -e 's,.*\(s[0-9]\),\1,'`
-    else echo couldnt divine scan id from name, defaulting to s1
-	    scan="s1"
-   fi
+    if [[ ! -n $subj ]] ; then
+        subj=`echo $fullid | sed -e 's,s[0-9],,'`
+        if [[ $fullid == *_s? || $fullid == *s? ]] ; then
+        	scan=`echo $fullid | sed -e 's,.*\(s[0-9]\),\1,'`
+        else echo couldnt divine scan id from name, defaulting to s1
+        	scan="s1"
+        fi
+    else echo BIDS naming will be: ${subj}_${scan}
+    fi
 
     mkdir -pv ${output}/BIDS/${subj}/${scan}/{anat,xfm}
     cp ${atlas_srr}  -vup ${output}/BIDS/${subj}/${scan}/anat/${subj}_${scan}_rec-niftymic_t2w.nii.gz

@@ -186,7 +186,7 @@ if [ $ITER ] ; then
     else $cmd
     fi
     
-    mrhistmatch scale ${NEG} ~/fetalmri/templates/ref/STA30.nii.gz ${MAX} -force 
+    mrhistmatch scale ${NEG} ${FETALREF}/ref/STA30.nii.gz ${MAX} -force 
     mv -v ${MAX} ${CORR}   
 
     INPUT=${CORR}

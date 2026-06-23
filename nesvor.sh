@@ -60,8 +60,10 @@ fi
 
 indir=$1
 if [[ ! -d $indir ]] ; then die "input dir doesnt exist" ; fi
+pdir=`dirname $indir`
+id=`basename $pdir`
 
-output=${indir}/nesvor.nii.gz
+output=${indir}/nesvor_${id}.nii.gz
 
 echo Reconstruction: $indir
 if [[ -f $output ]] ; then
@@ -74,12 +76,11 @@ elif [[ $FETALBET = 1 ]] ; then
     sh $0/fetal-bet.sh -d ${indir}
 
     echo Running NeSVoR reconstruction
-    singularity exec --nv docker://junshenxu/nesvor nesvor reconstruct --input-stacks ${indir}/fetus*z --stack-masks ${indir}/mask_fetus*z --output-volume ${indir}/nesvor.nii.gz --bias-field-correction --output-resolution ${RESO}
+    singularity exec --nv docker://junshenxu/nesvor nesvor reconstruct --input-stacks ${indir}/fetus*z --stack-masks ${indir}/mask_fetus*z --output-volume ${output} --bias-field-correction --output-resolution ${RESO}
     echo recon done!
-fi
 
 else
     echo Running NeSVoR segmentation and reconstruction
-    singularity exec --nv docker://junshenxu/nesvor nesvor reconstruct --input-stacks ${indir}/fetus*z --output-volume ${indir}/nesvor.nii.gz --segmentation --bias-field-correction --output-resolution ${RESO}
+    singularity exec --nv docker://junshenxu/nesvor nesvor reconstruct --input-stacks ${indir}/fetus*z --output-volume ${output} --segmentation --bias-field-correction --output-resolution ${RESO}
     echo recon done!
 fi

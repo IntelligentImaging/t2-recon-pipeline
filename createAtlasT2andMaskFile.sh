@@ -73,9 +73,8 @@ fi
 echo "ID is $ID"
 
 # Set full paths
-SHDIR=`dirname $0`
 C3D="${FETALSOFT}/bin/c3d_affine_tool"
-FIXMAT="${SHDIR}/changeTFMnameInFileToAffine.py"
+FIXMAT="${FETALSH}/changeTFMnameInFileToAffine.py"
 REGDIR=`dirname $TFM`
 NIIDIR=`dirname $REGDIR`
 outTFM="${NIIDIR}/t2-atlas_${ID}.tfm"

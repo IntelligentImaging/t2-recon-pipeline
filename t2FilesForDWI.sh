@@ -47,8 +47,7 @@ else echo "Final cropped, atlas space T2 recon wasn't found (not necessary for D
 fi
 
 if [[ -f $T2 && -f $MASK && -f $REG && -f $TFM ]] ; then
-	SHDIR=`dirname $0`
-	bash ${SHDIR}/createAtlasT2andMaskFile.sh $T2 $MASK $REG $TFM
+	bash ${FETALSH}/createAtlasT2andMaskFile.sh $T2 $MASK $REG $TFM
 else
 	echo "One of the needed files not found. Did you run reg-fetal-recon.sh and choosereg.sh ?"
 fi

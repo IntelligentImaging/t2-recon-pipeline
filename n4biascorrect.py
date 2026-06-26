@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
-""" A SimpleITK example that demonstrates how to apply N4BiasFieldImageFilter
-    to an image. """
+""" Applies N4BiasFieldImageFilter to an image. """
 
 import sys
 import os

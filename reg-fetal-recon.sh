@@ -112,8 +112,7 @@ SCRIPT="${DIR}/run-reg.sh"
 if [[ ! -n $METRIC ]] ; then METRIC="corratio" ; fi
 if [[ ! -n $CRKITCON ]] ; then let CRKITCON=0  ; fi
 
-SHDIR=`dirname $0`
-n4="${SHDIR}/n4biascorrect.py"
+n4="${FETALSH}/n4biascorrect.py"
 
 # THIS FUNCTION IS NOW SKIPPED due to troubles with scoping between terminal environments
 # it was not really necessary anyway
@@ -186,7 +185,7 @@ if [ $ITER ] ; then
     else $cmd
     fi
     
-    mrhistmatch scale ${NEG} ${FETALREF}/ref/STA30.nii.gz ${MAX} -force 
+    mrhistmatch scale ${NEG} ${FETALSH}/ref/STA30.nii.gz ${MAX} -force 
     mv -v ${MAX} ${CORR}   
 
     INPUT=${CORR}
@@ -224,7 +223,7 @@ if [[ ! -n $GA  && ! -f $TARGET ]] ; then
             pick="$atlasGA"
             pickvol="$abs"
         fi
-    done < "${SHDIR}/GAvols.txt"
+    done < "${FETALSH}/GAvols.txt"
     echo "Estimated GA is: $pick"
     GA=$pick
 fi
@@ -241,13 +240,13 @@ fi
 # Else, we use a list with registration templates
 if   [[ $TARGET == "CASES" ]] ; then
 	echo "*** Registering $INPUT to same-age cases ***"
-    tlist="${SHDIR}/regtemplates/cases.csv"
+    tlist="${FETALSH}/regtemplates/cases.csv"
 elif [[ $TARGET == "ATLAS" ]] ; then
 	echo "*** Registering $INPUT to same-age STA images ***"
-    tlist="${SHDIR}/regtemplates/STA.csv"
+    tlist="${FETALSH}/regtemplates/STA.csv"
 elif [[ $TARGET == "EARLY" ]] ; then
     echo "*** Registering $INPUT to EARLY-ga cases ***"
-    tlist="${SHDIR}/regtemplates/early.csv"
+    tlist="${FETALSH}/regtemplates/early.csv"
     GA="21"
 elif [[ -f $TARGET ]] ; then
     # ONLY USED IF INDIVIDUAL TARGET FILE IS USED
@@ -269,8 +268,8 @@ if [[ $TARGET == "ATLAS" || $TARGET == "CASES" || $TARGET == "EARLY" ]] ; then
 	# inspect list of possible registration templates
 	while IFS= read -r line ; do 
 		# name of template
-        template="`echo ${FETALREF}/${line} | cut -d' ' -f1`"
-		#template=`readlink -f $(echo ${FETALREF}/${line} | awk -F' ' "{ print $1 }")`
+        template="`echo ${FETALSH}/${line} | cut -d' ' -f1`"
+		#template=`readlink -f $(echo ${FETALSH}/${line} | awk -F' ' "{ print $1 }")`
 		# GA of template
 		tga=`echo $line | awk -F' ' '{ print $2 }'`
 		# check if template GA is match for our input GA, if so run command

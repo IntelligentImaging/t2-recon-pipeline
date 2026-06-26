@@ -70,10 +70,8 @@ if [[ -f $output ]] ; then
     echo $output already exists
 elif [[ $FETALBET = 1 ]] ; then
     echo FETAL-BET mode
-    SHDIR=$0
-
     echo Masking stacks
-    sh $0/fetal-bet.sh -d ${indir}
+    sh ${FETALSH}/fetal-bet.sh -d ${indir}
 
     echo Running NeSVoR reconstruction
     singularity exec --nv docker://junshenxu/nesvor nesvor reconstruct --input-stacks ${indir}/fetus*z --stack-masks ${indir}/mask_fetus*z --output-volume ${output} --bias-field-correction --output-resolution ${RESO}
@@ -84,3 +82,6 @@ else
     singularity exec --nv docker://junshenxu/nesvor nesvor reconstruct --input-stacks ${indir}/fetus*z --output-volume ${output} --segmentation --bias-field-correction --output-resolution ${RESO}
     echo recon done!
 fi
+
+echo Bias correction
+singularity exec --nv docker://junshenxu/nesvor python3 ${FETALSH}/n4biascorrect.py -i ${output} -o ${indir}/bnesvor_${id}.nii.gz

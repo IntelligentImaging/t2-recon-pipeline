@@ -5,6 +5,7 @@ Needed for some scripts:
 - Have the fetal processing pipeline directories set as environment variables:<br>
 `export FETALSOFT=/lab-share/Rad-Gholipour-e2/Public/fetalmri/software`<br>
 `export FETALREF=/lab-share/Rad-Gholipour-e2/Public/fetalmri/templates`<br>
+`export FETALSH=/home/ch162835/t2-recon-pipeline`<br>
 - Apptainer/Singularity https://apptainer.org/ or Docker: https://docs.docker.com/engine/install/
 
 Helpful tools:

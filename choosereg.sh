@@ -115,5 +115,4 @@ id=`basename $iddir`
 cp $best -v ${dir}/atlas_t2final_${id}.nii.gz
 
 echo "Save and name recon output files (placed one level up)"
-SHDIR=`dirname $0`
-bash ${SHDIR}/t2FilesForDWI.sh ${regdir}
+bash ${FETALSH}/t2FilesForDWI.sh ${regdir}

@@ -52,8 +52,7 @@ if [ $# -ne 2 ]  ; then
 fi
 
 # text file with each label (format: "NUMBER NAME") in a new line
-SHDIR=`dirname $0`
-atlaskey="${SHDIR}/4compute-STAkey.txt"
+atlaskey="${FETALSH}/4compute-STAkey.txt"
 # comput volume binary
 parc=${1}
 output=${2}

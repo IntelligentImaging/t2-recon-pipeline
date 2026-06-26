@@ -77,7 +77,6 @@ DCMDIR=`find ${RAW} -type d -name DICOM -o -name scans | sort | head -n1`
 IMAGEDIR=`dirname $DCMDIR`
 NIIDIR="${IMAGEDIR}/nii"
 NET="/fileserver/fetal/software/2Ddensenet"
-SHDIR=`dirname $0`
 
 if [[ ! -d $RAW ]] ; then
 	die "error: Raw case directory $RAW doesn't exist"
@@ -120,7 +119,7 @@ else
 
 if [[ $anon = 1 ]] ; then
     echo "Deidentify images:"
-    sh $SHDIR/deidentify.sh $DCMDIR ${IMAGEDIR}/deid xxx
+    sh $FETALSH/deidentify.sh $DCMDIR ${IMAGEDIR}/deid xxx
 fi
 
 

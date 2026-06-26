@@ -8,7 +8,6 @@ if [[ $# -lt 2 || $# -gt 2 ]]; then
 	exit
 	fi
 
-SHDIR=`dirname $0`
 PROC="$2"
 SUBJDIR="$1"
 DCMDIR=${SUBJDIR}/DICOM
@@ -58,5 +57,5 @@ done
 
 detox ${DCMDIR}/*
 
-bash ${SHDIR}/prep-fetal.sh ${SUBJDIR} ${PROC}
+bash ${FETALSH}/prep-fetal.sh ${SUBJDIR} ${PROC}
 

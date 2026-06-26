@@ -78,8 +78,7 @@ function depend () {
 }
 
 # N4 binary
-SHDIR=`dirname $0`
-n4="${SHDIR}/n4biascorrect.py"
+n4="${FETALSH}/n4biascorrect.py"
 
 # Set naming conventions
 RECON=`readlink -f $1`
@@ -138,7 +137,7 @@ echo "N4 bias correction done"
 
 
 # Intensity correction (N4 changes intensity range)
-REF="${SHDIR}/ref/STA30.nii.gz"
+REF="${FETALSH}/ref/STA30.nii.gz"
 
 
 cmd="crlBinaryThreshold $biascorr ${REGDIR}/tmp_noNegMask.nii.gz -10000 0 0 1"

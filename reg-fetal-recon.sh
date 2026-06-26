@@ -196,7 +196,7 @@ fi
 basebrain="${INPUT%%.*}"
 
 # AUTO-DETECT GA if no GA supplied 
-if [[ ! -n $GA  && ! -f $TARGET ]] ; then
+if [[ ! -n $GA  && ! -f $TARGET && ! $TARGET == "EARLY" ]] ; then
     # Compare mask volume to each STA mask volume and pick the closest
     echo "Estimating input GA"
     while IFS= read -r line ; do

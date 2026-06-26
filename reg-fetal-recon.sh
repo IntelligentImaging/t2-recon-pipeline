@@ -268,7 +268,7 @@ if [[ $TARGET == "ATLAS" || $TARGET == "CASES" || $TARGET == "EARLY" ]] ; then
 	# inspect list of possible registration templates
 	while IFS= read -r line ; do 
 		# name of template
-        template="`echo ${FETALSH}/${line} | cut -d' ' -f1`"
+        template="`echo ${FETALREF}/${line} | cut -d' ' -f1`"
 		#template=`readlink -f $(echo ${FETALSH}/${line} | awk -F' ' "{ print $1 }")`
 		# GA of template
 		tga=`echo $line | awk -F' ' '{ print $2 }'`
@@ -278,9 +278,9 @@ if [[ $TARGET == "ATLAS" || $TARGET == "CASES" || $TARGET == "EARLY" ]] ; then
 		baseT="`basename ${template%%.*}`"
 		output=${basebrain}_FLIRTto_${baseT}
 	 	# register &
+            echo flirt: ${basebrain} to ${baseT}
            	flirt -dof 6 -cost $METRIC -in $INPUT -ref $template -omat ${output}.mat -out $output &
 			warning="n"
-			echo
 		fi
 	done < ${tlist}
     wait

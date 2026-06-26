@@ -5,6 +5,9 @@ show_help () {
 cat << EOF
     USAGE: sh ${0##*/} [BIDS organized niftymic T2 file]
     Incorrect input supplied
+
+    -r  Resample input image to 0.5 (needed for bounti)
+    -m  Let bounti do brain masking (for images which have not been brain-extracted)
 EOF
 }
 
@@ -21,6 +24,9 @@ while :; do
             ;;
         -r|--resample) 
             let resam=1 # resample to .5 mm
+            ;;
+        -m|--mask)
+            let domask=1
             ;;
         --) # end of optionals
             shift
@@ -62,6 +68,18 @@ if [[ $resam = 1 ]] ; then
     image=${anat}/${pt5name}
 fi
 
-apptainer exec --nv docker://fetalsvrtk/svrtk:perinatal_brain_mri_analysis_amd sh -c " bash /home/perinatal-brain-mri-analysis/scripts/run-multi-bounti-fetal-brain-segmentation-2026-general.sh 0 ${image} ${tmpdir} ${anat}/${outname}  ; "
+if [[ -n ${domask} ]] ; then 
+    echo "Brain extraction mode"
+    echo Bounti
+    apptainer exec --nv docker://fetalsvrtk/svrtk:perinatal_brain_mri_analysis_amd sh -c " bash /home/perinatal-brain-mri-analysis/scripts/run-multi-bounti-fetal-brain-segmentation-2026-general.sh 1 ${image} ${tmpdir} ${anat}/${outname}  ; "
+
+else
+    echo "You have already done brain masking"
+    mask=${anat}/mask-for-bounti.nii.gz
+    echo Creating whole image mask
+    crlBinaryThreshold ${image} ${mask} 5 10000 1 0
+    echo Bounti
+    apptainer exec --nv docker://fetalsvrtk/svrtk:perinatal_brain_mri_analysis_amd sh -c " bash /home/perinatal-brain-mri-analysis/scripts/run-multi-bounti-fetal-brain-segmentation-2026-with-bet-init.sh 0 ${image} ${mask} ${tmpdir} ${anat}/${outname}  ; "
+fi
 
 rm -rf ${tmpdir}

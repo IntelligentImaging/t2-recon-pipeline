@@ -125,7 +125,7 @@ echo ${fullid} >> ${output}
 # a while loop for putting the label values for one case into a row
 while ( [ ${xcount} -lt ${count} ] ) ; do
 	# get the volume for this label
-	vol=`crlComputeVolume ${parc} ${labels[$xcount]}`
+	vol=`${FETALSH}/bin/crlComputeVolume ${parc} ${labels[$xcount]}`
 
 	# take the line as it exists now
 	line=`sed "${sedNUM}q;d" ${output}`

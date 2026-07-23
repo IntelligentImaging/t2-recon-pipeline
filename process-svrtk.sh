@@ -89,7 +89,7 @@ if [[ ${STEProi} = 1 ]] ; then
     echo "# # # STACK MASKING STEP # # #"
     stacks=`find ${svrtk} -maxdepth 1 -name fetus\*z`
     if [[ -n $stacks ]] ; then
-        bash ${shdir}/fetal-bet.sh -d -s ${svrtk}
+        bash ${shdir}/fetal-bet.sh -d 4 -s ${svrtk}
     else
         die "no stacks found in $svrtk"
     fi
@@ -142,7 +142,7 @@ if [[ ${STEPreg} = 1 ]] ; then
 
     # -n 2 runs two more iterations of N4 bias correction
     # -m takes the mask from step 2
-    bash ${shdir}/reg-fetal-recon.sh -k -n 2 -m ${subjmask} ${subjrecon}
+    bash ${shdir}/reg-fetal-recon_pt8.sh -k -n 2 -m -w -t CASES ${subjmask} ${subjrecon}
     # This script once again matches intensities to template range.
     # You could add "-w" to Widen the registration template selection to plus and minus one week GA
     # You could add "-t [CASES|EARLY]" to change the registration target to individual subjects or early-GA subjects

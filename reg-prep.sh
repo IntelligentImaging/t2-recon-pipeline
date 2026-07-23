@@ -175,7 +175,7 @@ if [[ $MASK == "YES" || $SING == "YES" ]] ; then
     else
         depend singularity
         echo "Running brain extraction docker, with singularity"
-        singularity run --bind ${workpath}:/src/inputs/ docker://arfentul/maskrecon:0.02
+        singularity run --nv --bind ${workpath}:/src/inputs/ docker://arfentul/maskrecon:0.02
     fi
     seg=`find ${work}/segmentations -type f -name \*segmentation.nii.gz`
     cp ${seg} -v ${REGDIR}/mask.nii.gz

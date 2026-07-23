@@ -28,7 +28,11 @@ while :; do
 	    let SINGLEMODE=1
             ;;
         -d|--dilate)
-	    let DILATE=2
+            if [[ $2 -gt 0 ]] ; then
+                let DILATE=$2
+            else die 'error: provide dilation factor (usually 1-4)'
+            fi
+            shift
             ;;
         --) # end of optionals
             shift
@@ -69,7 +73,7 @@ for mask in ${inpath}/*_predicted_mask.nii.gz ; do
 	if [[ -f $mask ]] ; then
 		if [[ $DILATE > 0 ]] ; then
 			# crlBinaryMorphology ${mask} dilate 1 ${DILATE} ${mask} # grow mask by DILATE factor
-            maskfilter ${mask} dilate -npass 2 ${mask}
+            maskfilter ${mask} dilate -npass ${DILATE} ${mask} -force
             maskfilter -largest ${mask} connect ${mask} -force # mask out all but the largest body of voxels
 		fi
 

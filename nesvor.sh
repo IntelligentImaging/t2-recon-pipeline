@@ -20,6 +20,9 @@ while :; do
                 die 'error: no resolution supplied'
             fi
             ;;
+	-s|--smooth)
+	    SMOOTH="--image-regularization edge --weight-image 2.5 --delta 0.5"
+	    ;;
         -b|--bet)
             let FETALBET=1 # activate fetal-bet mode
             ;;
@@ -46,6 +49,7 @@ cat << EOF
     -b      Fetal-BET (brain extraction tool) mode. Can use if NeSVoR stack --segmentation is failing.
             Runs Razieh Fetal-BET on all input masks, dilates result, crops stacks, and uses cropped stacks instead.
             Omits --segmentation argument from NeSVoR command.
+   -s	    Smooth mode: Edge regularization (which is default), weight-image and delta adjusted
 EOF
 }
 
@@ -74,12 +78,12 @@ elif [[ $FETALBET = 1 ]] ; then
     sh ${FETALSH}/fetal-bet.sh -d ${indir}
 
     echo Running NeSVoR reconstruction
-    singularity exec --nv docker://junshenxu/nesvor nesvor reconstruct --input-stacks ${indir}/fetus*z --stack-masks ${indir}/mask_fetus*z --output-volume ${output} --bias-field-correction --output-resolution ${RESO}
+    singularity exec --nv docker://junshenxu/nesvor nesvor reconstruct --input-stacks ${indir}/fetus*z --stack-masks ${indir}/mask_fetus*z --output-volume ${output} --bias-field-correction --output-resolution ${RESO} ${SMOOTH}
     echo recon done!
 
 else
     echo Running NeSVoR segmentation and reconstruction
-    singularity exec --nv docker://junshenxu/nesvor nesvor reconstruct --input-stacks ${indir}/fetus*z --output-volume ${output} --segmentation --bias-field-correction --output-resolution ${RESO}
+    singularity exec --nv docker://junshenxu/nesvor nesvor reconstruct --input-stacks ${indir}/fetus*z --output-volume ${output} --segmentation --bias-field-correction --output-resolution ${RESO} ${SMOOTH}
     echo recon done!
 fi
 

@@ -11,6 +11,7 @@ cat << EOF
     -s	SVRTK reconstruction using the images in the input directory
 	-m 	T2 recon mask segmentation for the SVRTK recon
 	-r	Normalize intensity and register masked recon to atlas
+	--pt8	Use 0.8 isotropic templates instead (default is 0.5)
 	-o	Output BIDS naming folder
 	--all   Do all
  
@@ -47,6 +48,9 @@ while :; do
         -r)
             let STEPreg=1
             ;;
+	--pt8)
+	    let pt8=1
+	    ;;
 	-o)
 	    let STEPbids=1
 	    ;;
@@ -140,9 +144,14 @@ if [[ ${STEPreg} = 1 ]] ; then
 
     if [[ ! -f $subjrecon || ! -f $subjmask ]] ; then die "Recon or Mask from step 2 (masking) not found" ; fi
 
+    if [[ $pt8 -eq 1 ]] ; then
+	regscript=${shdir}/reg-fetal-recon_pt8.sh
+    else regscript=${shdir}/reg-fetal-recon.sh
+    fi
+
     # -n 2 runs two more iterations of N4 bias correction
     # -m takes the mask from step 2
-    bash ${shdir}/reg-fetal-recon_pt8.sh -k -n 2 -m -w -t CASES ${subjmask} ${subjrecon}
+    bash ${regscript} -k -n 2 -m ${subjmask} -w -t CASES ${subjrecon}
     # This script once again matches intensities to template range.
     # You could add "-w" to Widen the registration template selection to plus and minus one week GA
     # You could add "-t [CASES|EARLY]" to change the registration target to individual subjects or early-GA subjects

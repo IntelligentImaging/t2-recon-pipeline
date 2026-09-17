@@ -21,7 +21,7 @@ while :; do
             fi
             ;;
 	-s|--smooth)
-	    SMOOTH="--image-regularization edge --weight-image 2.5 --delta 0.5"
+	    SMOOTH="--image-regularization edge --weight-image 3.0 --delta 0.01"
 	    ;;
         -b|--bet)
             let FETALBET=1 # activate fetal-bet mode
@@ -62,7 +62,7 @@ if [[ ! -n $RESO ]] ; then
     RESO="0.5"
 fi
 
-indir=$1
+indir=`readlink -f $1`
 if [[ ! -d $indir ]] ; then die "input dir doesnt exist" ; fi
 pdir=`dirname $indir`
 id=`basename $pdir`
@@ -70,20 +70,29 @@ id=`basename $pdir`
 output=${indir}/nesvor_${id}.nii.gz
 
 echo Reconstruction: $indir
+cmd="nesvor reconstruct --output-volume ${output} --bias-field-correction --output-resolution ${RESO}"
+if [[ -n $SMOOTH ]] ; then cmd="${cmd} ${SMOOTH}" ; fi
+
 if [[ -f $output ]] ; then
+
     echo $output already exists
 elif [[ $FETALBET = 1 ]] ; then
     echo FETAL-BET mode
     echo Masking stacks
     sh ${FETALSH}/fetal-bet.sh -d ${indir}
+    
 
     echo Running NeSVoR reconstruction
-    singularity exec --nv docker://junshenxu/nesvor nesvor reconstruct --input-stacks ${indir}/fetus*z --stack-masks ${indir}/mask_fetus*z --output-volume ${output} --bias-field-correction --output-resolution ${RESO} ${SMOOTH}
+    #singularity exec --nv docker://junshenxu/nesvor nesvor reconstruct --input-stacks ${indir}/fetus*z --stack-masks ${indir}/mask_fetus*z --output-volume ${output} --bias-field-correction --output-resolution ${RESO} ${SMOOTH}
+    singularity exec --nv docker://junshenxu/nesvor ${cmd} --input-stacks ${indir}/fetus*z --stack-masks ${indir}/mask_fetus*z
     echo recon done!
 
 else
     echo Running NeSVoR segmentation and reconstruction
-    singularity exec --nv docker://junshenxu/nesvor nesvor reconstruct --input-stacks ${indir}/fetus*z --output-volume ${output} --segmentation --bias-field-correction --output-resolution ${RESO} ${SMOOTH}
+    #singularity exec --nv docker://junshenxu/nesvor nesvor reconstruct --input-stacks ${indir}/fetus*z --output-volume ${output} --segmentation --bias-field-correction --output-resolution ${RESO} ${SMOOTH}
+    echo command is ${cmd} --input-stacks ${indir}/fetus*z --segmentation
+    echo "${cmd} --input-stacks ${indir}/fetus*z --segmentation" > ${indir}/cmd_nesvor.sh
+    singularity exec --nv docker://junshenxu/nesvor ${cmd} --input-stacks ${indir}/fetus*z --segmentation 
     echo recon done!
 fi
 

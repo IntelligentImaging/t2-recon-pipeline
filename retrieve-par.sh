@@ -84,7 +84,7 @@ get_tag() { dcmdump +P "$1" "$2" | grep -o -P '(?<=\[)(.*?)(?=\])'; }
 # Sorts DICOMs by PatientID, Accession Number, and Series 
 sortd() { 
 patient=`get_tag PatientID $1`
-study=`get_tag StudyID $1` 
+study=`get_tag StudyDate $1` 
 series=`get_tag SeriesDescription $1` 
 seriesnum=`get_tag SeriesNumber $1`
 if [[ $anon -eq 1 ]] ; then

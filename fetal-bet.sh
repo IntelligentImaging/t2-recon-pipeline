@@ -3,11 +3,12 @@
 
 show_help () {
 cat << EOF
-    USAGE: sh ${0##*/} [-s] [-d] -- [input directory]
+    USAGE: sh ${0##*/} [-p PREFIX] [-s] [-d] -- [input directory]
     Incorrect input supplied
 
 	Runs FETAL-BET for the input directory
 
+    -p      Set input stack file prefix (default=fetus)
 	-s	SINGLE MODE: chooses only the middle (alphabetical) image to mask
 	-d	Dilate result by 2
 EOF
@@ -23,6 +24,13 @@ while :; do
         -h|-\?|--help)
             show_help # help message
             exit
+            ;;
+        -p|--prefix)
+            if [[ -n "$2" ]] ; then
+                PREF="$2" # Specify prefix for input images
+                shift
+            else die 'error: no prefix supplied'
+            fi
             ;;
         -s|--single)
 	    let SINGLEMODE=1
@@ -53,18 +61,23 @@ if [ $# -ne 1 ]; then
     exit
 fi 
 
+if [[ ! -n $PREF ]] ; then
+    PREF="fetus"
+fi
+
+
 inpath=$1
 segin=${inpath}/FETALBET
 mkdir -pv ${segin}
 
 if [[ $SINGLEMODE = 1 ]] ; then
-	ims=`find ${inpath} -maxdepth 1 -type f -name fetus\*z -a ! -name \*mask\*`
-	count=`find ${inpath} -maxdepth 1 -type f -name fetus\*z -a ! -name \*mask\* | wc -w`
+	ims=`find ${inpath} -maxdepth 1 -type f -name ${PREF}\*z -a ! -name \*mask\*`
+	count=`find ${inpath} -maxdepth 1 -type f -name ${PREF}\*z -a ! -name \*mask\* | wc -w`
 	half=`echo "$count / 2" | bc`
-	chosen=`ls ${inpath}/fetus*z | sed -n "${half}p"`
+	chosen=`ls ${inpath}/${PREF}*z | sed -n "${half}p"`
 	cp $chosen -v ${segin}
 else
-	cp ${inpath}/fetus* -v ${segin}/
+	cp ${inpath}/${PREF}* -v ${segin}/
 fi
 
 singularity exec docker://arfentul/fetalbet-model:first /bin/bash -c "python /app/src/codes/inference.py --data_path ${segin}/ --save_path ${inpath} --saved_model_path /app/src/model/AttUNet.pth"

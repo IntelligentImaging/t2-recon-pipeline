@@ -12,6 +12,13 @@ while :; do
             show_help # help message
             exit
             ;;
+        -p|--prefix)
+            if [[ -n "$2" ]] ; then
+                PREF="$2" # Specify prefix for input images
+                shift
+            else die 'error: no prefix supplied'
+            fi
+            ;;
         -r|--resolution)
             if [[ -n "$2" ]] ; then
                 RESO=$2 # Specify resolution
@@ -20,9 +27,9 @@ while :; do
                 die 'error: no resolution supplied'
             fi
             ;;
-	-s|--smooth)
-	    SMOOTH="--image-regularization edge --weight-image 3.0 --delta 0.01"
-	    ;;
+        -s|--smooth)
+            SMOOTH="--image-regularization edge --weight-image 2.75 --delta 0.015"
+            ;;
         -b|--bet)
             let FETALBET=1 # activate fetal-bet mode
             ;;
@@ -42,20 +49,25 @@ done
 
 show_help () {
 cat << EOF
-    USAGE: sh ${0##*/} [-r 0.x] [-b|--bet] -- [input directory]
+    USAGE: sh ${0##*/} [-p PREFIX] [-r 0.x] [-b|--bet] -- [input directory]
     Incorrect input supplied
 
+    -p      Set input stack file prefix (default=fetus)
     -r      Set output resolution (default=0.5)
     -b      Fetal-BET (brain extraction tool) mode. Can use if NeSVoR stack --segmentation is failing.
             Runs Razieh Fetal-BET on all input masks, dilates result, crops stacks, and uses cropped stacks instead.
             Omits --segmentation argument from NeSVoR command.
-   -s	    Smooth mode: Edge regularization (which is default), weight-image and delta adjusted
+    -s	    Smooth mode: Edge regularization (which is default), weight-image and delta adjusted
 EOF
 }
 
 if [ $# -ne 1 ]; then
     show_help
     exit
+fi
+
+if [[ ! -n $PREF ]] ; then
+    PREF="fetus"
 fi
 
 if [[ ! -n $RESO ]] ; then
@@ -83,16 +95,14 @@ elif [[ $FETALBET = 1 ]] ; then
     
 
     echo Running NeSVoR reconstruction
-    #singularity exec --nv docker://junshenxu/nesvor nesvor reconstruct --input-stacks ${indir}/fetus*z --stack-masks ${indir}/mask_fetus*z --output-volume ${output} --bias-field-correction --output-resolution ${RESO} ${SMOOTH}
-    singularity exec --nv docker://junshenxu/nesvor ${cmd} --input-stacks ${indir}/fetus*z --stack-masks ${indir}/mask_fetus*z
+    singularity exec --nv docker://junshenxu/nesvor ${cmd} --input-stacks ${indir}/${PREF}*z --stack-masks ${indir}/mask_${PREF}*z
     echo recon done!
 
 else
     echo Running NeSVoR segmentation and reconstruction
-    #singularity exec --nv docker://junshenxu/nesvor nesvor reconstruct --input-stacks ${indir}/fetus*z --output-volume ${output} --segmentation --bias-field-correction --output-resolution ${RESO} ${SMOOTH}
-    echo command is ${cmd} --input-stacks ${indir}/fetus*z --segmentation
-    echo "${cmd} --input-stacks ${indir}/fetus*z --segmentation" > ${indir}/cmd_nesvor.sh
-    singularity exec --nv docker://junshenxu/nesvor ${cmd} --input-stacks ${indir}/fetus*z --segmentation 
+    echo command is ${cmd} --input-stacks ${indir}/${PREF}*z --segmentation
+    echo "${cmd} --input-stacks ${indir}/${PREF}*z --segmentation" > ${indir}/cmd_nesvor.sh
+    singularity exec --nv docker://junshenxu/nesvor ${cmd} --input-stacks ${indir}/${PREF}*z --segmentation 
     echo recon done!
 fi
 

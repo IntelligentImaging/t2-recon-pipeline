@@ -69,7 +69,7 @@ while :; do
             if [[ "$2" ]] ; then
                 METRIC=$2
                 shift
-            else die 'no target specified'
+            else die 'no metric specified'
             fi
             ;;
         -ga|--ga)
@@ -132,7 +132,7 @@ function register {
 
 # If optional mask is supplied, mask input image and set masked image as image which gets registered
 CCMASK="${DIR}/mask_r3Drecon_registration.nii.gz"
-if [ $MASK ] ; then
+if [[ -n $MASK ]] ; then
     echo "Finalize mask (crlMaskConnectedComponents)"
     maskfilter -largest ${MASK} connect ${CCMASK} -force
     echo Masking image
@@ -146,8 +146,15 @@ if [ $MASK ] ; then
 
     #fslmaths.fsl $INPUT -mul $CCMASK $MASKED
     INPUT=$MASKED
+elif [[ ! -f ${CCMASK} ]] ; then
+    echo No mask supplied, making binary mask with all voxels
+    cmd="crlBinaryThreshold $INPUT $CCMASK 50 10000 1 0"
+    if [[ $CRKITCON = 1 ]] ; then
+        singularity exec docker://arfentul/crkit:latest /bin/bash -c "$cmd"
+    else $cmd
+    fi
 else
-    echo No mask supplied
+    echo No mask supplied, using $CCMASK
 fi
 
 # If optional N4 bias is supplied, do N4 bias correction n times

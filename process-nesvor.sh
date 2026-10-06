@@ -91,6 +91,6 @@ if [[ ${STEPreg}=1 ]] ; then
     bash ${shdir}/reg-fetal-recon.sh ${recon}/nesvor.nii.gz
 
     echo "++ Registration step done ++"
-    echo "Now run sh ${shdir}/choosereg.sh on ${recon}/nesvor_FLIRTto_STA[ga].nii.gz if you are happy with the result"
+    echo "Now run sh ${shdir}/choosereg-nesvor.sh on ${recon}/nesvor_FLIRTto_STA[ga].nii.gz if you are happy with the result"
 
 fi

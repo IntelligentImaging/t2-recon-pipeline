@@ -157,6 +157,11 @@ else
     echo No mask supplied, using $CCMASK
 fi
 
+# Calculate volume of mask using voxel count multiplied by image spacing 
+maskvoxelcount=$(mrstats -q -mask "$CCMASK" "$CCMASK" -output count)
+maskimagespace=$(mrinfo "$CCMASK" -spacing | sed 's, ,*,g')
+invol=$(echo "$maskvoxelcount * $maskimagespace / 1000" | bc)
+
 # If optional N4 bias is supplied, do N4 bias correction n times
 if [ $ITER ] ; then
     echo Performing bias correction
@@ -206,19 +211,14 @@ basebrain="${INPUT%%.*}"
 if [[ ! -n $GA  && ! -f $TARGET && ! $TARGET == "EARLY" ]] ; then
     # Compare mask volume to each STA mask volume and pick the closest
     echo "Estimating input GA"
-    while IFS= read -r line ; do
 
-        # Get atlas GAs and volumes from text file
-        atlasGA=`echo $line | cut -d' ' -f1`
-        avol=`echo $line | cut -d ' ' -f2`
-
-        # Calculate volume of mask using voxel count multiplied by image spacing 
-        maskvoxelcount=`mrstats -q -mask $CCMASK $CCMASK -output count`
-        maskimagespace=`mrinfo $CCMASK -spacing | sed -e 's, ,*,g'`
-        invol=`echo "$maskvoxelcount * $maskimagespace / 1000" | bc`
-
-        diff=`echo "($avol-$invol)/1" | bc` # Difference btw atlas volume and input image volume
+    # Get atlas GAs and volumes from text file
+    while read -r atlasGA avol ; do
+     
+        avolR=$(printf "%.0f" "$avol")
+        diff=$(( avolR - invol ))
         abs=${diff#-}
+
         # list all comparison results
         # echo AtlasGA $atlasGA Diff $abs
         # if no comparison values yet, set it using first line
@@ -230,7 +230,9 @@ if [[ ! -n $GA  && ! -f $TARGET && ! $TARGET == "EARLY" ]] ; then
             pick="$atlasGA"
             pickvol="$abs"
         fi
+
     done < "${FETALSH}/GAvols.txt"
+
     echo "Estimated GA is: $pick"
     GA=$pick
 fi

@@ -68,6 +68,9 @@ dir=`dirname $best`
 if [[ ! -f $best ]] ; then
     echo "$best doesn't exist"
     exit 1
+elif [[ $best == *"nesvor"* ]] ; then
+    echo "error: did you mean choosereg-nesvor.sh? this filename has 'nesvor' in it"
+    exit 1
 fi
 if [[ $best == *FLIRT*FLIRT* || $combine = 1 ]] ; then
     echo "This transform might need to be composed first. Do you want to compose the two transforms (y/n)"?

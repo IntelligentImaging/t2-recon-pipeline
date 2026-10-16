@@ -43,6 +43,12 @@ while :; do
         -e|--bet)
             let FETALBET=1 # activate fetal-bet mode
             ;;
+        -u|--usermasks)
+            let USERMASK=1 # activate user mask mode
+            ;;
+        -d|--dilate)
+            DILATE="--dilation-radius-seg 5" # activate nesvor dilate mode
+            ;;
         --) # end of optionals
             shift
             break
@@ -68,8 +74,10 @@ cat << EOF
     -i      Set number of training iterations (default=6000)
     -e      Fetal-BET (brain extraction tool) mode. Can use if NeSVoR stack --segmentation is failing.
             Runs Razieh Fetal-BET on all input masks, dilates result, crops stacks, and uses cropped stacks instead.
-            Omits --segmentation argument from NeSVoR command.
+            Omits --segmentation argument from NeSVoR command. (Takes priority over User Mask mode).
+    -u      User mask mode. Assumes directory already has mask_fetus_x.nii.gz files in the folder.
     -s	    Smooth mode: Edge regularization (which is default), weight-image and delta adjusted
+    -d      Dilate mask (--dilation-radius-seg 5), overwrites FETAL-BET mode
 EOF
 }
 
@@ -109,16 +117,25 @@ output=${indir}/nesvor_${id}.nii.gz
 
 echo Reconstruction: $indir
 cmd="nesvor reconstruct --output-volume ${output} --bias-field-correction --output-resolution ${RESO} --n-iter ${ITER}"
+
+if [[ -n $DILATE ]] ; then
+    cmd="${cmd} ${DILATE} "
+fi
+
+
 if [[ -n $SMOOTH ]] ; then cmd="${cmd} ${SMOOTH}" ; fi
 
 if [[ -f $output ]] ; then
-
     echo $output already exists
-elif [[ $FETALBET = 1 ]] ; then
-    echo FETAL-BET mode
-    echo Masking stacks
-    sh ${FETALSH}/fetal-bet.sh -d ${indir}
-    
+
+elif [[ ( $FETALBET = 1 || $USERMASK = 1 ) && ! -n ${DILATE} ]] ; then
+    if [[ $FETALBET = 1 ]] ; then
+        echo FETAL-BET mode
+        echo Masking stacks
+        sh ${FETALSH}/fetal-bet.sh -p ${PREF} ${indir}
+    else
+        echo Will try to use already-existing stack masks
+    fi
 
     echo Running NeSVoR reconstruction
     singularity exec --nv docker://junshenxu/nesvor ${cmd} --input-stacks ${indir}/${PREF}*z --stack-masks ${indir}/mask_${PREF}*z

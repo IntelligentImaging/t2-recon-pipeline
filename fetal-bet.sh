@@ -19,6 +19,7 @@ die() {
     printf '%s\n' "$1" >&2
     exit 1
 }
+
 while :; do
     case $1 in
         -h|-\?|--help)
@@ -33,7 +34,7 @@ while :; do
             fi
             ;;
         -s|--single)
-	    let SINGLEMODE=1
+            let SINGLEMODE=1
             ;;
         -d|--dilate)
             if [[ $2 -gt 0 ]] ; then
@@ -46,8 +47,8 @@ while :; do
             shift
             break
             ;;
-        -)?*
-            printf 'warning: unknown option (ignored: %s\m' "$1" >&2
+        -?*)
+            printf 'warning: unknown option, ignored %s' "$1" >&2
             ;;
         *) # default case, no optionals
             break
@@ -56,7 +57,8 @@ while :; do
 done
 
 
-if [ $# -ne 1 ]; then
+
+if [[ $# -ne 1 ]]; then
     show_help
     exit
 fi 
@@ -64,7 +66,6 @@ fi
 if [[ ! -n $PREF ]] ; then
     PREF="fetus"
 fi
-
 
 inpath=$1
 segin=${inpath}/FETALBET

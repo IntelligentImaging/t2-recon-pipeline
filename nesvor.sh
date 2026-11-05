@@ -150,4 +150,9 @@ else
 fi
 
 echo Bias correction
-singularity exec --nv docker://junshenxu/nesvor python3 ${FETALSH}/n4biascorrect.py -i ${output} -o ${indir}/bnesvor_${id}.nii.gz
+if [[ -f $output ]] ; then
+    echo "Additional n4 bias correction"
+    singularity exec --nv docker://junshenxu/nesvor python3 ${FETALSH}/n4biascorrect.py -i ${output} -o ${indir}/bnesvor_${id}.nii.gz
+else
+    echo "Output not found- not doing n4 bias correction"
+fi

@@ -107,8 +107,9 @@ rm -v ${flirt}*
 mv -v ${tmpdir}/${base}.* ${dir}/
 rmdir -v ${tmpdir}
 
-sub=`echo $base | sed -e 's,.*sub-,sub-,g' -e 's,_ses.*,,g'`
-ses=`echo $base | sed -e 's,.*ses-,ses-,g' -e 's,_FLIRT.*,,g'`
+base2=`echo ${base} | sed -e 's,_FLIRT.*,,g'`
+sub=`echo $base2 | sed -e 's,.*sub-,sub-,g' -e 's,_ses.*,,g'`
+ses=`echo $base2 | sed -e 's,.*ses-,ses-,g'`
 
 BIDS="${dir}/bidsname"
 mkdir -pv ${BIDS}

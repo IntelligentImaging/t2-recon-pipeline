@@ -22,6 +22,7 @@ die() {
 
 let STEPsvr=0
 let STEPreg=0
+let 
 
 while :; do
     case $1 in
@@ -76,7 +77,7 @@ if [[ ${STEPsvr}=1 ]] ; then
 
     if [[ ! -n $fetuses ]] ; then die "t2 stacks (fetus*nii.gz) not found, can't run reconstruction" ; fi
 
-    bash ${shdir}/nesvor.sh ${recon} # runs nesvor container
+    bash ${shdir}/nesvor.sh -s -i 8000 ${recon} # runs nesvor container (smooth mode, 8000 iterations)
 
     echo "++ SVR recon step done ++"
 fi
@@ -88,7 +89,7 @@ if [[ ${STEPreg}=1 ]] ; then
 
     if [[ ! -f ${recon}/nesvor.nii.gz ]] ; then die "could not find nesvor reconstruction" ; fi 
 
-    bash ${shdir}/reg-fetal-recon.sh ${recon}/nesvor.nii.gz
+    bash ${shdir}/reg-fetal-recon.sh ${recon}/bnesvor.nii.gz # bnesvor is the bias corrected version (part of nesvor.sh script)
 
     echo "++ Registration step done ++"
     echo "Now run sh ${shdir}/choosereg-nesvor.sh on ${recon}/nesvor_FLIRTto_STA[ga].nii.gz if you are happy with the result"

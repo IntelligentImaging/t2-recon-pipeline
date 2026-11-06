@@ -15,7 +15,7 @@ cat << EOF
         -h      display help
         -m      supply a binary mask to crop the image (default: no mask)
         -n      run N4 bias correction (after masking) for "n" iterations, usually 3 (default: n=3)
-        -t      specify registration target, must be either "ATLAS", "CASES", "EARLY",
+        -t      specify registration target, must be either "ATLAS", "CASES", "EARLY", "NESVOR"
                 OR specify a single target image for registration.
                 "EARLY" should be used for very small brains (~20 weeks and below)
                 (default: ATLAS)
@@ -157,10 +157,12 @@ else
     echo No mask supplied, using $CCMASK
 fi
 
-# Calculate volume of mask using voxel count multiplied by image spacing 
-maskvoxelcount=$(mrstats -q -mask "$CCMASK" "$CCMASK" -output count)
-maskimagespace=$(mrinfo "$CCMASK" -spacing | sed 's, ,*,g')
-invol=$(echo "$maskvoxelcount * $maskimagespace / 1000" | bc)
+if [[ ! -n $GA  && ! -f $TARGET && ! $TARGET == "EARLY" ]] ; then
+    # Calculate volume of mask using voxel count multiplied by image spacing 
+    maskvoxelcount=$(mrstats -q -mask "$CCMASK" "$CCMASK" -output count)
+    maskimagespace=$(mrinfo "$CCMASK" -spacing | sed 's, ,*,g')
+    invol=$(echo "$maskvoxelcount * $maskimagespace / 1000" | bc)
+fi
 
 # If optional N4 bias is supplied, do N4 bias correction n times
 if [ $ITER ] ; then
@@ -253,6 +255,9 @@ if   [[ $TARGET == "CASES" ]] ; then
 elif [[ $TARGET == "ATLAS" ]] ; then
 	echo "*** Registering $INPUT to same-age STA images ***"
     tlist="${FETALSH}/regtemplates/STA.csv"
+elif [[ $TARGET == "NESVOR" ]] ; then
+	echo "*** Registering $INPUT to same-age Nesvor Pipeline images ***"
+    tlist="${FETALSH}/regtemplates/nesvor.csv"
 elif [[ $TARGET == "EARLY" ]] ; then
     echo "*** Registering $INPUT to EARLY-ga cases ***"
     tlist="${FETALSH}/regtemplates/early.csv"
@@ -273,7 +278,7 @@ else
     exit
 fi
 
-if [[ $TARGET == "ATLAS" || $TARGET == "CASES" || $TARGET == "EARLY" ]] ; then 
+if [[ $TARGET == "ATLAS" || $TARGET == "CASES" || $TARGET == "NESVOR" || $TARGET == "EARLY" ]] ; then 
 	# inspect list of possible registration templates
 	while IFS= read -r line ; do 
 		# name of template

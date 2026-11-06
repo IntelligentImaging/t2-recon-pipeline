@@ -128,8 +128,12 @@ if [[ -n $SMOOTH ]] ; then cmd="${cmd} ${SMOOTH}" ; fi
 if [[ -f $output ]] ; then
     echo $output already exists
 
-elif [[ ( $FETALBET = 1 || $USERMASK = 1 ) && ! -n ${DILATE} ]] ; then
-    if [[ $FETALBET = 1 ]] ; then
+elif [[  $FETALBET = 1 || $USERMASK = 1 ]] ; then
+    if [[ $FETALBET = 1 && $DILATE = 1 ]] ; then # if dilation is set, we dilate the fetal-bet masks
+        echo FETAL-BET mode
+        echo Masking stacks
+        sh ${FETALSH}/fetal-bet.sh -d 5 -p ${PREF} ${indir}
+    elif [[ $FETALBET = 1 ]] ; then 
         echo FETAL-BET mode
         echo Masking stacks
         sh ${FETALSH}/fetal-bet.sh -p ${PREF} ${indir}
@@ -150,4 +154,9 @@ else
 fi
 
 echo Bias correction
-singularity exec --nv docker://junshenxu/nesvor python3 ${FETALSH}/n4biascorrect.py -i ${output} -o ${indir}/bnesvor_${id}.nii.gz
+if [[ -f $output ]] ; then
+    echo "Additional n4 bias correction"
+    singularity exec --nv docker://junshenxu/nesvor python3 ${FETALSH}/n4biascorrect.py -i ${output} -o ${indir}/bnesvor_${id}.nii.gz
+else
+    echo "Output not found- not doing n4 bias correction"
+fi

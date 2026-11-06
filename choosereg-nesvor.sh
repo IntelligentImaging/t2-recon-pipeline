@@ -4,7 +4,7 @@
 
 show_help () {
 cat << EOF
-    USAGE: sh ${0##*/} [-c||--compose] -- [BEST IMAGE]
+    USAGE: sh ${0##*/} [-o||--old]] [-c||--compose] -- [BEST IMAGE]
     Incorrect input supplied
     
     Copies BEST IMAGE to atlas_t2final_subjID.nii.gz
@@ -17,6 +17,7 @@ cat << EOF
                             for convenience. The file you supply here would have
                             "_FLIRTto_" in the filename TWICE. Ignore this if this has
                             been done. The output of this is named subjID_FLIRTto_STA.nii.gz.
+    -o||--old               Old naming conventions (assumes nesvor_SUBJ_SCAN.nii.gz)
 
 EOF
 }
@@ -34,6 +35,9 @@ while :; do
             ;;
         -c|--compose)
             let combine=1
+            ;;
+        -o|--old)
+            let OLD=1
             ;;
         --) # end of optionals
             shift
@@ -107,8 +111,14 @@ rm -v ${flirt}*
 mv -v ${tmpdir}/${base}.* ${dir}/
 rmdir -v ${tmpdir}
 
-sub=`echo $base | sed -e 's,.*sub-,sub-,g' -e 's,_ses.*,,g'`
-ses=`echo $base | sed -e 's,.*ses-,ses-,g' -e 's,_FLIRT.*,,g'`
+base2=`echo ${base} | sed -e 's,_FLIRT.*,,g'`
+if [[ ! -n $OLD ]] ; then
+    sub=`echo $base2 | sed -e 's,.*sub-,sub-,g' -e 's,_ses.*,,g'`
+    ses=`echo $base2 | sed -e 's,.*ses-,ses-,g'`
+else
+    sub=`echo $base2 | sed -e 's,.*nesvor_,,g' -e 's,_.*,,g'
+    ses=`echo $base2 | sed -e 's,.*nesvor_,,g' -e 's,.*_,,g'
+fi
 
 BIDS="${dir}/bidsname"
 mkdir -pv ${BIDS}

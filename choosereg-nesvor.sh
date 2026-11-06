@@ -113,14 +113,16 @@ rmdir -v ${tmpdir}
 
 base2=`echo ${base} | sed -e 's,_FLIRT.*,,g'`
 if [[ ! -n $OLD ]] ; then
+    echo bids naming assumed
     sub=`echo $base2 | sed -e 's,.*sub-,sub-,g' -e 's,_ses.*,,g'`
     ses=`echo $base2 | sed -e 's,.*ses-,ses-,g'`
 else
-    sub=`echo $base2 | sed -e 's,.*nesvor_,,g' -e 's,_.*,,g'
-    ses=`echo $base2 | sed -e 's,.*nesvor_,,g' -e 's,.*_,,g'
+    echo old naming assumed
+    sub=`echo $base2 | sed -e 's,.*nesvor_,,g' -e 's,_.*,,g'`
+    ses=`echo $base2 | sed -e 's,.*nesvor_,,g' -e 's,.*_,,g'`
 fi
 
 BIDS="${dir}/bidsname"
 mkdir -pv ${BIDS}
-cp $best -v ${BIDS}/${sub}_${ses}_rec-nesvor_t2w.nii.gz
+cp $best -v ${BIDS}/sub-${sub}_${ses}_rec-nesvor_t2w.nii.gz
 

@@ -3,7 +3,7 @@
 
 show_help () {
 cat << EOF
-    USAGE: sh ${0##*/} [BIDS organized niftymic T2 file]
+    USAGE: sh ${0##*/} [input BIDS-named t2w recon]
     Incorrect input supplied
 
     -r  Resample input image to 0.5 (needed for bounti)
@@ -58,8 +58,9 @@ tmpdir=${anat}/TMP${RANDOM}
 mkdir ${tmpdir}
 
 base=`basename $image`
-pt5name=`echo $base | sed -e 's,_t2w.nii.gz,_pt5_t2w.nii.gz,g'`
-outname=`echo $base | sed -e 's,rec-\(.*\)_,rec-\1_desc-bounti_,g'`
+pt5name=`echo $base | sed -e 's,_t2w,_pt5_t2w,g'`
+outname=`echo $base | sed -e 's,rec-\(.*\)_,rec-\1_desc-bounti_,g' -e 's,_t2w.*,_t2w.nii.gz,g'`
+#maskname=`echo $base | sed -e 's,rec-\(.*\)_t2w,rec-\1_desc-mask_t2w,g'` # bids naming for mask
 
 
 if [[ $resam = 1 ]] ; then
@@ -72,6 +73,7 @@ if [[ -n ${domask} ]] ; then
     echo "Brain extraction mode"
     echo Bounti
     apptainer exec --nv docker://fetalsvrtk/svrtk:perinatal_brain_mri_analysis_amd sh -c " bash /home/perinatal-brain-mri-analysis/scripts/run-multi-bounti-fetal-brain-segmentation-2026-general.sh 1 ${image} ${tmpdir} ${anat}/${outname}  ; "
+    cp ${tmpdir}/m-t2.nii.gz ${anat}/mask-for-bounti.nii.gz
 
 else
     echo "You have already done brain masking"
@@ -82,4 +84,4 @@ else
     apptainer exec --nv docker://fetalsvrtk/svrtk:perinatal_brain_mri_analysis_amd sh -c " bash /home/perinatal-brain-mri-analysis/scripts/run-multi-bounti-fetal-brain-segmentation-2026-with-bet-init.sh 0 ${image} ${mask} ${tmpdir} ${anat}/${outname}  ; "
 fi
 
-rm -rf ${tmpdir}
+#rm -rf ${tmpdir}

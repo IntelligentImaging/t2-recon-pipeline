@@ -84,4 +84,4 @@ else
     apptainer exec --nv docker://fetalsvrtk/svrtk:perinatal_brain_mri_analysis_amd sh -c " bash /home/perinatal-brain-mri-analysis/scripts/run-multi-bounti-fetal-brain-segmentation-2026-with-bet-init.sh 0 ${image} ${mask} ${tmpdir} ${anat}/${outname}  ; "
 fi
 
-#rm -rf ${tmpdir}
+rm -rf ${tmpdir}

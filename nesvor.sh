@@ -49,6 +49,14 @@ while :; do
         -d|--dilate)
             DILATE="--dilation-radius-seg 5" # activate nesvor dilate mode
             ;;
+        -c|--command)
+            if [[ -f $2 ]] ; then
+                CMDSCRIPT=$2 # specify script for nesvor container command
+                shift
+            else
+                die 'error: supply a command script to run in the container'
+            fi
+            ;;
         --) # end of optionals
             shift
             break
@@ -78,6 +86,7 @@ cat << EOF
     -u      User mask mode. Assumes directory already has mask_fetus_x.nii.gz files in the folder.
     -s	    Smooth mode: Edge regularization (which is default), weight-image and delta adjusted
     -d      Dilate mask (--dilation-radius-seg 5), overwrites FETAL-BET mode
+    -c SCRIPT   Command mode (input a script to run in container for recon command)
 EOF
 }
 
@@ -116,12 +125,19 @@ fi
 output=${indir}/nesvor_${id}.nii.gz
 
 echo Reconstruction: $indir
+
+if [[ -f $CMDSCRIPT ]] ; then
+    echo Command script mode
+    singularity exec --nv docker://junshenxu/nesvor bash `echo $CMDSCRIPT`
+    exit
+fi
+
+
 cmd="nesvor reconstruct --output-volume ${output} --bias-field-correction --output-resolution ${RESO} --n-iter ${ITER}"
 
 if [[ -n $DILATE ]] ; then
     cmd="${cmd} ${DILATE} "
 fi
-
 
 if [[ -n $SMOOTH ]] ; then cmd="${cmd} ${SMOOTH}" ; fi
 

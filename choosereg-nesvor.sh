@@ -17,7 +17,7 @@ cat << EOF
                             for convenience. The file you supply here would have
                             "_FLIRTto_" in the filename TWICE. Ignore this if this has
                             been done. The output of this is named subjID_FLIRTto_STA.nii.gz.
-    -o||--old               Old naming conventions (assumes nesvor_SUBJ_SCAN.nii.gz)
+    -o||--old               Old naming conventions (assumes nesvor_SUBJsSCAN.nii.gz)
 
 EOF
 }
@@ -118,8 +118,8 @@ if [[ ! -n $OLD ]] ; then
     ses=`echo $base2 | sed -e 's,.*ses-,ses-,g'`
 else
     echo old naming assumed
-    sub=`echo $base2 | sed -e 's,.*nesvor_,,g' -e 's,_.*,,g'`
-    ses=`echo $base2 | sed -e 's,.*nesvor_,,g' -e 's,.*_,,g'`
+    sub=`echo $base2 | sed -e 's,.*nesvor_,,g' -e 's,s[1-9],,g'`
+    ses=`echo $base2 | sed -e 's,.*nesvor_,,g' -e 's,.*\(s[1-9]\),ses-\1,g'`
 fi
 
 BIDS="${dir}/bidsname"
